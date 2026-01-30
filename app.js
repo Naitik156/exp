@@ -343,7 +343,34 @@ const App = () => {
         setShowModal(true);
     };
 
-    const deleteChapter = (className, subject, chapter) => {
+    const handleDeleteChapter = (className, subject, chapter) => {
+    setModalConfig({
+        title: "Delete Chapter",
+        message: `Are you sure you want to delete "${chapter}"?`,
+        onConfirm: () => {
+            // Remove chapter from syllabus list (THIS WAS MISSING)
+            const chapters = EXAM_SYLLABUS[currentExam][className][subject];
+            const index = chapters.indexOf(chapter);
+            if (index > -1) chapters.splice(index, 1);
+
+            // Remove saved progress data
+            setData(prev => {
+                const newData = { ...prev };
+                if (newData[currentExam]?.[className]?.[subject]) {
+                    delete newData[currentExam][className][subject][chapter];
+                }
+                return newData;
+            });
+
+            setShowModal(false);
+            showToast("Chapter deleted");
+
+            // force re-render
+            setRefreshTrigger(prev => prev + 1);
+        }
+    });
+    setShowModal(true);
+};
         // Remove from data storage
         setData(prev => {
             const newData = { ...prev };
@@ -361,6 +388,7 @@ const App = () => {
             EXAM_SYLLABUS[currentExam][className][subject].push(chapterName);
             showToast(`Added: ${chapterName}`);
         }
+        setRefreshTrigger(prev => prev + 1);
     };
 
     const getProgress = (className, subject, chapter) => {
@@ -773,7 +801,7 @@ const App = () => {
     };
 
     const ChaptersView = () => {
-        const chapters = EXAM_SYLLABUS[currentExam][selectedClass][selectedSubject];
+        const chapters = [...EXAM_SYLLABUS[currentExam][selectedClass][selectedSubject]];
         const [showAddForm, setShowAddForm] = useState(false);
         const [newChapterName, setNewChapterName] = useState('');
         const [editingChapter, setEditingChapter] = useState(null);
@@ -970,7 +998,7 @@ const App = () => {
                                 className: 'delete-chapter-btn',
                                 onClick: (e) => {
                                     e.stopPropagation();
-                                    handleDeleteChapter(chapter);
+                                    handleDeleteChapter(selectedClass, selectedSubject, chapter);
                                 },
                                 title: 'Delete chapter'
                             }, '−')
