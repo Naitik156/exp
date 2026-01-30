@@ -371,17 +371,6 @@ const App = () => {
     });
     setShowModal(true);
 };
-        // Remove from data storage
-        setData(prev => {
-            const newData = { ...prev };
-            if (newData[currentExam]?.[className]?.[subject]) {
-                const subjectData = { ...newData[currentExam][className][subject] };
-                delete subjectData[chapter];
-                newData[currentExam][className][subject] = subjectData;
-            }
-            return newData;
-        });
-    };
 
     const addCustomChapter = (className, subject, chapterName) => {
         if (!EXAM_SYLLABUS[currentExam][className][subject].includes(chapterName)) {
