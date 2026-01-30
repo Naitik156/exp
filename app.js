@@ -989,24 +989,30 @@ const App = () => {
                                         margin: 0
                                     }
                                 }, chapter),
-                            editMode && React.createElement('button', {
-                                className: 'delete-chapter-btn',
-                                onClick: (e) => {
-                                    e.stopPropagation();
-                                    handleDeleteChapter(selectedClass, selectedSubject, chapter);
-                                },
-                                title: 'Delete chapter'
-                            }, '−')
-                        ),
-                        !editMode && React.createElement('div', { 
-                            className: 'satisfaction-display',
-                            onClick: () => {
-                                setSelectedChapter(chapter);
-                                setView('detail');
-                            }
-                        },
-                            React.createElement('span', { style: { fontSize: '1.5rem' } },
-                                satisfaction > 0 ? `${'★'.repeat(satisfaction)}${'☆'.repeat(10 - satisfaction)}` : '☆☆☆☆☆☆☆☆☆☆'
+                          editMode && React.createElement('div', {
+    style: {
+        display: 'flex',
+        gap: '6px'
+    }
+},
+    React.createElement('button', {
+        className: 'mini-edit-btn',
+        onClick: (e) => {
+            e.stopPropagation();
+            setEditingChapter(chapter);
+            setEditedName(chapter);
+        }
+    }, '✏️'),
+
+    React.createElement('button', {
+        className: 'mini-delete-btn',
+        onClick: (e) => {
+            e.stopPropagation();
+            handleDeleteChapter(chapter);
+        }
+    }, '🗑️')
+)
+tisfaction > 0 ? `${'★'.repeat(satisfaction)}${'☆'.repeat(10 - satisfaction)}` : '☆☆☆☆☆☆☆☆☆☆'
                             )
                         ),
                         !editMode && React.createElement('div', { 
