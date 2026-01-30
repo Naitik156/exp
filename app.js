@@ -941,7 +941,14 @@ const App = () => {
                     return React.createElement('div', {
                         key: chapter,
                         className: `card chapter-card ${getSubjectClass(selectedSubject)}`,
-                        style: {
+                       onClick: () => {
+    if (!editMode) {
+        setSelectedChapter(chapter);
+        setView('detail');
+    }
+},
+
+                       style: {
                             cursor: editMode ? 'default' : 'pointer',
                             opacity: editMode && editingChapter && editingChapter !== chapter ? 0.6 : 1
                         }
