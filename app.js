@@ -941,12 +941,11 @@ const App = () => {
                     return React.createElement('div', {
                         key: chapter,
                         className: `card chapter-card ${getSubjectClass(selectedSubject)}`,
-                       onClick: () => {
-    if (!editMode) {
-        setSelectedChapter(chapter);
-        setView('detail');
-    }
-},
+                      onClick: (e) => {
+    if (editMode) return;   // when editing, don't open chapter
+    setSelectedChapter(chapter);
+    setView('detail');
+}, 
 
                        style: {
                             cursor: editMode ? 'default' : 'pointer',
