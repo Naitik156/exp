@@ -992,10 +992,11 @@ const handleDeleteChapter = (chapterName) => {
                                 }, chapter),
                             editMode && React.createElement('button', {
                                 className: 'delete-chapter-btn',
-                                onClick: (e) => {
-                                    e.stopPropagation();
-                                    handleDeleteChapter(selectedClass, selectedSubject, chapter);
-                                },
+                               onClick: (e) => {
+    e.stopPropagation();
+    handleDeleteChapter(chapter);
+},
+
                                 title: 'Delete chapter'
                             }, '−')
                         ),
