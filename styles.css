@@ -1016,3 +1016,40 @@ body {
         font-size: 1.1rem;
     }
 }
+/* DELETE (MINUS) BUTTON – CLICKABLE & SENSITIVE */
+.delete-chapter-btn {
+    position: relative;
+    z-index: 20;
+    pointer-events: auto;
+    cursor: pointer;
+
+    background: #ef4444;
+    color: #ffffff;
+    border: none;
+    border-radius: 50%;
+
+    width: 32px;
+    height: 32px;
+
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 32px;
+    text-align: center;
+
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+
+    transition: transform 0.15s ease,
+                background-color 0.15s ease,
+                box-shadow 0.15s ease;
+}
+
+.delete-chapter-btn:hover {
+    background-color: #dc2626;
+    transform: scale(1.1);
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.4);
+}
+
+.delete-chapter-btn:active {
+    transform: scale(0.92);
+}
