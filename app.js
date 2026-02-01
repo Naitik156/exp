@@ -72,7 +72,6 @@ const EXAM_SYLLABUS = {
                 "Electric Charges and Fields",
                 "Electrostatic Potential and Capacitance",
                 "Current Electricity",
-                "Moving Charges and Magnetism",
                 "Magnetism and Matter",
                 "Electromagnetic Induction",
                 "Alternating Current",
@@ -83,13 +82,11 @@ const EXAM_SYLLABUS = {
                 "Atoms",
                 "Nuclei",
                 "Semiconductor Electronics",
-                "Communication Systems"
             ],
             "Physical Chemistry": [
                 "Solutions",
                 "Electrochemistry",
                 "Chemical Kinetics",
-                "Surface Chemistry",
             ],
             "Organic Chemistry": [
                 "Haloalkanes and Haloarenes",
@@ -97,50 +94,27 @@ const EXAM_SYLLABUS = {
                 "Aldehydes, Ketones and Carboxylic Acids",
                 "Amines",
                 "Biomolecules",
-                "Polymers",
-                "Chemistry in Everyday Life"
             ],
             "Inorganic Chemistry": [
-                "General Principles and Processes of Isolation of Elements",
-                "The p-Block Elements",
                 "The d-Block and f-Block Elements",
                 "Coordination Compounds"
             ],
             Botany: [
-                "Reproduction in Organisms",
                 "Sexual Reproduction in Flowering Plants",
-                "Human Reproduction",
-                "Reproductive Health",
                 "Principles of Inheritance and Variation",
                 "Molecular Basis of Inheritance",
-                "Evolution",
-                "Human Health and Disease",
-                "Strategies for Enhancement in Food Production",
                 "Microbes in Human Welfare",
-                "Biotechnology Principles and Processes",
-                "Biotechnology and its Applications",
                 "Organisms and Populations",
                 "Ecosystem",
                 "Biodiversity and Conservation",
-                "Environmental Issues"
             ],
             Zoology: [
-                "Reproduction in Organisms",
-                "Sexual Reproduction in Flowering Plants",
                 "Human Reproduction",
                 "Reproductive Health",
-                "Principles of Inheritance and Variation",
-                "Molecular Basis of Inheritance",
                 "Evolution",
                 "Human Health and Disease",
-                "Strategies for Enhancement in Food Production",
-                "Microbes in Human Welfare",
                 "Biotechnology Principles and Processes",
                 "Biotechnology and its Applications",
-                "Organisms and Populations",
-                "Ecosystem",
-                "Biodiversity and Conservation",
-                "Environmental Issues"
             ]
         }
     },
@@ -208,7 +182,7 @@ const EXAM_SYLLABUS = {
                 "Electric Charges and Fields",
                 "Electrostatic Potential and Capacitance",
                 "Current Electricity",
-                "Moving Charges and Magnetism",
+                "Magnetic Effects of Current",
                 "Magnetism and Matter",
                 "Electromagnetic Induction",
                 "Alternating Current",
@@ -219,14 +193,11 @@ const EXAM_SYLLABUS = {
                 "Atoms",
                 "Nuclei",
                 "Semiconductor Electronics",
-                "Communication Systems"
             ],
             "Physical Chemistry": [
                 "Solutions",
                 "Electrochemistry",
                 "Chemical Kinetics",
-                "Surface Chemistry",
-                "Solid State"
             ],
             "Organic Chemistry": [
                 "Haloalkanes and Haloarenes",
@@ -234,12 +205,8 @@ const EXAM_SYLLABUS = {
                 "Aldehydes, Ketones and Carboxylic Acids",
                 "Amines",
                 "Biomolecules",
-                "Polymers",
-                "Chemistry in Everyday Life"
             ],
             "Inorganic Chemistry": [
-                "General Principles and Processes of Isolation of Elements",
-                "The p-Block Elements",
                 "The d-Block and f-Block Elements",
                 "Coordination Compounds"
             ],
