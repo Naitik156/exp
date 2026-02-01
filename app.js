@@ -90,7 +90,6 @@ const EXAM_SYLLABUS = {
                 "Electrochemistry",
                 "Chemical Kinetics",
                 "Surface Chemistry",
-                "Solid State"
             ],
             "Organic Chemistry": [
                 "Haloalkanes and Haloarenes",
