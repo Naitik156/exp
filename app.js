@@ -1502,6 +1502,7 @@ const DailyGoalsView = () => {
         view === 'chapters' && React.createElement(ChaptersView),
         view === 'detail' && React.createElement(DetailView),
         view === 'dashboard' && React.createElement(DashboardView),
+         view === 'daily-goals' && React.createElement(DailyGoalsView),
         showModal && React.createElement('div', { className: 'modal', onClick: () => setShowModal(false) },
             React.createElement('div', { className: 'modal-content', onClick: (e) => e.stopPropagation() },
                 React.createElement('h3', { className: 'modal-title' }, modalConfig.title),
