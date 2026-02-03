@@ -400,7 +400,7 @@ const App = () => {
         return Math.round(total / subjects.length);
     };
 
-    const getAnalytics = () => {
+    const getAnalytics = (onlyClass = null) => {
         const classes = Object.keys(EXAM_SYLLABUS[currentExam]);
         let totalChapters = 0;
         let completedChapters = 0;
