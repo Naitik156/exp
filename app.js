@@ -1310,10 +1310,10 @@ const ProgressGraph = ({ history }) => {
     // Range state: 7 matlab Weekly, 30 matlab Monthly
     const [range, setRange] = useState(7); 
     
-    if (!history || history.length < 2) return null;
-
-    // Sirf utna hi data dikhao jitna range selected hai
-    const displayData = history.slice(-range);
+    // Agar data nahi bhi hai, toh 0% wala graph dikhao (Empty State)
+    const displayData = (history && history.length >= 2) 
+        ? history.slice(-range) 
+        : [{date: 'Start', percent: 0}, {date: 'Today', percent: 0}];
     
     // Graph ki banawat (Dimensions)
     const width = 1000;
