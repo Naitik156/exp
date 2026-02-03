@@ -1494,6 +1494,7 @@ const ProgressGraph = ({ history }) => {
                     )
                 )
             ),
+                                   React.createElement(ProgressGraph, { history: data.history }),
 
             // 6. ACTION FOOTER
             React.createElement('div', { style: { marginTop: '3rem', textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '1rem' } },
