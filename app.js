@@ -259,11 +259,13 @@ const App = () => {
             };
             
             // Dummy data taaki graph pehle din hi khali na dikhe
-            if (mergedData.history.length === 0) {
+            // Force Dummy Data: Agar history khali hai ya bilkul nahi hai, toh points add karo
+            if (!mergedData.history || mergedData.history.length === 0) {
                 mergedData.history = [
                     { date: '01 Feb', percent: 5 },
                     { date: '02 Feb', percent: 12 },
-                    { date: '03 Feb', percent: 18 }
+                    { date: '03 Feb', percent: 18 },
+                    { date: 'Today', percent: 0 }
                 ];
             }
             return mergedData;
