@@ -283,7 +283,40 @@ const App = () => {
     useEffect(() => {
         localStorage.setItem('currentExam', currentExam || '');
     }, [currentExam]);
+// --- GRAPH DATA AUTO-SAVE LOGIC ---
+    // Ye logic har baar padhai ka data badalne par graph update karega
+    useEffect(() => {
+        if (!currentExam) return;
+        
+        // 1. Aaj ki total progress nikaalo
+        const stats = getAnalytics('Overall');
+        const currentTotalPercent = stats.overallProgress;
+        
+        // 2. Aaj ki date format karo (Jaise: "03 Feb")
+        const today = new Date().toLocaleDateString('en-GB', { 
+            day: '2-digit', 
+            month: 'short' 
+        });
 
+        setData(prev => {
+            let updatedHistory = [...(prev.history || [])];
+            const lastRecord = updatedHistory[updatedHistory.length - 1];
+
+            // Agar aaj ki date ka record pehle se hai, to use update karo
+            if (lastRecord && lastRecord.date === today) {
+                if (lastRecord.percent === currentTotalPercent) return prev; // No change
+                lastRecord.percent = currentTotalPercent;
+            } else {
+                // Agar naya din hai, to naya point dalo
+                updatedHistory.push({ date: today, percent: currentTotalPercent });
+                
+                // Sirf pichle 30 din ka data rakho taaki memory bhar na jaye
+                if (updatedHistory.length > 30) updatedHistory.shift();
+            }
+            
+            return { ...prev, history: updatedHistory };
+        });
+    }, [data.NEET, data.JEE]); // Jab bhi NEET ya JEE ka data badle, ye chale
     const showToast = (message) => {
         setToast({ show: true, message });
         setTimeout(() => setToast({ show: false, message: '' }), 3000);
