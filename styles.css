@@ -1175,3 +1175,123 @@ body {
     border-radius: 8px;
     font-family: inherit;
 }
+/* --- DAILY GOAL MODAL UPGRADE (IMAGE 1 & 2 LOOK) --- */
+
+/* Modal ke corners ko image 1 jaisa rounded banana */
+.glass-modal {
+    border-radius: 28px !important;
+    padding: 2rem !important;
+    max-width: 420px !important;
+    background: #ffffff !important;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2) !important;
+}
+
+/* Header ka Target Icon aur Text */
+.custom-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1c1917;
+    margin-bottom: 1.5rem;
+}
+
+.target-icon {
+    color: #ef4444; /* Image 1 wala Red color */
+    font-size: 1.6rem;
+}
+
+/* Labels ko image ki tarah bold aur saaf banana */
+.input-group label {
+    font-weight: 600 !important;
+    font-size: 0.95rem !important;
+    color: #1c1917 !important;
+    margin-bottom: 8px !important;
+}
+
+/* Inputs ko rounded banana */
+.input-style {
+    border-radius: 12px !important;
+    border: 1px solid #e5e7eb !important;
+    padding: 0.8rem !important;
+    background: #fcfcfc !important;
+}
+
+/* --- ACTIVE FOR SECTION (IMAGE 2 LOOK) --- */
+.active-for-container {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.active-for-row {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Label aur Checkbox ke beech ka gap */
+}
+
+.active-for-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #4b3621; /* Brownish color like image 2 */
+    min-width: 90px;
+}
+
+/* Checkbox wala beige background dabba */
+.habit-checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f9f3f0; /* Image 2 wala light peach/beige color */
+    padding: 8px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.habit-checkbox-wrapper:hover {
+    background: #f2e7e1;
+}
+
+.habit-checkbox-wrapper input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #2d1b0d; /* Dark brown checkbox color */
+    cursor: pointer;
+}
+
+.habit-checkbox-text {
+    font-size: 1rem;
+    color: #2d1b0d;
+    font-weight: 500;
+}
+
+.habit-help-text {
+    margin-left: 105px; /* Label ki width ke hisaab se alignment */
+    font-size: 0.85rem;
+    color: #9ca3af; /* Light gray sub-text */
+}
+
+/* Buttons upgrade like Image 1 */
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 2rem;
+}
+
+.btn-cancel {
+    background: #f3f4f6 !important;
+    color: #1c1917 !important;
+    border-radius: 12px !important;
+    flex: 1;
+}
+
+.btn-save-target {
+    background: linear-gradient(135deg, #0d9488, #14b8a6) !important; /* Teal gradient like Image 1 */
+    color: white !important;
+    border-radius: 12px !important;
+    flex: 1.5;
+    font-weight: 700 !important;
+}
