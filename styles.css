@@ -1318,3 +1318,24 @@ body {
     border: 2px dashed var(--border);
     margin-top: 2rem;
 }
+/* Delete Button Fix for Mobile */
+.delete-goal-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.4rem;
+    padding: 15px; /* Touch area badhane ke liye */
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100; /* Card ke click se upar rakhne ke liye */
+    position: relative;
+    transition: transform 0.2s;
+    -webkit-tap-highlight-color: transparent; /* Mobile blue highlight hatane ke liye */
+}
+
+.delete-goal-btn:active {
+    transform: scale(1.2);
+    color: #ef4444;
+}
