@@ -1229,80 +1229,108 @@ const handleDeleteChapter = (chapterName) => {
         );
     };
 
-    const DashboardView = () => {
-        const analytics = getAnalytics();
+  const DashboardView = () => {
+        // --- NAYA STATE: Dashboard ka class filter track karne ke liye ---
+        const [dashFilter, setDashFilter] = React.useState('Overall');
+        
+        // Naye filter ke sath analytics calculation
+        const analytics = getAnalytics(dashFilter);
 
         return React.createElement('div', { className: 'container' },
+            // 1. Navigation Breadcrumb
             React.createElement('div', { className: 'nav-breadcrumb' },
-                React.createElement('span', { className: 'breadcrumb-item', onClick: changeExam }, 'Exam Select'),
-                React.createElement('span', { className: 'breadcrumb-separator' }, '/'),
                 React.createElement('span', { className: 'breadcrumb-item', onClick: () => setView('home') }, 'Home'),
                 React.createElement('span', { className: 'breadcrumb-separator' }, '/'),
-                React.createElement('span', { className: 'breadcrumb-item active' }, 'Dashboard')
+                React.createElement('span', { className: 'breadcrumb-item active' }, 'Smart Dashboard')
             ),
-            React.createElement('div', { className: 'header', style: { marginBottom: '2rem' } },
-                React.createElement('h2', { className: 'logo', style: { fontSize: '2rem' } }, `${currentExam} Performance Analytics`),
-                React.createElement('div', { style: { marginTop: '1.5rem', display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' } },
+            
+            // 2. Dashboard Title
+            React.createElement('div', { className: 'header' },
+                React.createElement('h2', { className: 'logo', style: {fontSize: '2.2rem'} }, `${currentExam} Performance`),
+                React.createElement('p', { className: 'tagline' }, `Viewing analytics for: ${dashFilter}`)
+            ),
+
+            // 3. CLASS SWITCHER BUTTONS (Professional Toggle)
+            React.createElement('div', { className: 'dashboard-toggle' },
+                ['Overall', 'Class 11', 'Class 12'].map(option => 
                     React.createElement('button', {
-                        className: 'btn btn-primary',
-                        onClick: exportData,
-                        style: { minWidth: '150px' }
-                    }, '📥 Export Data'),
-                    React.createElement('label', {
-                        className: 'btn btn-primary',
-                        style: { cursor: 'pointer', minWidth: '150px' }
-                    },
-                        '📤 Import Data',
-                        React.createElement('input', {
-                            type: 'file',
-                            accept: '.json',
-                            onChange: importData,
-                            style: { display: 'none' }
-                        })
-                    )
+                        key: option,
+                        className: `toggle-btn ${dashFilter === option ? 'active' : ''}`,
+                        onClick: () => setDashFilter(option)
+                    }, option)
                 )
             ),
+
+            // 4. MAIN STATS CARDS (Top Row)
             React.createElement('div', { className: 'dashboard-stats' },
+                // Overall Progress Card
                 React.createElement('div', { className: 'stat-card' },
+                    React.createElement('div', { className: 'stat-label' }, 'Overall Completion'),
                     React.createElement('div', { className: 'stat-value' }, `${analytics.overallProgress}%`),
-                    React.createElement('div', { className: 'stat-label' }, 'Overall Completion')
+                    React.createElement('div', { className: 'progress-bar-bg', style: {height: '8px', marginTop: '12px'} },
+                        React.createElement('div', { className: 'progress-bar-fill', style: { width: `${analytics.overallProgress}%` } })
+                    )
                 ),
+                // Chapters Done Card
                 React.createElement('div', { className: 'stat-card' },
-                    React.createElement('div', { className: 'stat-value' }, `${analytics.completedChapters}/${analytics.totalChapters}`),
-                    React.createElement('div', { className: 'stat-label' }, 'Chapters Completed')
+                    React.createElement('div', { className: 'stat-label' }, 'Chapters Mastered'),
+                    React.createElement('div', { className: 'stat-value', style: { color: 'var(--primary)' } }, `${analytics.completedChapters}/${analytics.totalChapters}`),
+                    React.createElement('div', { className: 'stat-label', style: {fontSize: '0.8rem', marginTop: '5px'} }, '100% preparation done')
                 ),
+                // Satisfaction/Quality Card
                 React.createElement('div', { className: 'stat-card' },
-                    React.createElement('div', { className: 'stat-value', style: { color: 'var(--success)' } }, analytics.strongCount),
-                    React.createElement('div', { className: 'stat-label' }, 'Strong Chapters')
-                ),
-                React.createElement('div', { className: 'stat-card' },
-                    React.createElement('div', { className: 'stat-value', style: { color: 'var(--warning)' } }, analytics.moderateCount),
-                    React.createElement('div', { className: 'stat-label' }, 'Moderate Chapters')
-                ),
-                React.createElement('div', { className: 'stat-card' },
-                    React.createElement('div', { className: 'stat-value', style: { color: 'var(--danger)' } }, analytics.weakCount),
-                    React.createElement('div', { className: 'stat-label' }, 'Weak Chapters')
-                ),
-                React.createElement('div', { className: 'stat-card' },
-                    React.createElement('div', { className: 'stat-value' }, `${analytics.avgSatisfaction}/10`),
-                    React.createElement('div', { className: 'stat-label' }, 'Avg Satisfaction')
+                    React.createElement('div', { className: 'stat-label' }, 'Study Quality'),
+                    React.createElement('div', { className: 'stat-value', style: { color: 'var(--secondary)' } }, `${analytics.avgSatisfaction}/10`),
+                    React.createElement('div', { className: 'stat-label', style: {fontSize: '0.8rem', marginTop: '5px'} }, 'Based on star ratings')
                 )
             ),
-            React.createElement('div', { className: 'card', style: { marginTop: '2rem' } },
-                React.createElement('h3', { className: 'card-title' }, 'Most Neglected Subject'),
-                React.createElement('p', { className: 'card-subtitle' }, analytics.neglectedSubject),
-                React.createElement('div', { className: 'progress-container' },
-                    React.createElement('div', { className: 'progress-label' },
-                        React.createElement('span', null, 'Progress'),
-                        React.createElement('span', null, `${analytics.neglectedProgress}%`)
-                    ),
-                    React.createElement('div', { className: 'progress-bar-bg' },
-                        React.createElement('div', { className: 'progress-bar-fill', style: { width: `${analytics.neglectedProgress}%` } })
+
+            // 5. SECONDARY ANALYSIS (Middle Row)
+            React.createElement('div', { className: 'grid grid-2', style: { marginTop: '2rem' } },
+                
+                // Chapter Mastery Levels (Visual representation of Stars)
+                React.createElement('div', { className: 'card' },
+                    React.createElement('h3', { className: 'card-title', style: {fontSize: '1.25rem', marginBottom: '1.5rem'} }, 'Mastery Breakdown'),
+                    React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: '1.2rem' } },
+                        React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                            React.createElement('span', { style: { fontWeight: '600' } }, '🟢 Strong Chapters'),
+                            React.createElement('span', { className: 'exam-subject-tag', style: {background: '#10B981'} }, analytics.strongCount)
+                        ),
+                        React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                            React.createElement('span', { style: { fontWeight: '600' } }, '🟡 Moderate Prep'),
+                            React.createElement('span', { className: 'exam-subject-tag', style: {background: '#F59E0B'} }, analytics.moderateCount)
+                        ),
+                        React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                            React.createElement('span', { style: { fontWeight: '600' } }, '🔴 Need Attention'),
+                            React.createElement('span', { className: 'exam-subject-tag', style: {background: '#EF4444'} }, analytics.weakCount)
+                        )
+                    )
+                ),
+
+                // Neglected Area / Subject Focus
+                React.createElement('div', { className: 'card' },
+                    React.createElement('h3', { className: 'card-title', style: {fontSize: '1.25rem', marginBottom: '1rem'} }, 'Focus Required'),
+                    React.createElement('div', { style: { textAlign: 'center', background: 'rgba(239, 68, 68, 0.05)', padding: '1.5rem', borderRadius: '12px' } },
+                        React.createElement('p', { style: { fontSize: '0.9rem', color: 'var(--text-light)', marginBottom: '0.5rem' } }, 'Least Prepared Subject:'),
+                        React.createElement('h4', { style: { fontSize: '1.8rem', color: 'var(--danger)', marginBottom: '1rem' } }, analytics.neglectedSubject),
+                        React.createElement('div', { className: 'progress-bar-bg' },
+                            React.createElement('div', { 
+                                className: 'progress-bar-fill', 
+                                style: { width: `${analytics.neglectedProgress}%`, background: 'var(--danger)' } 
+                            })
+                        ),
+                        React.createElement('p', { style: { marginTop: '0.8rem', fontSize: '0.85rem', fontWeight: '700' } }, `${analytics.neglectedProgress}% syllabus covered`)
                     )
                 )
+            ),
+
+            // 6. ACTION FOOTER
+            React.createElement('div', { style: { marginTop: '3rem', textAlign: 'center', display: 'flex', justifyContent: 'center', gap: '1rem' } },
+                React.createElement('button', { className: 'btn btn-primary', onClick: exportData }, '📥 Download Report'),
+                React.createElement('button', { className: 'btn btn-secondary', onClick: () => setView('home') }, '🔙 Back to Home')
             )
         );
-    };
+    };  
 
     return React.createElement(React.Fragment, null,
         view === 'exam-select' && React.createElement(ExamSelectView),
