@@ -1409,3 +1409,20 @@ body {
     font-weight: 600;
     text-align: center;
 }
+/* Clicking Fix: Ensure graph doesn't block clicks */
+.svg-container {
+    pointer-events: none; /* Isse graph ke piche waale buttons click ho payenge */
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+}
+
+.graph-point {
+    pointer-events: auto; /* Sirf dots par click/hover kaam karega */
+}
+
+/* Ensure Breadcrumb and Buttons are always on top */
+.nav-breadcrumb, .btn, .goal-card {
+    position: relative;
+    z-index: 10;
+}
