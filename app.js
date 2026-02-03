@@ -399,9 +399,12 @@ const App = () => {
         const total = subjects.reduce((sum, subject) => sum + getSubjectProgress(className, subject), 0);
         return Math.round(total / subjects.length);
     };
-
-    const getAnalytics = () => {
-        const classes = Object.keys(EXAM_SYLLABUS[currentExam]);
+const getAnalytics = (filterClass = 'Overall') => {
+        // Step A: Check karna ki data 'Overall' chahiye ya kisi specific Class ka
+        const classes = filterClass === 'Overall' 
+            ? Object.keys(EXAM_SYLLABUS[currentExam]) 
+            : [filterClass];
+            
         let totalChapters = 0;
         let completedChapters = 0;
         let totalProgress = 0;
@@ -412,41 +415,52 @@ const App = () => {
         let weakCount = 0;
         let subjectProgress = {};
 
+        // Step B: Loop chala kar data nikalna
         classes.forEach(className => {
+            if (!EXAM_SYLLABUS[currentExam][className]) return;
+
             Object.keys(EXAM_SYLLABUS[currentExam][className]).forEach(subject => {
                 const chapters = EXAM_SYLLABUS[currentExam][className][subject];
                 totalChapters += chapters.length;
 
-                const subjectKey = `${className}-${subject}`;
-                if (!subjectProgress[subjectKey]) {
-                    subjectProgress[subjectKey] = { total: 0, count: 0, name: subject };
+                if (!subjectProgress[subject]) {
+                    subjectProgress[subject] = { total: 0, count: 0, name: subject };
                 }
 
                 chapters.forEach(chapter => {
                     const progress = getProgress(className, subject, chapter);
                     totalProgress += progress;
-                    subjectProgress[subjectKey].total += progress;
-                    subjectProgress[subjectKey].count += 1;
+                    subjectProgress[subject].total += progress;
+                    subjectProgress[subject].count += 1;
 
                     if (progress === 100) completedChapters++;
+                    
                     const chapterData = getChapterData(className, subject, chapter);
-                    if (chapterData.satisfaction) {
-                        totalSatisfaction += chapterData.satisfaction;
+                    const stars = chapterData.satisfaction || 0;
+                    
+                    if (stars > 0) {
+                        totalSatisfaction += stars;
                         satisfactionCount++;
-                        if (chapterData.satisfaction >= 8) strongCount++;
-                        else if (chapterData.satisfaction >= 5) moderateCount++;
+                        // Rating Logic: Strong, Moderate, Weak
+                        if (stars >= 8) strongCount++;
+                        else if (stars >= 5) moderateCount++;
                         else weakCount++;
                     }
                 });
             });
         });
 
+        // Step C: Sabse kam progress wala subject dhundna
         const neglected = Object.entries(subjectProgress)
-            .map(([key, val]) => ({ name: val.name, progress: Math.round(val.total / val.count) }))
+            .map(([key, val]) => ({ 
+                name: val.name, 
+                progress: val.count > 0 ? Math.round(val.total / val.count) : 0 
+            }))
             .sort((a, b) => a.progress - b.progress)[0] || { name: 'None', progress: 0 };
 
+        // Step D: Dashboard ko final data bhejna
         return {
-            overallProgress: Math.round(totalProgress / totalChapters),
+            overallProgress: totalChapters > 0 ? Math.round(totalProgress / totalChapters) : 0,
             totalChapters,
             completedChapters,
             avgSatisfaction: satisfactionCount > 0 ? (totalSatisfaction / satisfactionCount).toFixed(1) : 0,
