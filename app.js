@@ -1408,45 +1408,89 @@ const DailyGoalsView = () => {
         const completedCount = goals.filter(g => g.completed).length;
         const progressPercent = goals.length > 0 ? Math.round((completedCount / goals.length) * 100) : 0;
 
-        return React.createElement('div', { className: 'container' },
+        return React.createElement('div', { className: 'container daily-goals-page' },
+            // 1. Breadcrumb (Wapas jaane ke liye)
             React.createElement('div', { className: 'nav-breadcrumb' },
                 React.createElement('span', { className: 'breadcrumb-item', onClick: () => setView('home') }, 'Home'),
                 React.createElement('span', { className: 'breadcrumb-separator' }, '/'),
                 React.createElement('span', { className: 'breadcrumb-item active' }, 'Daily Goals')
             ),
 
-            React.createElement('div', { className: 'header' },
-                React.createElement('h2', { className: 'logo' }, 'Today\'s Targets'),
-                React.createElement('div', { className: 'progress-container', style: { maxWidth: '500px', margin: '1rem auto' } },
+            // 2. Main Header Card (Title aur Progress ek card ke andar)
+            React.createElement('div', { className: 'goals-header-card' },
+                React.createElement('h2', { className: 'logo', style: {fontSize: '2.5rem', marginBottom: '1rem'} }, 'Today\'s Targets'),
+                React.createElement('div', { className: 'progress-container' },
                     React.createElement('div', { className: 'progress-label' },
-                        React.createElement('span', null, 'Daily Task Progress'),
-                        React.createElement('span', null, `${progressPercent}%`)
+                        React.createElement('span', {style: {fontWeight: '700'}}, 'Daily Task Progress:'),
+                        React.createElement('span', {style: {fontWeight: '700', color: 'var(--primary)'}}, ` ${progressPercent}%`) // Space theek kiya yahan
                     ),
-                    React.createElement('div', { className: 'progress-bar-bg' },
-                        React.createElement('div', { className: 'progress-bar-fill', style: { width: `${progressPercent}%` } })
+                    React.createElement('div', { className: 'progress-bar-bg', style: {height: '12px'} },
+                        React.createElement('div', { 
+                            className: 'progress-bar-fill', 
+                            style: { width: `${progressPercent}%`, background: 'linear-gradient(90deg, var(--secondary), #fbbf24)' } 
+                        })
                     )
                 )
             ),
 
+            // 3. Add Goal Button (Full width professional button)
             React.createElement('div', { style: { textAlign: 'center', marginBottom: '2rem' } },
-                React.createElement('button', { className: 'btn btn-primary', onClick: () => setShowAddModal(true), style: {background: 'var(--secondary)'} }, '+ Add Today\'s Goal')
+                React.createElement('button', { 
+                    className: 'btn btn-primary', 
+                    onClick: () => setShowAddModal(true), 
+                    style: {
+                        background: 'var(--secondary)', 
+                        padding: '1rem 2.5rem', 
+                        fontSize: '1.1rem', 
+                        borderRadius: '12px', 
+                        width: '100%', 
+                        maxWidth: '500px',
+                        boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)'
+                    } 
+                }, '+ Add Today\'s Goal')
             ),
 
-            React.createElement('div', { style: { maxWidth: '600px', margin: '0 auto' } },
-                goals.map(goal => React.createElement('div', { key: goal.id, className: `goal-card ${goal.completed ? 'completed' : ''}`, onClick: () => toggleGoal(goal.id) },
-                    React.createElement('input', { type: 'checkbox', checked: goal.completed, readOnly: true, className: 'custom-checkbox' }),
-                    React.createElement('div', { className: 'goal-icon-circle' }, goal.icon),
-                    React.createElement('div', { className: 'goal-content' },
-                        React.createElement('span', { className: 'goal-title' }, goal.title),
-                        React.createElement('span', { className: 'goal-desc' }, goal.isRecurring ? '🔄 Active for all months' : goal.desc)
-                    ),
-                    React.createElement('button', { 
-                        style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem' },
-                        onClick: (e) => { e.stopPropagation(); deleteGoal(goal.id); }
-                    }, '🗑️')
+            // 4. Goals List Section
+            React.createElement('div', { style: { maxWidth: '700px', margin: '0 auto' } },
+                goals.length === 0 
+                ? React.createElement('div', { className: 'empty-state-container' }, 
+                    React.createElement('div', {style: {fontSize: '4rem', marginBottom: '1rem'}}, '✨'),
+                    React.createElement('h3', {style: {color: 'var(--text-light)'}}, 'Koi targets nahi hain?'),
+                    React.createElement('p', {style: {color: 'var(--text-light)'}}, 'Naya goal jorein aur padhai shuru karein!'))
+                : goals.map(goal => React.createElement('div', { 
+                    key: goal.id, 
+                    className: `card goal-card ${goal.completed ? 'completed' : ''}`, 
+                    style: { 
+                        marginBottom: '1rem', 
+                        borderLeft: '6px solid var(--secondary)',
+                        padding: '1.25rem'
+                    },
+                    onClick: () => toggleGoal(goal.id) 
+                },
+                    React.createElement('div', { style: {display: 'flex', alignItems: 'center', gap: '15px'} },
+                        React.createElement('input', { 
+                            type: 'checkbox', 
+                            checked: goal.completed, 
+                            readOnly: true, 
+                            className: 'custom-checkbox', 
+                            style: {width: '22px', height: '22px'} 
+                        }),
+                        React.createElement('div', { className: 'goal-icon-circle', style: {background: 'rgba(245, 158, 11, 0.1)', fontSize: '1.5rem'} }, goal.icon),
+                        React.createElement('div', { className: 'goal-content' },
+                            React.createElement('span', { className: 'goal-title', style: {fontSize: '1.1rem', fontWeight: '700'} }, goal.title),
+                            React.createElement('span', { className: 'goal-desc', style: {display: 'block', color: 'var(--text-light)', fontSize: '0.9rem'} }, 
+                                goal.isRecurring ? '🔄 Active for all months' : goal.desc
+                            )
+                        ),
+                        React.createElement('button', { 
+                            style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.3rem', padding: '10px' },
+                            onClick: (e) => { e.stopPropagation(); deleteGoal(goal.id); }
+                        }, '🗑️')
+                    )
                 ))
             ),
 
+            // 5. Add Goal Modal (Popup)
             showAddModal && React.createElement('div', { className: 'modal' },
                 React.createElement('div', { className: 'modal-content glass-modal' },
                     React.createElement('div', { className: 'custom-modal-header' },
