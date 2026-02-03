@@ -710,7 +710,25 @@ const getAnalytics = (filterClass = 'Overall') => {
                     onClick: () => setView('dashboard'),
                     style: { fontSize: '1.1rem', padding: '1rem 2rem' }
                 }, '📊 View Analytics Dashboard')
-            ),
+            ),// --- NAYA DAILY GOALS BUTTON ---
+React.createElement('div', { style: { textAlign: 'center', marginTop: '1.5rem' } },
+    React.createElement('button', {
+        className: 'btn',
+        onClick: () => setView('daily-goals'),
+        style: { 
+            fontSize: '1.1rem', 
+            padding: '1rem 2.5rem', 
+            background: 'linear-gradient(135deg, #F59E0B, #D97706)', // Professional Gold/Orange Gradient
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            transition: 'transform 0.2s ease'
+        }
+    }, '🎯 My Daily Goals')
+),
             React.createElement('div', { className: 'social-links', style: { marginTop: '3rem', display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' } },
                 React.createElement('a', {
                     href: 'https://www.instagram.com/naitik_156_?igsh=ejF0ZmV4dTJoa3Iz',
