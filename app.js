@@ -241,31 +241,34 @@ const App = () => {
     const [selectedSubject, setSelectedSubject] = useState(null);
     const [selectedChapter, setSelectedChapter] = useState(null);
     const [data, setData] = useState(() => {
-        // 1. Browser ki memory (LocalStorage) se purana data uthana
         const saved = localStorage.getItem('syllabusData');
-        
-        // 2. Ek 'Default Structure' banana jisme NEET, JEE aur naya DailyGoals ho
         const defaultData = { 
             NEET: {}, 
             JEE: {}, 
-            dailyGoals: [] // Yeh naya section hai jo goals store karega
+            dailyGoals: [],
+            history: [] // <--- Graph ka data yahan save hoga
         };
 
         if (saved) {
-            // Agar pehle se koi data hai (JSON format mein), toh use Object mein badlo
             const parsedData = JSON.parse(saved);
-            
-            // Sabse Important: Purane data (NEET/JEE) ko rakho aur naya 'dailyGoals' usme merge kar do
-            // Agar user ne pehle se goals save kiye hain, toh parsedData.dailyGoals use hoga
-            return { 
+            // Purane data ko naye format ke saath merge karna
+            const mergedData = { 
                 ...defaultData, 
                 ...parsedData,
-                dailyGoals: parsedData.dailyGoals || [] 
+                history: parsedData.history || [] 
             };
-        } else {
-            // Agar naya user hai, toh khali default structure bhej do
-            return defaultData;
+            
+            // Dummy data taaki graph pehle din hi khali na dikhe
+            if (mergedData.history.length === 0) {
+                mergedData.history = [
+                    { date: '01 Feb', percent: 5 },
+                    { date: '02 Feb', percent: 12 },
+                    { date: '03 Feb', percent: 18 }
+                ];
+            }
+            return mergedData;
         }
+        return defaultData;
     });
     const [editMode, setEditMode] = useState(false);
     const [showModal, setShowModal] = useState(false);
