@@ -1522,7 +1522,7 @@ const DailyGoalsView = () => {
                             value: newGoal.icon,
                             onChange: (e) => setNewGoal({...newGoal, icon: e.target.value})
                         },
-                            ['📖', '🧪', '✍️', '📝', '⏰', '🎯', '💡'].map(i => React.createElement('option', {key: i, value: i}, i))
+                            ['📖', '🏋🏻', '✍️', '📝', '⏰', '🎯', '💡'].map(i => React.createElement('option', {key: i, value: i}, i))
                         )
                     ),
                     React.createElement('div', { className: 'active-for-container' },
