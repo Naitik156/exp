@@ -1482,9 +1482,13 @@ const DailyGoalsView = () => {
                                 goal.isRecurring ? '🔄 Active for all months' : goal.desc
                             )
                         ),
+                        // ↓↓↓ YE NAYA CODE WAHAN DAAL DEIN ↓↓↓
                         React.createElement('button', { 
-                            style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.3rem', padding: '10px' },
-                            onClick: (e) => { e.stopPropagation(); deleteGoal(goal.id); }
+                            className: 'delete-goal-btn', 
+                            onClick: (e) => { 
+                                e.stopPropagation(); 
+                                deleteGoal(goal.id); 
+                            }
                         }, '🗑️')
                     )
                 ))
