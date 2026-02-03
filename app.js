@@ -1513,26 +1513,70 @@ const DailyGoalsView = () => {
                 ))
             ),
 // --- STEP 4: PERFORMANCE GRAPH UI ---
-            React.createElement('div', { className: 'graph-section', style: { maxWidth: '700px', margin: '3rem auto 0' } },
+// --- STEP 2: PROFESSIONAL WAVE GRAPH (IMAGE 1 STYLE) ---
+            React.createElement('div', { className: 'graph-section', style: { maxWidth: '700px', margin: '2rem auto 0' } },
                 React.createElement('div', { className: 'graph-title' }, 
-                    React.createElement('span', null, '📊'), 
-                    React.createElement('span', { style: {marginLeft: '10px'} }, 'Weekly Performance')
+                    React.createElement('span', null, '📈'), 
+                    React.createElement('span', null, 'Weekly Performance Wave')
                 ),
-                React.createElement('div', { className: 'graph-bars-container' },
+                
+                React.createElement('div', { className: 'svg-container' },
+                    (() => {
+                        const daysData = [...Array(7)].map((_, i) => {
+                            const d = new Date();
+                            d.setDate(d.getDate() - (6 - i));
+                            const dateKey = d.toLocaleDateString();
+                            const val = data.performanceHistory?.[dateKey] || 0;
+                            return val;
+                        });
+
+                        const width = 100;
+                        const height = 100;
+                        const points = daysData.map((val, i) => {
+                            const x = (i * (width / 6));
+                            const y = height - (val * 0.8 + 10);
+                            return `${x},${y}`;
+                        }).join(' ');
+
+                        const areaPath = `0,${height} ${points} ${width},${height}`;
+
+                        return React.createElement('svg', { 
+                            viewBox: `0 0 ${width} ${height}`, 
+                            preserveAspectRatio: 'none',
+                            style: { width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }
+                        },
+                            React.createElement('polyline', {
+                                points: areaPath,
+                                className: 'graph-path'
+                            }),
+                            React.createElement('polyline', {
+                                points: points,
+                                fill: 'none',
+                                stroke: '#8b5cf6',
+                                strokeWidth: '2.5',
+                                strokeLinejoin: 'round'
+                            }),
+                            daysData.map((val, i) => {
+                                const x = (i * (width / 6));
+                                const y = height - (val * 0.8 + 10);
+                                return React.createElement('circle', {
+                                    key: i,
+                                    cx: x,
+                                    cy: y,
+                                    r: '1.5',
+                                    className: 'graph-point'
+                                });
+                            })
+                        );
+                    })()
+                ),
+                
+                React.createElement('div', { className: 'graph-labels-x' },
                     [...Array(7)].map((_, i) => {
                         const d = new Date();
                         d.setDate(d.getDate() - (6 - i));
-                        const dateKey = d.toLocaleDateString();
-                        const progressValue = data.performanceHistory?.[dateKey] || 0;
-                        const dateLabel = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
-
-                        return React.createElement('div', { key: i, className: 'graph-bar-wrapper' },
-                            React.createElement('div', { 
-                                className: 'bar-pill', 
-                                'data-value': `${progressValue}%`,
-                                style: { height: `${progressValue}%` } 
-                            }),
-                            React.createElement('div', { className: 'graph-date' }, dateLabel)
+                        return React.createElement('span', { key: i, className: 'x-label' }, 
+                            d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })
                         );
                     })
                 )
