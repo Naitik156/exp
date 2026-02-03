@@ -1374,20 +1374,25 @@ const handleDeleteChapter = (chapterName) => {
     };  
 const DailyGoalsView = () => {
         const [showAddModal, setShowAddModal] = React.useState(false);
-        const [newGoal, setNewGoal] = React.useState({ title: '', desc: '', icon: '📖' });
+        const [newGoal, setNewGoal] = React.useState({ 
+            title: '', 
+            desc: '', 
+            icon: '📖', 
+            isRecurring: true 
+        });
 
         const goals = data.dailyGoals || [];
 
         const addGoal = () => {
             if (!newGoal.title.trim()) {
-                showToast('Pehle Goal ka naam toh likho!');
+                showToast('Goal ka naam likhna zaroori hai!');
                 return;
             }
             const updatedGoals = [...goals, { ...newGoal, id: Date.now(), completed: false }];
             setData(prev => ({ ...prev, dailyGoals: updatedGoals }));
             setShowAddModal(false);
-            setNewGoal({ title: '', desc: '', icon: '📖' });
-            showToast('🎯 Goal Set! Ab padhai shuru karo.');
+            setNewGoal({ title: '', desc: '', icon: '📖', isRecurring: true });
+            showToast('🎯 Target Set Ho Gaya!');
         };
 
         const toggleGoal = (id) => {
@@ -1398,7 +1403,6 @@ const DailyGoalsView = () => {
         const deleteGoal = (id) => {
             const updatedGoals = goals.filter(g => g.id !== id);
             setData(prev => ({ ...prev, dailyGoals: updatedGoals }));
-            showToast('Goal hata diya gaya.');
         };
 
         const completedCount = goals.filter(g => g.completed).length;
@@ -1413,44 +1417,31 @@ const DailyGoalsView = () => {
 
             React.createElement('div', { className: 'header' },
                 React.createElement('h2', { className: 'logo' }, 'Today\'s Targets'),
-                React.createElement('div', { className: 'progress-container', style: { maxWidth: '500px', margin: '1.5rem auto' } },
+                React.createElement('div', { className: 'progress-container', style: { maxWidth: '500px', margin: '1rem auto' } },
                     React.createElement('div', { className: 'progress-label' },
-                        React.createElement('span', null, 'Daily Progress'),
-                        React.createElement('span', {style: {color: 'var(--primary)', fontWeight: 'bold'}}, `${progressPercent}%`)
+                        React.createElement('span', null, 'Daily Task Progress'),
+                        React.createElement('span', null, `${progressPercent}%`)
                     ),
-                    React.createElement('div', { className: 'progress-bar-bg', style: {height: '12px'} },
-                        React.createElement('div', { className: 'progress-bar-fill', style: { width: `${progressPercent}%`, transition: 'width 0.5s ease' } })
+                    React.createElement('div', { className: 'progress-bar-bg' },
+                        React.createElement('div', { className: 'progress-bar-fill', style: { width: `${progressPercent}%` } })
                     )
                 )
             ),
 
-            React.createElement('div', { style: { textAlign: 'center', marginBottom: '2.5rem' } },
-                React.createElement('button', { 
-                    className: 'btn btn-primary', 
-                    onClick: () => setShowAddModal(true),
-                    style: { padding: '0.8rem 2rem', borderRadius: '50px', background: 'var(--secondary)' }
-                }, '+ Add Today\'s Goal')
+            React.createElement('div', { style: { textAlign: 'center', marginBottom: '2rem' } },
+                React.createElement('button', { className: 'btn btn-primary', onClick: () => setShowAddModal(true), style: {background: 'var(--secondary)'} }, '+ Add Today\'s Goal')
             ),
 
-            React.createElement('div', { style: { maxWidth: '700px', margin: '0 auto' } },
-                goals.length === 0 
-                ? React.createElement('div', {style: {textAlign: 'center', padding: '3rem', opacity: 0.5}}, 
-                    React.createElement('div', {style: {fontSize: '3rem'}}, '☀️'),
-                    React.createElement('p', null, 'Aaj ka koi target nahi? Chalo ek set karte hain!'))
-                : goals.map(goal => React.createElement('div', { 
-                    key: goal.id, 
-                    className: `goal-card ${goal.completed ? 'completed' : ''}`,
-                    style: { cursor: 'pointer' },
-                    onClick: () => toggleGoal(goal.id)
-                },
+            React.createElement('div', { style: { maxWidth: '600px', margin: '0 auto' } },
+                goals.map(goal => React.createElement('div', { key: goal.id, className: `goal-card ${goal.completed ? 'completed' : ''}`, onClick: () => toggleGoal(goal.id) },
                     React.createElement('input', { type: 'checkbox', checked: goal.completed, readOnly: true, className: 'custom-checkbox' }),
                     React.createElement('div', { className: 'goal-icon-circle' }, goal.icon),
                     React.createElement('div', { className: 'goal-content' },
                         React.createElement('span', { className: 'goal-title' }, goal.title),
-                        React.createElement('span', { className: 'goal-desc' }, goal.desc)
+                        React.createElement('span', { className: 'goal-desc' }, goal.isRecurring ? '🔄 Active for all months' : goal.desc)
                     ),
                     React.createElement('button', { 
-                        style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem', padding: '10px' },
+                        style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.1rem' },
                         onClick: (e) => { e.stopPropagation(); deleteGoal(goal.id); }
                     }, '🗑️')
                 ))
@@ -1458,7 +1449,10 @@ const DailyGoalsView = () => {
 
             showAddModal && React.createElement('div', { className: 'modal' },
                 React.createElement('div', { className: 'modal-content glass-modal' },
-                    React.createElement('h3', { className: 'card-title' }, '🎯 Naya Target Set Karein'),
+                    React.createElement('div', { className: 'custom-modal-header' },
+                        React.createElement('span', { className: 'target-icon' }, '🎯'),
+                        React.createElement('span', null, 'Naya Target Set Karein')
+                    ),
                     React.createElement('div', { className: 'input-group' },
                         React.createElement('label', null, 'Goal Name'),
                         React.createElement('input', { 
@@ -1484,12 +1478,26 @@ const DailyGoalsView = () => {
                             value: newGoal.icon,
                             onChange: (e) => setNewGoal({...newGoal, icon: e.target.value})
                         },
-                            ['📖', '🧪', '✍️', '📝', '⏰', '💪', '🎯'].map(i => React.createElement('option', {key: i, value: i}, i))
+                            ['📖', '🧪', '✍️', '📝', '⏰', '🎯', '💡'].map(i => React.createElement('option', {key: i, value: i}, i))
                         )
                     ),
+                    React.createElement('div', { className: 'active-for-container' },
+                        React.createElement('div', { className: 'active-for-row' },
+                            React.createElement('span', { className: 'active-for-title' }, 'Active For'),
+                            React.createElement('label', { className: 'habit-checkbox-wrapper' },
+                                React.createElement('input', { 
+                                    type: 'checkbox', 
+                                    checked: newGoal.isRecurring,
+                                    onChange: (e) => setNewGoal({...newGoal, isRecurring: e.target.checked})
+                                }),
+                                React.createElement('span', { className: 'habit-checkbox-text' }, 'All months (default)')
+                            )
+                        ),
+                        React.createElement('p', { className: 'habit-help-text' }, 'This habit will appear in all months')
+                    ),
                     React.createElement('div', { className: 'modal-buttons' },
-                        React.createElement('button', { className: 'btn btn-secondary', onClick: () => setShowAddModal(false) }, 'Cancel'),
-                        React.createElement('button', { className: 'btn btn-primary', onClick: addGoal }, 'Save Target')
+                        React.createElement('button', { className: 'btn btn-cancel', onClick: () => setShowAddModal(false) }, 'Cancel'),
+                        React.createElement('button', { className: 'btn btn-save-target', onClick: addGoal }, 'Save Target')
                     )
                 )
             )
