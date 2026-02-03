@@ -1512,7 +1512,31 @@ const DailyGoalsView = () => {
                     )
                 ))
             ),
+// --- STEP 4: PERFORMANCE GRAPH UI ---
+            React.createElement('div', { className: 'graph-section', style: { maxWidth: '700px', margin: '3rem auto 0' } },
+                React.createElement('div', { className: 'graph-title' }, 
+                    React.createElement('span', null, '📊'), 
+                    React.createElement('span', { style: {marginLeft: '10px'} }, 'Weekly Performance')
+                ),
+                React.createElement('div', { className: 'graph-bars-container' },
+                    [...Array(7)].map((_, i) => {
+                        const d = new Date();
+                        d.setDate(d.getDate() - (6 - i));
+                        const dateKey = d.toLocaleDateString();
+                        const progressValue = data.performanceHistory?.[dateKey] || 0;
+                        const dateLabel = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
 
+                        return React.createElement('div', { key: i, className: 'graph-bar-wrapper' },
+                            React.createElement('div', { 
+                                className: 'bar-pill', 
+                                'data-value': `${progressValue}%`,
+                                style: { height: `${progressValue}%` } 
+                            }),
+                            React.createElement('div', { className: 'graph-date' }, dateLabel)
+                        );
+                    })
+                )
+            ),
             // 5. Add Goal Modal (Popup)
             showAddModal && React.createElement('div', { className: 'modal' },
                 React.createElement('div', { className: 'modal-content glass-modal' },
