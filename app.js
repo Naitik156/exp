@@ -1217,7 +1217,7 @@ const handleDeleteChapter = (chapterName) => {
 
     const DashboardView = () => {
         const analytics = getAnalytics();
-
+        const [dashboardClass, setDashboardClass] = React.useState(selectedClass || "Class 11")
         return React.createElement('div', { className: 'container' },
             React.createElement('div', { className: 'nav-breadcrumb' },
                 React.createElement('span', { className: 'breadcrumb-item', onClick: changeExam }, 'Exam Select'),
