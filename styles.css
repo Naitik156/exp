@@ -1339,3 +1339,51 @@ body {
     transform: scale(1.2);
     color: #ef4444;
 }
+/* ============================================================
+   UPGRADED GRAPH SECTION (Step 1)
+   ============================================================ */
+
+/* 1. Graph ka Main Dabba (Card) */
+.graph-card {
+    background: #1c1917;         /* Image ki tarah dark background */
+    border-radius: 20px;         /* Smooth rounded corners */
+    padding: 2rem;               /* Andar ki space */
+    margin-top: 2rem;            /* Dashboard stats se gap */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2); /* Thoda utha hua dikhne ke liye */
+    border: 1px solid rgba(255,255,255,0.05); /* Bahut halki border lines */
+    animation: fadeInUp 0.8s ease; /* Niche se upar aane wala animation */
+}
+
+/* 2. Graph ka Header (Title aur Buttons ek line mein) */
+.graph-header {
+    display: flex;
+    justify-content: space-between; /* Title left mein, buttons right mein */
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;             /* Mobile par agar jagah kam ho to niche shift ho jaye */
+    gap: 1rem;
+}
+
+.graph-title-group h3 {
+    color: #fafaf9;              /* White color text */
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.graph-title-group p {
+    color: #78716c;              /* Gray color sub-text */
+    margin: 0;
+    font-size: 0.85rem;
+}
+
+/* 3. Weekly/Monthly Toggle Switcher */
+.graph-controls {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.05); /* Buttons ke peeche halka dabba */
+    padding: 4px;
+    border-radius: 12px;
+}
+
+.graph-toggle-btn {
+    padding: 0.5rem 1.2rem;
