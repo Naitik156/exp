@@ -1100,3 +1100,78 @@ body {
     background: var(--primary);
     opacity: 0.3;
 }
+/* Daily Goals Styles */
+.goal-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: var(--card);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    border-left: 5px solid var(--primary);
+}
+
+.goal-card.completed {
+    opacity: 0.6;
+    border-left-color: var(--success);
+}
+
+.goal-card.completed .goal-text {
+    text-decoration: line-through;
+    color: var(--text-light);
+}
+
+.goal-icon-circle {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: rgba(15, 118, 110, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.goal-content {
+    flex: 1;
+}
+
+.goal-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    display: block;
+}
+
+.goal-desc {
+    font-size: 0.85rem;
+    color: var(--text-light);
+}
+
+/* Glassmorphism Modal */
+.glass-modal {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.input-group {
+    margin-bottom: 1.2rem;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.input-style {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: inherit;
+}
