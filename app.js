@@ -1372,46 +1372,21 @@ const handleDeleteChapter = (chapterName) => {
 const DailyGoalsView = () => {
         const [showAddModal, setShowAddModal] = React.useState(false);
         const [newGoal, setNewGoal] = React.useState({ 
-            title: '', 
-            desc: '', 
-            icon: '📖', 
-            isRecurring: true 
+            title: '', desc: '', icon: '📖', isRecurring: true 
         });
 
         const goals = data.dailyGoals || [];
-// --- STEP 3: AUTOMATIC HISTORY SAVER ---
-        // Yeh code har baar chalega jab aapka 'goals' array badlega
-        React.useEffect(() => {
-            // Agar koi bhi goal set hai, tabhi history update karein
-            if (goals.length > 0) {
-                // 1. Aaj ki tarikh nikalna (Format: 3/2/2026)
-                const today = new Date().toLocaleDateString();
-                
-                // 2. Aaj ka percentage calculate karna
-                const completedCount = goals.filter(g => g.completed).length;
-                const totalCount = goals.length;
-                const currentProgress = Math.round((completedCount / totalCount) * 100);
-                
-                // 3. Data mein save karna (Agar aaj ka data pehle se hai toh use update kar dega)
-                setData(prev => ({
-                    ...prev,
-                    performanceHistory: {
-                        ...prev.performanceHistory,
-                        [today]: currentProgress
-                    }
-                }));
-            }
-        }, [goals]); // <--- Iska matlab: Goals list mein kuch bhi badle toh yeh chalao
+
         const addGoal = () => {
             if (!newGoal.title.trim()) {
-                showToast('DARSH MADHRCHOD HAI!');
+                showToast('Goal Name likhein!');
                 return;
             }
             const updatedGoals = [...goals, { ...newGoal, id: Date.now(), completed: false }];
             setData(prev => ({ ...prev, dailyGoals: updatedGoals }));
             setShowAddModal(false);
             setNewGoal({ title: '', desc: '', icon: '📖', isRecurring: true });
-            showToast('🎯 Target Set Ho Gaya!');
+            showToast('🎯 Target Set!');
         };
 
         const toggleGoal = (id) => {
@@ -1422,155 +1397,89 @@ const DailyGoalsView = () => {
         const deleteGoal = (id) => {
             const updatedGoals = goals.filter(g => g.id !== id);
             setData(prev => ({ ...prev, dailyGoals: updatedGoals }));
+            showToast('Deleted');
         };
 
         const completedCount = goals.filter(g => g.completed).length;
         const progressPercent = goals.length > 0 ? Math.round((completedCount / goals.length) * 100) : 0;
 
-        return React.createElement('div', { className: 'container daily-goals-page' },
-            // 1. Breadcrumb (Wapas jaane ke liye)
+        return React.createElement('div', { className: 'container daily-goals-page', style: {position: 'relative', zIndex: 1} },
+            // 1. Navigation
             React.createElement('div', { className: 'nav-breadcrumb' },
                 React.createElement('span', { className: 'breadcrumb-item', onClick: () => setView('home') }, 'Home'),
                 React.createElement('span', { className: 'breadcrumb-separator' }, '/'),
                 React.createElement('span', { className: 'breadcrumb-item active' }, 'Daily Goals')
             ),
 
-            // 2. Main Header Card (Title aur Progress ek card ke andar)
+            // 2. Header Card
             React.createElement('div', { className: 'goals-header-card' },
-                React.createElement('h2', { className: 'logo', style: {fontSize: '2.5rem', marginBottom: '1rem'} }, 'Today\'s Targets'),
+                React.createElement('h2', { className: 'logo' }, 'Today\'s Targets'),
                 React.createElement('div', { className: 'progress-container' },
                     React.createElement('div', { className: 'progress-label' },
-                        React.createElement('span', {style: {fontWeight: '700'}}, 'Daily Task Progress:'),
-                        React.createElement('span', {style: {fontWeight: '700', color: 'var(--primary)'}}, ` ${progressPercent}%`) // Space theek kiya yahan
+                        React.createElement('span', null, 'Daily Task Progress:'),
+                        React.createElement('span', {style: {color: 'var(--primary)'}}, ` ${progressPercent}%`)
                     ),
-                    React.createElement('div', { className: 'progress-bar-bg', style: {height: '12px'} },
-                        React.createElement('div', { 
-                            className: 'progress-bar-fill', 
-                            style: { width: `${progressPercent}%`, background: 'linear-gradient(90deg, var(--secondary), #fbbf24)' } 
-                        })
+                    React.createElement('div', { className: 'progress-bar-bg' },
+                        React.createElement('div', { className: 'progress-bar-fill', style: { width: `${progressPercent}%` } })
                     )
                 )
             ),
 
-            // 3. Add Goal Button (Full width professional button)
+            // 3. Add Button
             React.createElement('div', { style: { textAlign: 'center', marginBottom: '2rem' } },
                 React.createElement('button', { 
                     className: 'btn btn-primary', 
-                    onClick: () => setShowAddModal(true), 
-                    style: {
-                        background: 'var(--secondary)', 
-                        padding: '1rem 2.5rem', 
-                        fontSize: '1.1rem', 
-                        borderRadius: '12px', 
-                        width: '100%', 
-                        maxWidth: '500px',
-                        boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)'
-                    } 
+                    onClick: () => setShowAddModal(true),
+                    style: {background: 'var(--secondary)', width: '100%', maxWidth: '500px'} 
                 }, '+ Add Today\'s Goal')
             ),
 
-            // 4. Goals List Section
+            // 4. Goals List
             React.createElement('div', { style: { maxWidth: '700px', margin: '0 auto' } },
-                goals.length === 0 
-                ? React.createElement('div', { className: 'empty-state-container' }, 
-                    React.createElement('div', {style: {fontSize: '4rem', marginBottom: '1rem'}}, '☀️'),
-                    React.createElement('h3', {style: {color: 'var(--text-light)'}}, 'Koi targets nahi hain?'),
-                    React.createElement('p', {style: {color: 'var(--text-light)'}}, 'Naya goal jorein aur padhai shuru karein!'))
-                : goals.map(goal => React.createElement('div', { 
+                goals.map(goal => React.createElement('div', { 
                     key: goal.id, 
                     className: `card goal-card ${goal.completed ? 'completed' : ''}`, 
-                    style: { 
-                        marginBottom: '1rem', 
-                        borderLeft: '6px solid var(--secondary)',
-                        padding: '1.25rem'
-                    },
+                    style: { marginBottom: '1rem', borderLeft: '6px solid var(--secondary)' },
                     onClick: () => toggleGoal(goal.id) 
                 },
                     React.createElement('div', { style: {display: 'flex', alignItems: 'center', gap: '15px'} },
-                        React.createElement('input', { 
-                            type: 'checkbox', 
-                            checked: goal.completed, 
-                            readOnly: true, 
-                            className: 'custom-checkbox', 
-                            style: {width: '22px', height: '22px'} 
-                        }),
-                        React.createElement('div', { className: 'goal-icon-circle', style: {background: 'rgba(245, 158, 11, 0.1)', fontSize: '1.5rem'} }, goal.icon),
+                        React.createElement('input', { type: 'checkbox', checked: goal.completed, readOnly: true, className: 'custom-checkbox' }),
+                        React.createElement('div', { className: 'goal-icon-circle' }, goal.icon),
                         React.createElement('div', { className: 'goal-content' },
-                            React.createElement('span', { className: 'goal-title', style: {fontSize: '1.1rem', fontWeight: '700'} }, goal.title),
-                            React.createElement('span', { className: 'goal-desc', style: {display: 'block', color: 'var(--text-light)', fontSize: '0.9rem'} }, 
-                                goal.isRecurring ? '🔄 Active for all months' : goal.desc
-                            )
+                            React.createElement('span', { className: 'goal-title' }, goal.title),
+                            React.createElement('span', { className: 'goal-desc' }, goal.isRecurring ? '🔄 Active for all months' : goal.desc)
                         ),
-                        // ↓↓↓ YE NAYA CODE WAHAN DAAL DEIN ↓↓↓
                         React.createElement('button', { 
-                            className: 'delete-goal-btn', 
-                            onClick: (e) => { 
-                                e.stopPropagation(); 
-                                deleteGoal(goal.id); 
-                            }
+                            className: 'delete-goal-btn',
+                            onClick: (e) => { e.stopPropagation(); deleteGoal(goal.id); }
                         }, '🗑️')
                     )
                 ))
             ),
-// --- STEP 4: PERFORMANCE GRAPH UI ---
-// --- STEP 2: PROFESSIONAL WAVE GRAPH (IMAGE 1 STYLE) ---
-            React.createElement('div', { className: 'graph-section', style: { maxWidth: '700px', margin: '2rem auto 0' } },
-                React.createElement('div', { className: 'graph-title' }, 
-                    React.createElement('span', null, '📈'), 
-                    React.createElement('span', null, 'Weekly Performance Wave')
-                ),
-                
+
+            // 5. WAVE GRAPH (Image 1 Style - Click Safe)
+            React.createElement('div', { className: 'graph-section', style: { maxWidth: '700px', margin: '3rem auto 0' } },
+                React.createElement('div', { className: 'graph-title' }, '📈 Performance Wave'),
                 React.createElement('div', { className: 'svg-container' },
                     (() => {
                         const daysData = [...Array(7)].map((_, i) => {
                             const d = new Date();
                             d.setDate(d.getDate() - (6 - i));
-                            const dateKey = d.toLocaleDateString();
-                            const val = data.performanceHistory?.[dateKey] || 0;
-                            return val;
+                            return data.performanceHistory?.[d.toLocaleDateString()] || 0;
                         });
 
-                        const width = 100;
-                        const height = 100;
-                        const points = daysData.map((val, i) => {
-                            const x = (i * (width / 6));
-                            const y = height - (val * 0.8 + 10);
-                            return `${x},${y}`;
-                        }).join(' ');
+                        const points = daysData.map((val, i) => `${i * 16.6},${90 - (val * 0.7)}`).join(' ');
+                        const areaPath = `0,100 ${points} 100,100`;
 
-                        const areaPath = `0,${height} ${points} ${width},${height}`;
-
-                        return React.createElement('svg', { 
-                            viewBox: `0 0 ${width} ${height}`, 
-                            preserveAspectRatio: 'none',
-                            style: { width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }
-                        },
-                            React.createElement('polyline', {
-                                points: areaPath,
-                                className: 'graph-path'
-                            }),
-                            React.createElement('polyline', {
-                                points: points,
-                                fill: 'none',
-                                stroke: '#8b5cf6',
-                                strokeWidth: '2.5',
-                                strokeLinejoin: 'round'
-                            }),
-                            daysData.map((val, i) => {
-                                const x = (i * (width / 6));
-                                const y = height - (val * 0.8 + 10);
-                                return React.createElement('circle', {
-                                    key: i,
-                                    cx: x,
-                                    cy: y,
-                                    r: '1.5',
-                                    className: 'graph-point'
-                                });
-                            })
+                        return React.createElement('svg', { viewBox: '0 0 100 100', preserveAspectRatio: 'none', style: {width: '100%', height: '100%'} },
+                            React.createElement('polyline', { points: areaPath, className: 'graph-path' }),
+                            React.createElement('polyline', { points: points, fill: 'none', stroke: '#8b5cf6', strokeWidth: '3' }),
+                            daysData.map((val, i) => React.createElement('circle', { 
+                                key: i, cx: i * 16.6, cy: 90 - (val * 0.7), r: '2.5', className: 'graph-point' 
+                            }))
                         );
                     })()
                 ),
-                
                 React.createElement('div', { className: 'graph-labels-x' },
                     [...Array(7)].map((_, i) => {
                         const d = new Date();
@@ -1581,50 +1490,33 @@ const DailyGoalsView = () => {
                     })
                 )
             ),
-            // 5. Add Goal Modal (Popup)
-            showAddModal && React.createElement('div', { className: 'modal' },
-                React.createElement('div', { className: 'modal-content glass-modal' },
+
+            // 6. Modal
+            showAddModal && React.createElement('div', { className: 'modal', style: {zIndex: 9999} },
+                React.createElement('div', { className: 'modal-content glass-modal', onClick: (e) => e.stopPropagation() },
                     React.createElement('div', { className: 'custom-modal-header' },
                         React.createElement('span', { className: 'target-icon' }, '🎯'),
                         React.createElement('span', null, 'Naya Target Set Karein')
                     ),
                     React.createElement('div', { className: 'input-group' },
                         React.createElement('label', null, 'Goal Name'),
-                        React.createElement('input', { 
-                            className: 'input-style', 
-                            value: newGoal.title,
-                            onChange: (e) => setNewGoal({...newGoal, title: e.target.value}),
-                            placeholder: 'Kya karna hai?'
-                        })
+                        React.createElement('input', { className: 'input-style', value: newGoal.title, onChange: (e) => setNewGoal({...newGoal, title: e.target.value}), placeholder: 'Kya karna hai?' })
                     ),
                     React.createElement('div', { className: 'input-group' },
                         React.createElement('label', null, 'Description'),
-                        React.createElement('input', { 
-                            className: 'input-style', 
-                            value: newGoal.desc,
-                            onChange: (e) => setNewGoal({...newGoal, desc: e.target.value}),
-                            placeholder: 'Details...'
-                        })
+                        React.createElement('input', { className: 'input-style', value: newGoal.desc, onChange: (e) => setNewGoal({...newGoal, desc: e.target.value}), placeholder: 'Details...' })
                     ),
                     React.createElement('div', { className: 'input-group' },
                         React.createElement('label', null, 'Choose Icon'),
-                        React.createElement('select', { 
-                            className: 'input-style',
-                            value: newGoal.icon,
-                            onChange: (e) => setNewGoal({...newGoal, icon: e.target.value})
-                        },
-                            ['📖', '🏋🏻', '✍️', '📝', '⏰', '🎯', '💡'].map(i => React.createElement('option', {key: i, value: i}, i))
+                        React.createElement('select', { className: 'input-style', value: newGoal.icon, onChange: (e) => setNewGoal({...newGoal, icon: e.target.value}) },
+                            ['📖', '🧪', '✍️', '📝', '⏰', '🎯', '💡'].map(i => React.createElement('option', {key: i, value: i}, i))
                         )
                     ),
                     React.createElement('div', { className: 'active-for-container' },
                         React.createElement('div', { className: 'active-for-row' },
                             React.createElement('span', { className: 'active-for-title' }, 'Active For'),
                             React.createElement('label', { className: 'habit-checkbox-wrapper' },
-                                React.createElement('input', { 
-                                    type: 'checkbox', 
-                                    checked: newGoal.isRecurring,
-                                    onChange: (e) => setNewGoal({...newGoal, isRecurring: e.target.checked})
-                                }),
+                                React.createElement('input', { type: 'checkbox', checked: newGoal.isRecurring, onChange: (e) => setNewGoal({...newGoal, isRecurring: e.target.checked}) }),
                                 React.createElement('span', { className: 'habit-checkbox-text' }, 'All months (default)')
                             )
                         ),
@@ -1638,38 +1530,3 @@ const DailyGoalsView = () => {
             )
         );
     };
-    return React.createElement(React.Fragment, null,
-        view === 'exam-select' && React.createElement(ExamSelectView),
-        view === 'home' && React.createElement(HomePage),
-        view === 'subjects' && React.createElement(SubjectsView),
-        view === 'chapters' && React.createElement(ChaptersView),
-        view === 'detail' && React.createElement(DetailView),
-        view === 'dashboard' && React.createElement(DashboardView),
-         view === 'daily-goals' && React.createElement(DailyGoalsView),
-        showModal && React.createElement('div', { className: 'modal', onClick: () => setShowModal(false) },
-            React.createElement('div', { className: 'modal-content', onClick: (e) => e.stopPropagation() },
-                React.createElement('h3', { className: 'modal-title' }, modalConfig.title),
-                React.createElement('p', { style: { marginBottom: '1.5rem' } }, modalConfig.message),
-                React.createElement('div', { className: 'modal-buttons' },
-                    React.createElement('button', { 
-                        className: 'btn btn-secondary', 
-                        onClick: () => setShowModal(false),
-                        style: { flex: 1 }
-                    }, '✕ No, Cancel'),
-                    React.createElement('button', { 
-                        className: 'btn btn-danger', 
-                        onClick: () => {
-                            if (modalConfig.onConfirm) {
-                                modalConfig.onConfirm();
-                            }
-                        },
-                        style: { flex: 1 }
-                    }, '✓ Yes, Delete')
-                )
-            )
-        ),
-        toast.show && React.createElement('div', { className: 'toast' }, toast.message)
-    );
-};
-
-ReactDOM.render(React.createElement(App), document.getElementById('root'));
