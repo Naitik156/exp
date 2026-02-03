@@ -1385,7 +1385,7 @@ const DailyGoalsView = () => {
 
         const addGoal = () => {
             if (!newGoal.title.trim()) {
-                showToast('Goal name is compulsory!');
+                showToast('DARSH MADHRCHOD HAI!');
                 return;
             }
             const updatedGoals = [...goals, { ...newGoal, id: Date.now(), completed: false }];
