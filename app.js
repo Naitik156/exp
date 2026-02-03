@@ -1377,6 +1377,18 @@ const DailyGoalsView = () => {
 
         const goals = data.dailyGoals || [];
 
+        // History Saver Logic
+        React.useEffect(() => {
+            if (goals.length > 0) {
+                const today = new Date().toLocaleDateString();
+                const progress = Math.round((goals.filter(g => g.completed).length / goals.length) * 100);
+                setData(prev => ({
+                    ...prev,
+                    performanceHistory: { ...prev.performanceHistory, [today]: progress }
+                }));
+            }
+        }, [goals]);
+
         const addGoal = () => {
             if (!newGoal.title.trim()) {
                 showToast('Goal Name likhein!');
@@ -1397,70 +1409,66 @@ const DailyGoalsView = () => {
         const deleteGoal = (id) => {
             const updatedGoals = goals.filter(g => g.id !== id);
             setData(prev => ({ ...prev, dailyGoals: updatedGoals }));
-            showToast('Deleted');
         };
 
         const completedCount = goals.filter(g => g.completed).length;
         const progressPercent = goals.length > 0 ? Math.round((completedCount / goals.length) * 100) : 0;
 
-        return React.createElement('div', { className: 'container daily-goals-page', style: {position: 'relative', zIndex: 1} },
-            // 1. Navigation
-            React.createElement('div', { className: 'nav-breadcrumb' },
+        return React.createElement('div', { className: 'container daily-goals-page', style: { position: 'relative', zIndex: 1 } },
+            React.createElement('div', { className: 'nav-breadcrumb', style: { position: 'relative', zIndex: 10 } },
                 React.createElement('span', { className: 'breadcrumb-item', onClick: () => setView('home') }, 'Home'),
                 React.createElement('span', { className: 'breadcrumb-separator' }, '/'),
                 React.createElement('span', { className: 'breadcrumb-item active' }, 'Daily Goals')
             ),
 
-            // 2. Header Card
             React.createElement('div', { className: 'goals-header-card' },
                 React.createElement('h2', { className: 'logo' }, 'Today\'s Targets'),
                 React.createElement('div', { className: 'progress-container' },
                     React.createElement('div', { className: 'progress-label' },
-                        React.createElement('span', null, 'Daily Task Progress:'),
-                        React.createElement('span', {style: {color: 'var(--primary)'}}, ` ${progressPercent}%`)
+                        React.createElement('span', { style: { fontWeight: '700' } }, 'Daily Task Progress:'),
+                        React.createElement('span', { style: { fontWeight: '700', color: 'var(--primary)' } }, ` ${progressPercent}%`)
                     ),
                     React.createElement('div', { className: 'progress-bar-bg' },
-                        React.createElement('div', { className: 'progress-bar-fill', style: { width: `${progressPercent}%` } })
+                        React.createElement('div', { className: 'progress-bar-fill', style: { width: `${progressPercent}%`, background: 'linear-gradient(90deg, var(--secondary), #fbbf24)' } })
                     )
                 )
             ),
 
-            // 3. Add Button
             React.createElement('div', { style: { textAlign: 'center', marginBottom: '2rem' } },
                 React.createElement('button', { 
                     className: 'btn btn-primary', 
                     onClick: () => setShowAddModal(true),
-                    style: {background: 'var(--secondary)', width: '100%', maxWidth: '500px'} 
+                    style: { background: 'var(--secondary)', padding: '1rem 2.5rem', borderRadius: '12px', width: '100%', maxWidth: '500px' } 
                 }, '+ Add Today\'s Goal')
             ),
 
-            // 4. Goals List
-            React.createElement('div', { style: { maxWidth: '700px', margin: '0 auto' } },
-                goals.map(goal => React.createElement('div', { 
+            React.createElement('div', { style: { maxWidth: '700px', margin: '0 auto', position: 'relative', zIndex: 5 } },
+                goals.length === 0 
+                ? React.createElement('div', { className: 'empty-state-container' }, 
+                    React.createElement('div', { style: { fontSize: '4rem', marginBottom: '1rem' } }, '✨'),
+                    React.createElement('p', null, 'Naya goal jorein aur padhai shuru karein!'))
+                : goals.map(goal => React.createElement('div', { 
                     key: goal.id, 
                     className: `card goal-card ${goal.completed ? 'completed' : ''}`, 
                     style: { marginBottom: '1rem', borderLeft: '6px solid var(--secondary)' },
                     onClick: () => toggleGoal(goal.id) 
                 },
-                    React.createElement('div', { style: {display: 'flex', alignItems: 'center', gap: '15px'} },
+                    React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '15px' } },
                         React.createElement('input', { type: 'checkbox', checked: goal.completed, readOnly: true, className: 'custom-checkbox' }),
                         React.createElement('div', { className: 'goal-icon-circle' }, goal.icon),
                         React.createElement('div', { className: 'goal-content' },
-                            React.createElement('span', { className: 'goal-title' }, goal.title),
-                            React.createElement('span', { className: 'goal-desc' }, goal.isRecurring ? '🔄 Active for all months' : goal.desc)
+                            React.createElement('span', { className: 'goal-title', style: { fontWeight: '700' } }, goal.title),
+                            React.createElement('span', { className: 'goal-desc', style: { display: 'block', fontSize: '0.85rem' } }, goal.isRecurring ? '🔄 Active for all months' : goal.desc)
                         ),
-                        React.createElement('button', { 
-                            className: 'delete-goal-btn',
-                            onClick: (e) => { e.stopPropagation(); deleteGoal(goal.id); }
-                        }, '🗑️')
+                        React.createElement('button', { className: 'delete-goal-btn', onClick: (e) => { e.stopPropagation(); deleteGoal(goal.id); } }, '🗑️')
                     )
                 ))
             ),
 
-            // 5. WAVE GRAPH (Image 1 Style - Click Safe)
+            // IMAGE 1 STYLE WAVE GRAPH
             React.createElement('div', { className: 'graph-section', style: { maxWidth: '700px', margin: '3rem auto 0' } },
-                React.createElement('div', { className: 'graph-title' }, '📈 Performance Wave'),
-                React.createElement('div', { className: 'svg-container' },
+                React.createElement('div', { className: 'graph-title' }, '📈 Weekly Performance Wave'),
+                React.createElement('div', { className: 'svg-container', style: { pointerEvents: 'none' } },
                     (() => {
                         const daysData = [...Array(7)].map((_, i) => {
                             const d = new Date();
@@ -1471,11 +1479,11 @@ const DailyGoalsView = () => {
                         const points = daysData.map((val, i) => `${i * 16.6},${90 - (val * 0.7)}`).join(' ');
                         const areaPath = `0,100 ${points} 100,100`;
 
-                        return React.createElement('svg', { viewBox: '0 0 100 100', preserveAspectRatio: 'none', style: {width: '100%', height: '100%'} },
+                        return React.createElement('svg', { viewBox: '0 0 100 100', preserveAspectRatio: 'none', style: { width: '100%', height: '100%' } },
                             React.createElement('polyline', { points: areaPath, className: 'graph-path' }),
                             React.createElement('polyline', { points: points, fill: 'none', stroke: '#8b5cf6', strokeWidth: '3' }),
                             daysData.map((val, i) => React.createElement('circle', { 
-                                key: i, cx: i * 16.6, cy: 90 - (val * 0.7), r: '2.5', className: 'graph-point' 
+                                key: i, cx: i * 16.6, cy: 90 - (val * 0.7), r: '2.5', className: 'graph-point', style: { pointerEvents: 'auto' } 
                             }))
                         );
                     })()
@@ -1484,49 +1492,48 @@ const DailyGoalsView = () => {
                     [...Array(7)].map((_, i) => {
                         const d = new Date();
                         d.setDate(d.getDate() - (6 - i));
-                        return React.createElement('span', { key: i, className: 'x-label' }, 
-                            d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' })
-                        );
+                        return React.createElement('span', { key: i, className: 'x-label' }, d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' }));
                     })
                 )
             ),
 
-            // 6. Modal
-            showAddModal && React.createElement('div', { className: 'modal', style: {zIndex: 9999} },
+            showAddModal && React.createElement('div', { className: 'modal', style: { zIndex: 9999 } },
                 React.createElement('div', { className: 'modal-content glass-modal', onClick: (e) => e.stopPropagation() },
-                    React.createElement('div', { className: 'custom-modal-header' },
-                        React.createElement('span', { className: 'target-icon' }, '🎯'),
-                        React.createElement('span', null, 'Naya Target Set Karein')
-                    ),
+                    React.createElement('h3', { className: 'card-title' }, '🎯 Naya Target'),
                     React.createElement('div', { className: 'input-group' },
                         React.createElement('label', null, 'Goal Name'),
-                        React.createElement('input', { className: 'input-style', value: newGoal.title, onChange: (e) => setNewGoal({...newGoal, title: e.target.value}), placeholder: 'Kya karna hai?' })
-                    ),
-                    React.createElement('div', { className: 'input-group' },
-                        React.createElement('label', null, 'Description'),
-                        React.createElement('input', { className: 'input-style', value: newGoal.desc, onChange: (e) => setNewGoal({...newGoal, desc: e.target.value}), placeholder: 'Details...' })
-                    ),
-                    React.createElement('div', { className: 'input-group' },
-                        React.createElement('label', null, 'Choose Icon'),
-                        React.createElement('select', { className: 'input-style', value: newGoal.icon, onChange: (e) => setNewGoal({...newGoal, icon: e.target.value}) },
-                            ['📖', '🧪', '✍️', '📝', '⏰', '🎯', '💡'].map(i => React.createElement('option', {key: i, value: i}, i))
-                        )
-                    ),
-                    React.createElement('div', { className: 'active-for-container' },
-                        React.createElement('div', { className: 'active-for-row' },
-                            React.createElement('span', { className: 'active-for-title' }, 'Active For'),
-                            React.createElement('label', { className: 'habit-checkbox-wrapper' },
-                                React.createElement('input', { type: 'checkbox', checked: newGoal.isRecurring, onChange: (e) => setNewGoal({...newGoal, isRecurring: e.target.checked}) }),
-                                React.createElement('span', { className: 'habit-checkbox-text' }, 'All months (default)')
-                            )
-                        ),
-                        React.createElement('p', { className: 'habit-help-text' }, 'This habit will appear in all months')
+                        React.createElement('input', { className: 'input-style', value: newGoal.title, onChange: (e) => setNewGoal({ ...newGoal, title: e.target.value }) })
                     ),
                     React.createElement('div', { className: 'modal-buttons' },
-                        React.createElement('button', { className: 'btn btn-cancel', onClick: () => setShowAddModal(false) }, 'Cancel'),
-                        React.createElement('button', { className: 'btn btn-save-target', onClick: addGoal }, 'Save Target')
+                        React.createElement('button', { className: 'btn btn-secondary', onClick: () => setShowAddModal(false) }, 'Cancel'),
+                        React.createElement('button', { className: 'btn btn-primary', onClick: addGoal }, 'Save Target')
                     )
                 )
             )
         );
     };
+
+    // --- MAIN APP RENDERER ---
+    return React.createElement(React.Fragment, null,
+        view === 'exam-select' && React.createElement(ExamSelectView),
+        view === 'home' && React.createElement(HomePage),
+        view === 'subjects' && React.createElement(SubjectsView),
+        view === 'chapters' && React.createElement(ChaptersView),
+        view === 'detail' && React.createElement(DetailView),
+        view === 'dashboard' && React.createElement(DashboardView),
+        view === 'daily-goals' && React.createElement(DailyGoalsView),
+        showModal && React.createElement('div', { className: 'modal', onClick: () => setShowModal(false) },
+            React.createElement('div', { className: 'modal-content', onClick: (e) => e.stopPropagation() },
+                React.createElement('h3', { className: 'modal-title' }, modalConfig.title),
+                React.createElement('p', null, modalConfig.message),
+                React.createElement('div', { className: 'modal-buttons' },
+                    React.createElement('button', { className: 'btn btn-secondary', onClick: () => setShowModal(false) }, 'Cancel'),
+                    React.createElement('button', { className: 'btn btn-danger', onClick: modalConfig.onConfirm }, 'Confirm')
+                )
+            )
+        ),
+        toast.show && React.createElement('div', { className: 'toast' }, toast.message)
+    );
+};
+
+ReactDOM.render(React.createElement(App), document.getElementById('root'));
