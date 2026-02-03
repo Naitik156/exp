@@ -1305,7 +1305,101 @@ const handleDeleteChapter = (chapterName) => {
             )
         );
     };
+// --- PURPLE SMOOTH GRAPH COMPONENT ---
+const ProgressGraph = ({ history }) => {
+    // Range state: 7 matlab Weekly, 30 matlab Monthly
+    const [range, setRange] = useState(7); 
+    
+    if (!history || history.length < 2) return null;
 
+    // Sirf utna hi data dikhao jitna range selected hai
+    const displayData = history.slice(-range);
+    
+    // Graph ki banawat (Dimensions)
+    const width = 1000;
+    const height = 250;
+    const padding = 50;
+
+    // 1. Points Calculate Karo: Date aur Percent ko X aur Y coordinates mein badlo
+    const points = displayData.map((h, i) => ({
+        x: padding + (i * (width - 2 * padding) / (displayData.length - 1)),
+        y: height - padding - (h.percent * (height - 2 * padding) / 100)
+    }));
+
+    // 2. Smooth Curve (Bezier) Logic: 
+    // Isse graph ki line "seedhi" nahi balki "smooth wave" ki tarah dikhti hai
+    const getBezierPath = () => {
+        let d = `M ${points[0].x} ${points[0].y}`;
+        for (let i = 0; i < points.length - 1; i++) {
+            const curr = points[i];
+            const next = points[i + 1];
+            const cp1x = curr.x + (next.x - curr.x) / 2; // Control Point
+            d += ` C ${cp1x} ${curr.y}, ${cp1x} ${next.y}, ${next.x} ${next.y}`;
+        }
+        return d;
+    };
+
+    const pathLine = getBezierPath();
+    // AreaPath line ke niche purple gradient bharne ke liye hai
+    const pathArea = `${pathLine} L ${points[points.length-1].x} ${height-padding} L ${points[0].x} ${height-padding} Z`;
+
+    return React.createElement('div', { className: 'graph-card' },
+        React.createElement('div', { className: 'graph-header' },
+            React.createElement('div', { className: 'graph-title-group' },
+                React.createElement('h3', null, 'Consistency Analytics'),
+                React.createElement('p', null, `Viewing performance of last ${range} days`)
+            ),
+            // Weekly / Monthly Buttons
+            React.createElement('div', { className: 'graph-controls' },
+                React.createElement('button', { 
+                    className: `graph-toggle-btn ${range === 7 ? 'active' : ''}`, 
+                    onClick: () => setRange(7) 
+                }, 'Weekly'),
+                React.createElement('button', { 
+                    className: `graph-toggle-btn ${range === 30 ? 'active' : ''}`, 
+                    onClick: () => setRange(30) 
+                }, 'Monthly')
+            )
+        ),
+        React.createElement('div', { className: 'graph-svg-container' },
+            React.createElement('svg', { 
+                viewBox: `0 0 ${width} ${height}`, 
+                preserveAspectRatio: "none", 
+                style: {width: '100%', height: '100%'} 
+            },
+                // Purple Glow Gradient Define Karein
+                React.createElement('defs', null, 
+                    React.createElement('linearGradient', { id: 'purpleGradient', x1: '0', y1: '0', x2: '0', y2: '1' },
+                        React.createElement('stop', { offset: '0%', stopColor: '#a855f7', stopOpacity: '0.6' }),
+                        React.createElement('stop', { offset: '100%', stopColor: '#a855f7', stopOpacity: '0' })
+                    )
+                ),
+                // Peeche ki Grid Lines (0%, 50%, 100%)
+                [0, 50, 100].map(v => {
+                    const y = height - padding - (v * (height - 2 * padding) / 100);
+                    return React.createElement('line', { 
+                        key: v, x1: padding, y1: y, x2: width - padding, y2: y, 
+                        className: 'graph-grid-line' 
+                    });
+                }),
+                // 1. Purple Fill (Area)
+                React.createElement('path', { d: pathArea, className: 'graph-area' }),
+                // 2. Main Purple Line
+                React.createElement('path', { d: pathLine, className: 'graph-line' }),
+                // 3. Dots aur Date Labels
+                points.map((p, i) => React.createElement('g', { key: i },
+                    // Dots sirf weekly view mein dikhao taaki monthly clutter na ho
+                    range === 7 && React.createElement('circle', { cx: p.x, cy: p.y, r: 5, className: 'graph-point' }),
+                    // Dates dikhao (Monthly mein har 5 din baad)
+                    (range === 7 || i % 5 === 0 || i === displayData.length-1) && 
+                    React.createElement('text', { 
+                        x: p.x, y: height - 15, className: 'graph-label', textAnchor: 'middle' 
+                    }, displayData[i].date)
+                ))
+            )
+        )
+    );
+};
   const DashboardView = () => {
         // --- NAYA STATE: Dashboard ka class filter track karne ke liye ---
         const [dashFilter, setDashFilter] = React.useState('Overall');
