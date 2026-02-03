@@ -1379,7 +1379,29 @@ const DailyGoalsView = () => {
         });
 
         const goals = data.dailyGoals || [];
-
+// --- STEP 3: AUTOMATIC HISTORY SAVER ---
+        // Yeh code har baar chalega jab aapka 'goals' array badlega
+        React.useEffect(() => {
+            // Agar koi bhi goal set hai, tabhi history update karein
+            if (goals.length > 0) {
+                // 1. Aaj ki tarikh nikalna (Format: 3/2/2026)
+                const today = new Date().toLocaleDateString();
+                
+                // 2. Aaj ka percentage calculate karna
+                const completedCount = goals.filter(g => g.completed).length;
+                const totalCount = goals.length;
+                const currentProgress = Math.round((completedCount / totalCount) * 100);
+                
+                // 3. Data mein save karna (Agar aaj ka data pehle se hai toh use update kar dega)
+                setData(prev => ({
+                    ...prev,
+                    performanceHistory: {
+                        ...prev.performanceHistory,
+                        [today]: currentProgress
+                    }
+                }));
+            }
+        }, [goals]); // <--- Iska matlab: Goals list mein kuch bhi badle toh yeh chalao
         const addGoal = () => {
             if (!newGoal.title.trim()) {
                 showToast('DARSH MADHRCHOD HAI!');
