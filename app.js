@@ -804,7 +804,7 @@ React.createElement('div', { style: { textAlign: 'center', marginTop: '1.5rem' }
     };
 
     const SubjectsView = () => {
-        const subjects = Object.keys(EXAM_SYLLABUS[currentExam][selectedClass]);
+        const subjects = Object.keys(data.customSyllabus[currentExam][selectedClass]);
 
         return React.createElement('div', { className: 'container' },
             React.createElement('div', { className: 'nav-breadcrumb' },
