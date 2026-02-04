@@ -723,7 +723,7 @@ const getAnalytics = (filterClass = 'Overall') => {
                     className: 'card class-card',
                     onClick: () => {
                         setSelectedClass('Class 12');
-                        setView('subjects');
+                        navigateTo('subjects', { selectedClass: 'Class 12' });
                     }
                 },
                     React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '1rem' } },
