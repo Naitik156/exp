@@ -241,29 +241,26 @@ const App = () => {
     const [selectedSubject, setSelectedSubject] = useState(null);
     const [selectedChapter, setSelectedChapter] = useState(null);
     const [data, setData] = useState(() => {
-        // 1. Browser ki memory (LocalStorage) se purana data uthana
         const saved = localStorage.getItem('syllabusData');
         
-        // 2. Ek 'Default Structure' banana jisme NEET, JEE aur naya DailyGoals ho
+        // Naya feature: Hum pura EXAM_SYLLABUS bhi state mein save karenge
         const defaultData = { 
             NEET: {}, 
             JEE: {}, 
-            dailyGoals: [] // Yeh naya section hai jo goals store karega
+            dailyGoals: [],
+            customSyllabus: JSON.parse(JSON.stringify(EXAM_SYLLABUS)) 
         };
 
         if (saved) {
-            // Agar pehle se koi data hai (JSON format mein), toh use Object mein badlo
             const parsedData = JSON.parse(saved);
-            
-            // Sabse Important: Purane data (NEET/JEE) ko rakho aur naya 'dailyGoals' usme merge kar do
-            // Agar user ne pehle se goals save kiye hain, toh parsedData.dailyGoals use hoga
             return { 
                 ...defaultData, 
                 ...parsedData,
+                // Agar pehle se customSyllabus hai toh wahi rakho, nahi toh default load karo
+                customSyllabus: parsedData.customSyllabus || defaultData.customSyllabus,
                 dailyGoals: parsedData.dailyGoals || [] 
             };
         } else {
-            // Agar naya user hai, toh khali default structure bhej do
             return defaultData;
         }
     });
