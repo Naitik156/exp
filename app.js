@@ -397,11 +397,35 @@ const App = () => {
     setShowModal(true);
 };
 
-    const addCustomChapter = (className, subject, chapterName) => {
-        if (!EXAM_SYLLABUS[currentExam][className][subject].includes(chapterName)) {
-            EXAM_SYLLABUS[currentExam][className][subject].push(chapterName);
-            showToast(`Added: ${chapterName}`);
-        }
+const addCustomChapter = (className, subject, chapterName) => {
+        setData(prev => {
+            const newData = { ...prev };
+            if (!newData.customSyllabus[currentExam][className][subject].includes(chapterName)) {
+                newData.customSyllabus[currentExam][className][subject].push(chapterName);
+            }
+            return newData;
+        });
+        showToast(`Added: ${chapterName}`);
+        setRefreshTrigger(prev => prev + 1);
+    };
+        setData(prev => {
+            const newData = { ...prev };
+            if (!newData.customSyllabus[currentExam][className][subject].includes(chapterName)) {
+                newData.customSyllabus[currentExam][className][subject].push(chapterName);
+            }
+            return newData;
+        });
+        showToast(`Added: ${chapterName}`);
+        setRefreshTrigger(prev => prev + 1);
+    }
+        setData(prev => {
+            const newData = { ...prev };
+            if (!newData.customSyllabus[currentExam][className][subject].includes(chapterName)) {
+                newData.customSyllabus[currentExam][className][subject].push(chapterName);
+            }
+            return newData;
+        });
+        showToast(`Added: ${chapterName}`);
         setRefreshTrigger(prev => prev + 1);
     };
 
