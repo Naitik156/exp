@@ -745,14 +745,14 @@ const getAnalytics = (filterClass = 'Overall') => {
             React.createElement('div', { style: { textAlign: 'center', marginTop: '3rem' } },
                 React.createElement('button', {
                     className: 'btn btn-primary',
-                    onClick: () => setView('dashboard'),
+                    onClick: () => navigateTo('dashboard'),
                     style: { fontSize: '1.1rem', padding: '1rem 2rem' }
                 }, '📊 View Analytics Dashboard')
             ),// --- NAYA DAILY GOALS BUTTON ---
 React.createElement('div', { style: { textAlign: 'center', marginTop: '1.5rem' } },
     React.createElement('button', {
         className: 'btn',
-        onClick: () => setView('daily-goals'),
+        onClick: () => navigateTo('daily-goals'),
         style: { 
             fontSize: '1.1rem', 
             padding: '1rem 2.5rem', 
