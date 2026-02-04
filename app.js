@@ -1454,7 +1454,7 @@ const DailyGoalsView = () => {
             React.createElement('div', { style: { maxWidth: '700px', margin: '0 auto' } },
                 goals.length === 0 
                 ? React.createElement('div', { className: 'empty-state-container' }, 
-                    React.createElement('div', {style: {fontSize: '4rem', marginBottom: '1rem'}}, '👁'),
+                    React.createElement('div', {style: {fontSize: '8rem', marginBottom: '1rem'}}, '👁'),
                     React.createElement('h3', {style: {color: 'var(--text-light)'}}, 'Koi targets nahi hain?'),
                     React.createElement('p', {style: {color: 'var(--text-light)'}}, 'Naya goal jorein aur padhai shuru karein!'))
                 : goals.map(goal => React.createElement('div', { 
