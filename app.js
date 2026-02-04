@@ -458,9 +458,9 @@ const App = () => {
         return Math.round(total / subjects.length);
     };
 const getAnalytics = (filterClass = 'Overall') => {
-        // Step A: Check karna ki data 'Overall' chahiye ya kisi specific Class ka
+        // Step A: State wale syllabus (customSyllabus) se data uthana
         const classes = filterClass === 'Overall' 
-            ? Object.keys(EXAM_SYLLABUS[currentExam]) 
+            ? Object.keys(data.customSyllabus[currentExam]) 
             : [filterClass];
             
         let totalChapters = 0;
@@ -473,12 +473,11 @@ const getAnalytics = (filterClass = 'Overall') => {
         let weakCount = 0;
         let subjectProgress = {};
 
-        // Step B: Loop chala kar data nikalna
         classes.forEach(className => {
-            if (!EXAM_SYLLABUS[currentExam][className]) return;
+            if (!data.customSyllabus[currentExam][className]) return;
 
-            Object.keys(EXAM_SYLLABUS[currentExam][className]).forEach(subject => {
-                const chapters = EXAM_SYLLABUS[currentExam][className][subject];
+            Object.keys(data.customSyllabus[currentExam][className]).forEach(subject => {
+                const chapters = data.customSyllabus[currentExam][className][subject];
                 totalChapters += chapters.length;
 
                 if (!subjectProgress[subject]) {
@@ -499,7 +498,6 @@ const getAnalytics = (filterClass = 'Overall') => {
                     if (stars > 0) {
                         totalSatisfaction += stars;
                         satisfactionCount++;
-                        // Rating Logic: Strong, Moderate, Weak
                         if (stars >= 8) strongCount++;
                         else if (stars >= 5) moderateCount++;
                         else weakCount++;
@@ -508,7 +506,6 @@ const getAnalytics = (filterClass = 'Overall') => {
             });
         });
 
-        // Step C: Sabse kam progress wala subject dhundna
         const neglected = Object.entries(subjectProgress)
             .map(([key, val]) => ({ 
                 name: val.name, 
@@ -516,7 +513,6 @@ const getAnalytics = (filterClass = 'Overall') => {
             }))
             .sort((a, b) => a.progress - b.progress)[0] || { name: 'None', progress: 0 };
 
-        // Step D: Dashboard ko final data bhejna
         return {
             overallProgress: totalChapters > 0 ? Math.round(totalProgress / totalChapters) : 0,
             totalChapters,
