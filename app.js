@@ -918,30 +918,30 @@ React.createElement('div', { style: { textAlign: 'center', marginTop: '1.5rem' }
             setEditedName('');
         };
 const handleDeleteChapter = (chapterName) => {
-    setModalConfig({
-        title: 'Delete Chapter',
-        message: `Are you sure you want to delete "${chapterName}"? All progress data will be permanently lost.`,
-        onConfirm: () => {
+            setModalConfig({
+                title: 'Delete Chapter',
+                message: `Are you sure you want to delete "${chapterName}"? This will update your dashboard and all progress will be lost.`,
+                onConfirm: () => {
+                    setData(prev => {
+                        const newData = { ...prev };
+                        // 1. Saved Syllabus se delete karo
+                        const list = newData.customSyllabus[currentExam][selectedClass][selectedSubject];
+                        const index = list.indexOf(chapterName);
+                        if (index > -1) list.splice(index, 1);
 
-            const list = EXAM_SYLLABUS[currentExam][selectedClass][selectedSubject];
-            const index = list.indexOf(chapterName);
-            if (index > -1) list.splice(index, 1);
-
-            setData(prev => {
-                const copy = { ...prev };
-                if (copy[currentExam]?.[selectedClass]?.[selectedSubject]) {
-                    delete copy[currentExam][selectedClass][selectedSubject][chapterName];
+                        // 2. Progress data se delete karo
+                        if (newData[currentExam]?.[selectedClass]?.[selectedSubject]) {
+                            delete newData[currentExam][selectedClass][selectedSubject][chapterName];
+                        }
+                        return newData;
+                    });
+                    setShowModal(false);
+                    showToast(`Chapter deleted: ${chapterName}`);
+                    setRefreshTrigger(p => p + 1);
                 }
-                return copy;
             });
-
-            setShowModal(false);
-            showToast(`Chapter deleted: ${chapterName}`);
-            setRefreshTrigger(p => p + 1);
-        }
-    });
-    setShowModal(true);
-};
+            setShowModal(true);
+        };    
 
         return React.createElement('div', { className: 'container', key: `chapters-view-${refreshTrigger}` },
             React.createElement('div', { className: 'nav-breadcrumb' },
