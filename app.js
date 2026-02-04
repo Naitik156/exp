@@ -603,7 +603,7 @@ const getAnalytics = (filterClass = 'Overall') => {
                     className: 'card exam-card',
                     onClick: () => {
                         setCurrentExam('JEE');
-                        setView('home');
+                        navigateTo('home');
                     }
                 },
                     React.createElement('div', { className: 'exam-icon' }, '⚙️'),
