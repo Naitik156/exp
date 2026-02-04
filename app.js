@@ -830,7 +830,7 @@ React.createElement('div', { style: { textAlign: 'center', marginTop: '1.5rem' }
                     className: `card ${getSubjectClass(subject)}`,
                     onClick: () => {
                         setSelectedSubject(subject);
-                        setView('chapters');
+                        navigateTo('chapters', { selectedSubject: subject });
                     }
                 },
                     React.createElement('h3', { className: 'card-title' }, subject),
