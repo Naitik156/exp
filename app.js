@@ -1053,8 +1053,6 @@ const handleDeleteChapter = (chapterName) => {
                                 className: 'delete-chapter-btn',
                             onClick: (e) => {
     e.stopPropagation();
-    console.log("MINUS CLICKED", chapter);
-    alert("minus pressed");
     handleDeleteChapter(chapter);
 },
 
