@@ -272,7 +272,45 @@ const App = () => {
     const [modalConfig, setModalConfig] = useState({});
     const [toast, setToast] = useState({ show: false, message: '' });
     const [refreshTrigger, setRefreshTrigger] = useState(0);
+// --- BROWSER BACK BUTTON LOGIC START ---
+    const navigateTo = (viewName, params = {}) => {
+        const state = {
+            view: viewName,
+            selectedClass: params.selectedClass !== undefined ? params.selectedClass : selectedClass,
+            selectedSubject: params.selectedSubject !== undefined ? params.selectedSubject : selectedSubject,
+            selectedChapter: params.selectedChapter !== undefined ? params.selectedChapter : selectedChapter
+        };
+        window.history.pushState(state, "");
+        
+        setView(viewName);
+        if (params.selectedClass !== undefined) setSelectedClass(params.selectedClass);
+        if (params.selectedSubject !== undefined) setSelectedSubject(params.selectedSubject);
+        if (params.selectedChapter !== undefined) setSelectedChapter(params.selectedChapter);
+    };
 
+    useEffect(() => {
+        const handlePopState = (event) => {
+            if (event.state) {
+                setView(event.state.view);
+                setSelectedClass(event.state.selectedClass);
+                setSelectedSubject(event.state.selectedSubject);
+                setSelectedChapter(event.state.selectedChapter);
+            } else {
+                setView(currentExam ? 'home' : 'exam-select');
+            }
+        };
+        window.addEventListener('popstate', handlePopState);
+        
+        // Initial state set karna taaki back button detect ho sake
+        if (!window.history.state) {
+            window.history.replaceState({ 
+                view: currentExam ? 'home' : 'exam-select',
+                selectedClass: null, selectedSubject: null, selectedChapter: null 
+            }, "");
+        }
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [currentExam]);
+    // --- BROWSER BACK BUTTON LOGIC END ---
     useEffect(() => {
         localStorage.setItem('syllabusData', JSON.stringify(data));
     }, [data]);
