@@ -1004,7 +1004,7 @@ const handleDeleteChapter = (chapterName) => {
                       onClick: (e) => {
     if (editMode) return;   // when editing, don't open chapter
     setSelectedChapter(chapter);
-    setView('detail');
+    navigateTo('detail', { selectedChapter: chapter });
 }, 
 
                        style: {
