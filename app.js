@@ -230,46 +230,37 @@ const EXAM_SYLLABUS = {
 };
 
 const App = () => {
-    const [currentExam, setCurrentExam] = useState(() => {
-        const saved = localStorage.getItem('currentExam');
-        return saved || null;
-    });
-    const [view, setView] = useState(() => {
-        return currentExam ? 'home' : 'exam-select';
-    });
-    const [selectedClass, setSelectedClass] = useState(null);
-    const [selectedSubject, setSelectedSubject] = useState(null);
-    const [selectedChapter, setSelectedChapter] = useState(null);
+    // 1. Dimaag (Data State): Isme customSyllabus add kiya hai taaki reload par delete kiya hua wapas na aaye
     const [data, setData] = useState(() => {
         const saved = localStorage.getItem('syllabusData');
-        
-        // Naya feature: Hum pura EXAM_SYLLABUS bhi state mein save karenge
+        const initialSyllabus = JSON.parse(JSON.stringify(EXAM_SYLLABUS));
         const defaultData = { 
-            NEET: {}, 
-            JEE: {}, 
-            dailyGoals: [],
-            customSyllabus: JSON.parse(JSON.stringify(EXAM_SYLLABUS)) 
+            NEET: {}, JEE: {}, dailyGoals: [], 
+            customSyllabus: initialSyllabus 
         };
-
         if (saved) {
             const parsedData = JSON.parse(saved);
             return { 
                 ...defaultData, 
                 ...parsedData,
-                // Agar pehle se customSyllabus hai toh wahi rakho, nahi toh default load karo
-                customSyllabus: parsedData.customSyllabus || defaultData.customSyllabus,
-                dailyGoals: parsedData.dailyGoals || [] 
+                customSyllabus: parsedData.customSyllabus || defaultData.customSyllabus 
             };
-        } else {
-            return defaultData;
         }
+        return defaultData;
     });
+
+    const [currentExam, setCurrentExam] = useState(() => localStorage.getItem('currentExam') || null);
+    const [view, setView] = useState(currentExam ? 'home' : 'exam-select');
+    const [selectedClass, setSelectedClass] = useState(null);
+    const [selectedSubject, setSelectedSubject] = useState(null);
+    const [selectedChapter, setSelectedChapter] = useState(null);
     const [editMode, setEditMode] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [modalConfig, setModalConfig] = useState({});
     const [toast, setToast] = useState({ show: false, message: '' });
     const [refreshTrigger, setRefreshTrigger] = useState(0);
-// --- BROWSER BACK BUTTON LOGIC START ---
+
+    // 2. Navigation Fix: Isse phone/browser ka back button kaam karega
     const navigateTo = (viewName, params = {}) => {
         const state = {
             view: viewName,
@@ -278,7 +269,6 @@ const App = () => {
             selectedChapter: params.selectedChapter !== undefined ? params.selectedChapter : selectedChapter
         };
         window.history.pushState(state, "");
-        
         setView(viewName);
         if (params.selectedClass !== undefined) setSelectedClass(params.selectedClass);
         if (params.selectedSubject !== undefined) setSelectedSubject(params.selectedSubject);
@@ -297,17 +287,12 @@ const App = () => {
             }
         };
         window.addEventListener('popstate', handlePopState);
-        
-        // Initial state set karna taaki back button detect ho sake
         if (!window.history.state) {
-            window.history.replaceState({ 
-                view: currentExam ? 'home' : 'exam-select',
-                selectedClass: null, selectedSubject: null, selectedChapter: null 
-            }, "");
+            window.history.replaceState({ view: view, selectedClass: null, selectedSubject: null, selectedChapter: null }, "");
         }
         return () => window.removeEventListener('popstate', handlePopState);
-    }, [currentExam]);
-    // --- BROWSER BACK BUTTON LOGIC END ---
+    }, [currentExam, view]);
+
     useEffect(() => {
         localStorage.setItem('syllabusData', JSON.stringify(data));
     }, [data]);
@@ -315,6 +300,7 @@ const App = () => {
     useEffect(() => {
         localStorage.setItem('currentExam', currentExam || '');
     }, [currentExam]);
+     
 
     const showToast = (message) => {
         setToast({ show: true, message });
