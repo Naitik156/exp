@@ -680,7 +680,14 @@ const getAnalytics = (filterClass = 'Overall') => {
     };
 
     const HomePage = () => {
-        return React.createElement('div', { className: 'container' },
+    return React.createElement('div', { className: 'container' },
+        React.createElement('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' } },
+            React.createElement('button', { 
+                className: 'btn btn-danger', 
+                onClick: window.logoutUser,
+                style: { padding: '0.6rem 1.2rem', fontSize: '0.9rem', borderRadius: '10px' } 
+            }, '🚪 Logout')
+        ),
             React.createElement('div', { className: 'nav-breadcrumb' },
                 React.createElement('span', { className: 'breadcrumb-item', onClick: changeExam }, 'Exam Select'),
                 React.createElement('span', { className: 'breadcrumb-separator' }, '/'),
