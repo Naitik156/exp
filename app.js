@@ -274,6 +274,7 @@ const App = () => {
     const [modalConfig, setModalConfig] = useState({});
     const [toast, setToast] = useState({ show: false, message: '' });
     const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const [isFetched, setIsFetched] = useState(false);
 // --- BROWSER BACK BUTTON LOGIC START ---
     const navigateTo = (viewName, params = {}) => {
         const state = {
