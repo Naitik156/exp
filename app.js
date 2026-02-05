@@ -1,5 +1,7 @@
 
 const { useState, useEffect } = React;
+const db = window.db;
+const { doc, getDoc, setDoc } = window.dbFuncs;
 
 // Syllabus data structure for both exams
 const EXAM_SYLLABUS = {
