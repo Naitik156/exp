@@ -232,7 +232,7 @@ const EXAM_SYLLABUS = {
 };
 
 const App = () => {
- // --- NAYA UPDATED SYNC LOGIC ---
+ // --- AKELA AUR SAHI SYNC LOGIC ---
     const [user, setUser] = useState(null);
     const [currentExam, setCurrentExam] = useState(() => localStorage.getItem('currentExam') || null);
     const [view, setView] = useState(currentExam ? 'home' : 'exam-select');
@@ -249,12 +249,10 @@ const App = () => {
 
     // 1. Auth Status (Login Check)
     useEffect(() => {
+        if (!window.auth) return;
         const unsubscribe = window.auth.onAuthStateChanged((u) => {
-            if (u) {
-                setUser(u);
-            } else {
-                window.location.href = "login.html";
-            }
+            if (u) { setUser(u); } 
+            else { window.location.href = "login.html"; }
         });
         return () => unsubscribe();
     }, []);
@@ -287,38 +285,41 @@ const App = () => {
         return () => window.removeEventListener('popstate', handlePopState);
     }, []);
 
-    // 3. LOAD DATA (Cloud se App mein)
+    // 3. LOAD DATA (Database se progress lana)
     useEffect(() => {
         const loadFromDB = async () => {
-            if (user) {
+            if (user && window.dbFuncs && window.db) {
+                const { doc, getDoc } = window.dbFuncs;
                 try {
-                    const docRef = doc(db, "users", user.uid);
+                    const docRef = doc(window.db, "users", user.uid);
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
-                        const cloudData = docSnap.data();
-                        setData({
-                            NEET: cloudData.NEET || {},
-                            JEE: cloudData.JEE || {},
-                            dailyGoals: cloudData.dailyGoals || []
-                        });
+                        setData(docSnap.data());
                     }
-                    setIsFetched(true); // CONFIRM: Data load ho gaya, ab SAVE chalu ho sakta hai
+                    setIsFetched(true); 
                 } catch (err) {
                     console.error("Load error:", err);
-                    setIsFetched(true); 
+                    setIsFetched(true);
                 }
             }
         };
-        loadFromDB();
+
+        const timer = setInterval(() => {
+            if (window.dbFuncs && user) {
+                loadFromDB();
+                clearInterval(timer);
+            }
+        }, 500);
+        return () => clearInterval(timer);
     }, [user]);
 
-    // 4. SAVE DATA (App se Cloud mein)
+    // 4. SAVE DATA (Progress database mein bhejna)
     useEffect(() => {
         const saveToDB = async () => {
-            // SHART: Data tabhi save hoga jab isFetched true ho (taaki khali data overwrite na ho)
-            if (user && isFetched) {
+            if (user && isFetched && window.dbFuncs && window.db) {
+                const { doc, setDoc } = window.dbFuncs;
                 try {
-                    const docRef = doc(db, "users", user.uid);
+                    const docRef = doc(window.db, "users", user.uid);
                     await setDoc(docRef, data, { merge: true });
                     localStorage.setItem('currentExam', currentExam || '');
                 } catch (err) {
@@ -326,103 +327,7 @@ const App = () => {
                 }
             }
         };
-        const timer = setTimeout(saveToDB, 1200); // 1.2 second ka delay for stability
-        return () => clearTimeout(timer);
-    }, [data, currentExam, isFetched, user]);// --- NAYA UPDATED SYNC LOGIC ---
-    const [user, setUser] = useState(null);
-    const [currentExam, setCurrentExam] = useState(() => localStorage.getItem('currentExam') || null);
-    const [view, setView] = useState(currentExam ? 'home' : 'exam-select');
-    const [selectedClass, setSelectedClass] = useState(null);
-    const [selectedSubject, setSelectedSubject] = useState(null);
-    const [selectedChapter, setSelectedChapter] = useState(null);
-    const [data, setData] = useState({ NEET: {}, JEE: {}, dailyGoals: [] });
-    const [editMode, setEditMode] = useState(false);
-    const [showModal, setShowModal] = useState(false);
-    const [modalConfig, setModalConfig] = useState({});
-    const [toast, setToast] = useState({ show: false, message: '' });
-    const [refreshTrigger, setRefreshTrigger] = useState(0);
-    const [isFetched, setIsFetched] = useState(false);
-
-    // 1. Auth Status (Login Check)
-    useEffect(() => {
-        const unsubscribe = window.auth.onAuthStateChanged((u) => {
-            if (u) {
-                setUser(u);
-            } else {
-                window.location.href = "login.html";
-            }
-        });
-        return () => unsubscribe();
-    }, []);
-
-    // 2. Navigation Logic
-    const navigateTo = (viewName, params = {}) => {
-        const state = {
-            view: viewName,
-            selectedClass: params.selectedClass !== undefined ? params.selectedClass : selectedClass,
-            selectedSubject: params.selectedSubject !== undefined ? params.selectedSubject : selectedSubject,
-            selectedChapter: params.selectedChapter !== undefined ? params.selectedChapter : selectedChapter
-        };
-        window.history.pushState(state, "");
-        setView(viewName);
-        if (params.selectedClass !== undefined) setSelectedClass(params.selectedClass);
-        if (params.selectedSubject !== undefined) setSelectedSubject(params.selectedSubject);
-        if (params.selectedChapter !== undefined) setSelectedChapter(params.selectedChapter);
-    };
-
-    useEffect(() => {
-        const handlePopState = (event) => {
-            if (event.state) {
-                setView(event.state.view);
-                setSelectedClass(event.state.selectedClass);
-                setSelectedSubject(event.state.selectedSubject);
-                setSelectedChapter(event.state.selectedChapter);
-            }
-        };
-        window.addEventListener('popstate', handlePopState);
-        return () => window.removeEventListener('popstate', handlePopState);
-    }, []);
-
-    // 3. LOAD DATA (Cloud se App mein)
-    useEffect(() => {
-        const loadFromDB = async () => {
-            if (user) {
-                try {
-                    const docRef = doc(db, "users", user.uid);
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        const cloudData = docSnap.data();
-                        setData({
-                            NEET: cloudData.NEET || {},
-                            JEE: cloudData.JEE || {},
-                            dailyGoals: cloudData.dailyGoals || []
-                        });
-                    }
-                    setIsFetched(true); // CONFIRM: Data load ho gaya, ab SAVE chalu ho sakta hai
-                } catch (err) {
-                    console.error("Load error:", err);
-                    setIsFetched(true); 
-                }
-            }
-        };
-        loadFromDB();
-    }, [user]);
-
-    // 4. SAVE DATA (App se Cloud mein)
-    useEffect(() => {
-        const saveToDB = async () => {
-            // SHART: Data tabhi save hoga jab isFetched true ho (taaki khali data overwrite na ho)
-            if (user && isFetched) {
-                try {
-                    const docRef = doc(db, "users", user.uid);
-                    await setDoc(docRef, data, { merge: true });
-                    localStorage.setItem('currentExam', currentExam || '');
-                } catch (err) {
-                    console.error("Save error:", err);
-                }
-            }
-        };
-        const timer = setTimeout(saveToDB, 1200); // 1.2 second ka delay for stability
+        const timer = setTimeout(saveToDB, 1500);
         return () => clearTimeout(timer);
     }, [data, currentExam, isFetched, user]);
     const showToast = (message) => {
