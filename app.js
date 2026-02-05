@@ -232,28 +232,34 @@ const EXAM_SYLLABUS = {
 };
 
 const App = () => {
-    const [currentExam, setCurrentExam] = useState(() => {
-        const saved = localStorage.getItem('currentExam');
-        return saved || null;
-    });
-    const [view, setView] = useState(() => {
-        return currentExam ? 'home' : 'exam-select';
-    });
+ // --- NAYA UPDATED SYNC LOGIC ---
+    const [user, setUser] = useState(null);
+    const [currentExam, setCurrentExam] = useState(() => localStorage.getItem('currentExam') || null);
+    const [view, setView] = useState(currentExam ? 'home' : 'exam-select');
     const [selectedClass, setSelectedClass] = useState(null);
     const [selectedSubject, setSelectedSubject] = useState(null);
     const [selectedChapter, setSelectedChapter] = useState(null);
-    const [data, setData] = useState({ 
-    NEET: {}, 
-    JEE: {}, 
-    dailyGoals: [] 
-});
+    const [data, setData] = useState({ NEET: {}, JEE: {}, dailyGoals: [] });
     const [editMode, setEditMode] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [modalConfig, setModalConfig] = useState({});
     const [toast, setToast] = useState({ show: false, message: '' });
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [isFetched, setIsFetched] = useState(false);
-// --- BROWSER BACK BUTTON LOGIC START ---
+
+    // 1. Auth Status (Login Check)
+    useEffect(() => {
+        const unsubscribe = window.auth.onAuthStateChanged((u) => {
+            if (u) {
+                setUser(u);
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+        return () => unsubscribe();
+    }, []);
+
+    // 2. Navigation Logic
     const navigateTo = (viewName, params = {}) => {
         const state = {
             view: viewName,
@@ -262,7 +268,6 @@ const App = () => {
             selectedChapter: params.selectedChapter !== undefined ? params.selectedChapter : selectedChapter
         };
         window.history.pushState(state, "");
-        
         setView(viewName);
         if (params.selectedClass !== undefined) setSelectedClass(params.selectedClass);
         if (params.selectedSubject !== undefined) setSelectedSubject(params.selectedSubject);
@@ -276,67 +281,150 @@ const App = () => {
                 setSelectedClass(event.state.selectedClass);
                 setSelectedSubject(event.state.selectedSubject);
                 setSelectedChapter(event.state.selectedChapter);
-            } else {
-                setView(currentExam ? 'home' : 'exam-select');
             }
         };
         window.addEventListener('popstate', handlePopState);
-        
-        // Initial state set karna taaki back button detect ho sake
-        if (!window.history.state) {
-            window.history.replaceState({ 
-                view: currentExam ? 'home' : 'exam-select',
-                selectedClass: null, selectedSubject: null, selectedChapter: null 
-            }, "");
-        }
         return () => window.removeEventListener('popstate', handlePopState);
-    }, [currentExam]);
-    // --- BROWSER BACK BUTTON LOGIC END ---
-// 1. DATABASE SE DATA LOAD KARNA (Fresh Start Fix)
-useEffect(() => {
-    const loadFromDB = async () => {
-        if (window.userId) {
-            try {
-                const docRef = doc(db, "users", window.userId);
-                const docSnap = await getDoc(docRef);
-                
-                if (docSnap.exists()) {
-                    // Agar Cloud par data hai, toh use dikhao
-                    setData(docSnap.data());
-                } else {
-                    // Agar naya user hai (Cloud khali hai), toh LocalStorage ka purana kachra saaf karo
-                    setData({ NEET: {}, JEE: {}, dailyGoals: [] });
-                    localStorage.removeItem('syllabusData');
-                }
-                setIsFetched(true); 
-            } catch (err) {
-                console.error("Load error:", err);
-                setIsFetched(true); 
-            }
-        }
-    };
-    loadFromDB();
-}, []);
+    }, []);
 
-    // 2. DATABASE MEIN DATA SAVE KARNA (Protection ke saath)
+    // 3. LOAD DATA (Cloud se App mein)
+    useEffect(() => {
+        const loadFromDB = async () => {
+            if (user) {
+                try {
+                    const docRef = doc(db, "users", user.uid);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const cloudData = docSnap.data();
+                        setData({
+                            NEET: cloudData.NEET || {},
+                            JEE: cloudData.JEE || {},
+                            dailyGoals: cloudData.dailyGoals || []
+                        });
+                    }
+                    setIsFetched(true); // CONFIRM: Data load ho gaya, ab SAVE chalu ho sakta hai
+                } catch (err) {
+                    console.error("Load error:", err);
+                    setIsFetched(true); 
+                }
+            }
+        };
+        loadFromDB();
+    }, [user]);
+
+    // 4. SAVE DATA (App se Cloud mein)
     useEffect(() => {
         const saveToDB = async () => {
-            // SHART: Jab tak database se fetch na ho jaye (isFetched true na ho), tab tak Save mat karna
-            if (window.userId && data && isFetched) {
+            // SHART: Data tabhi save hoga jab isFetched true ho (taaki khali data overwrite na ho)
+            if (user && isFetched) {
                 try {
-                    const docRef = doc(db, "users", window.userId);
+                    const docRef = doc(db, "users", user.uid);
                     await setDoc(docRef, data, { merge: true });
-                    
-                    localStorage.setItem('syllabusData', JSON.stringify(data));
                     localStorage.setItem('currentExam', currentExam || '');
-                    console.log("Sync Complete: Data saved to Cloud.");
                 } catch (err) {
                     console.error("Save error:", err);
                 }
             }
         };
-        saveToDB();
-    }, [data, currentExam, isFetched]);
+        const timer = setTimeout(saveToDB, 1200); // 1.2 second ka delay for stability
+        return () => clearTimeout(timer);
+    }, [data, currentExam, isFetched, user]);// --- NAYA UPDATED SYNC LOGIC ---
+    const [user, setUser] = useState(null);
+    const [currentExam, setCurrentExam] = useState(() => localStorage.getItem('currentExam') || null);
+    const [view, setView] = useState(currentExam ? 'home' : 'exam-select');
+    const [selectedClass, setSelectedClass] = useState(null);
+    const [selectedSubject, setSelectedSubject] = useState(null);
+    const [selectedChapter, setSelectedChapter] = useState(null);
+    const [data, setData] = useState({ NEET: {}, JEE: {}, dailyGoals: [] });
+    const [editMode, setEditMode] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [modalConfig, setModalConfig] = useState({});
+    const [toast, setToast] = useState({ show: false, message: '' });
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
+    const [isFetched, setIsFetched] = useState(false);
+
+    // 1. Auth Status (Login Check)
+    useEffect(() => {
+        const unsubscribe = window.auth.onAuthStateChanged((u) => {
+            if (u) {
+                setUser(u);
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+        return () => unsubscribe();
+    }, []);
+
+    // 2. Navigation Logic
+    const navigateTo = (viewName, params = {}) => {
+        const state = {
+            view: viewName,
+            selectedClass: params.selectedClass !== undefined ? params.selectedClass : selectedClass,
+            selectedSubject: params.selectedSubject !== undefined ? params.selectedSubject : selectedSubject,
+            selectedChapter: params.selectedChapter !== undefined ? params.selectedChapter : selectedChapter
+        };
+        window.history.pushState(state, "");
+        setView(viewName);
+        if (params.selectedClass !== undefined) setSelectedClass(params.selectedClass);
+        if (params.selectedSubject !== undefined) setSelectedSubject(params.selectedSubject);
+        if (params.selectedChapter !== undefined) setSelectedChapter(params.selectedChapter);
+    };
+
+    useEffect(() => {
+        const handlePopState = (event) => {
+            if (event.state) {
+                setView(event.state.view);
+                setSelectedClass(event.state.selectedClass);
+                setSelectedSubject(event.state.selectedSubject);
+                setSelectedChapter(event.state.selectedChapter);
+            }
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
+    // 3. LOAD DATA (Cloud se App mein)
+    useEffect(() => {
+        const loadFromDB = async () => {
+            if (user) {
+                try {
+                    const docRef = doc(db, "users", user.uid);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const cloudData = docSnap.data();
+                        setData({
+                            NEET: cloudData.NEET || {},
+                            JEE: cloudData.JEE || {},
+                            dailyGoals: cloudData.dailyGoals || []
+                        });
+                    }
+                    setIsFetched(true); // CONFIRM: Data load ho gaya, ab SAVE chalu ho sakta hai
+                } catch (err) {
+                    console.error("Load error:", err);
+                    setIsFetched(true); 
+                }
+            }
+        };
+        loadFromDB();
+    }, [user]);
+
+    // 4. SAVE DATA (App se Cloud mein)
+    useEffect(() => {
+        const saveToDB = async () => {
+            // SHART: Data tabhi save hoga jab isFetched true ho (taaki khali data overwrite na ho)
+            if (user && isFetched) {
+                try {
+                    const docRef = doc(db, "users", user.uid);
+                    await setDoc(docRef, data, { merge: true });
+                    localStorage.setItem('currentExam', currentExam || '');
+                } catch (err) {
+                    console.error("Save error:", err);
+                }
+            }
+        };
+        const timer = setTimeout(saveToDB, 1200); // 1.2 second ka delay for stability
+        return () => clearTimeout(timer);
+    }, [data, currentExam, isFetched, user]);
     const showToast = (message) => {
         setToast({ show: true, message });
         setTimeout(() => setToast({ show: false, message: '' }), 3000);
