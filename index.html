@@ -7,11 +7,13 @@
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 
-    <!-- STEP 2: PASTE STARTED HERE (LOGIN CHECK) -->
+    <!-- Firebase & Auth Check Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // Aapka Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyC34JnP3u8km7TlX17JcA7Xw5UkddLrfvY",
             authDomain: "my-exam-tracker-80be7.firebaseapp.com",
@@ -21,25 +23,42 @@
             appId: "1:507669777779:web:4df324624b99de359cc906"
         };
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        // Agar user login nahi hai, toh turant login.html par bhejo
+        // Inhe global variables bana rahe hain taaki app.js use kar sake
+        window.auth = auth;
+        window.db = db;
+        window.logoutUser = () => signOut(auth).then(() => window.location.href = "login.html");
+
+        // LOGIN CHECK: Agar login nahi hai toh login.html par bhej do
         onAuthStateChanged(auth, (user) => {
             if (!user) {
                 window.location.href = "login.html";
+            } else {
+                console.log("Logged in as:", user.email);
+                // Page ko thoda delay ke baad dikhayenge taaki glitch na aaye
+                document.body.style.display = "block";
             }
         });
     </script>
-    <!-- STEP 2: PASTE ENDED HERE -->
 
+    <style>
+        /* Jab tak login check ho raha hai, body ko chhupa ke rakho */
+        body { display: none; } 
+    </style>
 </head>
 <body>
     <div id="root"></div>
 
+    <!-- React Scripts -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Aapki Main App File -->
     <script type="text/babel" src="app.js"></script>
 </body>
 </html>
