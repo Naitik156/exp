@@ -37,7 +37,7 @@
         
         // Logout Function
         window.logoutUser = () => {
-            if(confirm("Logout karein? Local settings clear ho jayengi.")) {
+            if(confirm("Logout karein?")) {
                 localStorage.removeItem('currentExam'); 
                 signOut(auth).then(() => {
                     window.location.href = "login.html";
