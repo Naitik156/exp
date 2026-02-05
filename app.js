@@ -313,14 +313,32 @@ const App = () => {
         return () => window.removeEventListener('popstate', handlePopState);
     }, [currentExam]);
     // --- BROWSER BACK BUTTON LOGIC END ---
+// Database se data Load karne ke liye
     useEffect(() => {
-        localStorage.setItem('syllabusData', JSON.stringify(data));
-    }, [data]);
+        const loadFromDB = async () => {
+            if (window.userId) {
+                const docRef = doc(db, "users", window.userId);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    setData(docSnap.data());
+                }
+            }
+        };
+        loadFromDB();
+    }, []);
 
+    // Database mein data Save karne ke liye
     useEffect(() => {
-        localStorage.setItem('currentExam', currentExam || '');
-    }, [currentExam]);
-
+        const saveToDB = async () => {
+            if (window.userId && data) {
+                const docRef = doc(db, "users", window.userId);
+                await setDoc(docRef, data, { merge: true });
+                localStorage.setItem('syllabusData', JSON.stringify(data));
+                localStorage.setItem('currentExam', currentExam || '');
+            }
+        };
+        saveToDB();
+    }, [data, currentExam]);
     const showToast = (message) => {
         setToast({ show: true, message });
         setTimeout(() => setToast({ show: false, message: '' }), 3000);
