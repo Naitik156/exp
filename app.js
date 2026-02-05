@@ -292,30 +292,31 @@ const App = () => {
         return () => window.removeEventListener('popstate', handlePopState);
     }, [currentExam]);
     // --- BROWSER BACK BUTTON LOGIC END ---
-// 1. DATABASE SE DATA LOAD KARNA (Device Sync Fix)
-    useEffect(() => {
-        const loadFromDB = async () => {
-            if (window.userId) {
-                try {
-                    const docRef = doc(db, "users", window.userId);
-                    const docSnap = await getDoc(docRef);
-                    
-                    if (docSnap.exists()) {
-                        const cloudData = docSnap.data();
-                        console.log("Cloud data found, syncing...");
-                        setData(cloudData); 
-                    } else {
-                        console.log("No cloud data, starting fresh.");
-                    }
-                    setIsFetched(true); // Flag: Ab hum save karne ke liye ready hain
-                } catch (err) {
-                    console.error("Load error:", err);
-                    setIsFetched(true); 
+// 1. DATABASE SE DATA LOAD KARNA (Fresh Start Fix)
+useEffect(() => {
+    const loadFromDB = async () => {
+        if (window.userId) {
+            try {
+                const docRef = doc(db, "users", window.userId);
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    // Agar Cloud par data hai, toh use dikhao
+                    setData(docSnap.data());
+                } else {
+                    // Agar naya user hai (Cloud khali hai), toh LocalStorage ka purana kachra saaf karo
+                    setData({ NEET: {}, JEE: {}, dailyGoals: [] });
+                    localStorage.removeItem('syllabusData');
                 }
+                setIsFetched(true); 
+            } catch (err) {
+                console.error("Load error:", err);
+                setIsFetched(true); 
             }
-        };
-        loadFromDB();
-    }, []);
+        }
+    };
+    loadFromDB();
+}, []);
 
     // 2. DATABASE MEIN DATA SAVE KARNA (Protection ke saath)
     useEffect(() => {
