@@ -314,32 +314,50 @@ const App = () => {
         return () => window.removeEventListener('popstate', handlePopState);
     }, [currentExam]);
     // --- BROWSER BACK BUTTON LOGIC END ---
-// Database se data Load karne ke liye
+// 1. DATABASE SE DATA LOAD KARNA (Device Sync Fix)
     useEffect(() => {
         const loadFromDB = async () => {
             if (window.userId) {
-                const docRef = doc(db, "users", window.userId);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    setData(docSnap.data());
+                try {
+                    const docRef = doc(db, "users", window.userId);
+                    const docSnap = await getDoc(docRef);
+                    
+                    if (docSnap.exists()) {
+                        const cloudData = docSnap.data();
+                        console.log("Cloud data found, syncing...");
+                        setData(cloudData); 
+                    } else {
+                        console.log("No cloud data, starting fresh.");
+                    }
+                    setIsFetched(true); // Flag: Ab hum save karne ke liye ready hain
+                } catch (err) {
+                    console.error("Load error:", err);
+                    setIsFetched(true); 
                 }
             }
         };
         loadFromDB();
     }, []);
 
-    // Database mein data Save karne ke liye
+    // 2. DATABASE MEIN DATA SAVE KARNA (Protection ke saath)
     useEffect(() => {
         const saveToDB = async () => {
-            if (window.userId && data) {
-                const docRef = doc(db, "users", window.userId);
-                await setDoc(docRef, data, { merge: true });
-                localStorage.setItem('syllabusData', JSON.stringify(data));
-                localStorage.setItem('currentExam', currentExam || '');
+            // SHART: Jab tak database se fetch na ho jaye (isFetched true na ho), tab tak Save mat karna
+            if (window.userId && data && isFetched) {
+                try {
+                    const docRef = doc(db, "users", window.userId);
+                    await setDoc(docRef, data, { merge: true });
+                    
+                    localStorage.setItem('syllabusData', JSON.stringify(data));
+                    localStorage.setItem('currentExam', currentExam || '');
+                    console.log("Sync Complete: Data saved to Cloud.");
+                } catch (err) {
+                    console.error("Save error:", err);
+                }
             }
         };
         saveToDB();
-    }, [data, currentExam]);
+    }, [data, currentExam, isFetched]);
     const showToast = (message) => {
         setToast({ show: true, message });
         setTimeout(() => setToast({ show: false, message: '' }), 3000);
