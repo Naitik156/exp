@@ -37,9 +37,15 @@
         
         // Professional Logout Function
         window.logoutUser = () => {
-            signOut(auth).then(() => {
-                window.location.href = "login.html";
-            }).catch((error) => alert("Logout Failed: " + error.message));
+            if(confirm("Kya aap Logout karna chahte hain? Sabhi purana local data clear ho jayega.")) {
+                // Pehle browser ki memory saaf karo (LocalStorage Clean)
+                localStorage.clear(); 
+                
+                // Fir Firebase se Logout karo
+                signOut(auth).then(() => {
+                    window.location.href = "login.html";
+                }).catch((error) => alert("Logout Failed: " + error.message));
+            }
         };
 
         // Login Status Check: Bina login ke koi site nahi dekh payega
