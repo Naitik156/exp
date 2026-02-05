@@ -1,7 +1,7 @@
-
 const { useState, useEffect } = React;
-const db = window.db;
-const { doc, getDoc, setDoc } = window.dbFuncs;
+
+// Inhe hum abhi variable mein store nahi karenge, 
+// balki seedhe component ke andar se access karenge.
 
 // Syllabus data structure for both exams
 const EXAM_SYLLABUS = {
