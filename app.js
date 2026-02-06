@@ -319,7 +319,7 @@ const compressImage = (file) => {
         return () => window.removeEventListener('popstate', handlePopState);
     }, []);
 
-    // 3. LOAD DATA (Database se progress lana)
+// 3. LOAD DATA (Database se progress lana) - FIXED VERSION
     useEffect(() => {
         const loadFromDB = async () => {
             if (user && window.dbFuncs && window.db) {
@@ -328,7 +328,12 @@ const compressImage = (file) => {
                     const docRef = doc(window.db, "users", user.uid);
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
-                        setData(docSnap.data());
+                        const fetchedData = docSnap.data();
+                        // Yeh line sabse zaroori hai: Agar database mein tests/mistakes nahi hain, toh empty array set ho jayega
+                        setData({
+                            NEET: {}, JEE: {}, dailyGoals: [], tests: [], mistakes: [],
+                            ...fetchedData 
+                        });
                     }
                     setIsFetched(true); 
                 } catch (err) {
