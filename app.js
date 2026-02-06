@@ -267,20 +267,25 @@ const compressImage = (file) => {
         });
     };
 
+    // --- FAST REVISION LOGIC (Improved) ---
+    const triggerRevision = () => {
+        const pending = (data.mistakes || []).filter(m => !m.mastered);
+        if (pending.length === 0) {
+            showToast("No mistakes found! Keep it up.");
+            return;
+        }
+        const random = pending[Math.floor(Math.random() * pending.length)];
+        setActiveNotif(random);
+        setNotifShow(true);
+        setTimeout(() => setNotifShow(false), 20000); // 20 sec stay
+    };
+
     useEffect(() => {
-        // Reminder Logic: Only shows Non-Mastered mistakes
         if (!isFetched || !data.mistakes || data.mistakes.length === 0) return;
-        const trigger = () => {
-            const pending = data.mistakes.filter(m => !m.mastered);
-            if (pending.length === 0) return;
-            const random = pending[Math.floor(Math.random() * pending.length)];
-            setActiveNotif(random); setNotifShow(true);
-            setTimeout(() => setNotifShow(false), 20000);
-        };
-        const init = setTimeout(trigger, 10000);
-        const loop = setInterval(trigger, 900000);
+        const init = setTimeout(triggerRevision, 8000); // Page load ke 8 sec baad
+        const loop = setInterval(triggerRevision, 900000); // Har 15 min
         return () => { clearTimeout(init); clearInterval(loop); };
-    }, [isFetched, data.mistakes]);
+    }, [isFetched]);
     // 1. Auth Status (Login Check)
     useEffect(() => {
         if (!window.auth) return;
