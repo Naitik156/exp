@@ -1821,7 +1821,15 @@ const DailyGoalsView = () => {
                 )
             )
         ),
-        toast.show && React.createElement('div', { className: 'toast' }, toast.message)
+        toast.show && React.createElement('div', { className: 'toast' }, toast.message),
+                               notifShow && activeNotif && React.createElement('div', { 
+            className: 'error-notification show',
+            onClick: () => { setNotifShow(false); setView('error-book'); }
+        },
+            React.createElement('div', { className: 'notif-header' }, React.createElement('span', null, '💡 FAST REVISION'), React.createElement('span', { className: 'notif-close', onClick: e => { e.stopPropagation(); setNotifShow(false); } }, '×')),
+            React.createElement('div', { style:{fontSize:'0.85rem', fontWeight:'700', color:'#b91c1c'} }, `❌ ${activeNotif.myMistake.substring(0,60)}...`),
+            React.createElement('div', { style:{fontSize:'0.8rem', color:'#15803d', marginTop:'4px'} }, `✅ ${activeNotif.correctLogic.substring(0,60)}...`)
+        )
     );
 };
 
