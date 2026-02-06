@@ -1839,14 +1839,20 @@ const TestAnalysisView = () => {
                     React.createElement('button', { 
                         className: 'btn-save', 
                         style: {width:'100%', background:'#0F766E', color:'white', border:'none', padding:'15px', borderRadius:'12px', fontWeight:'800', marginTop:'20px', cursor:'pointer'},
-                        onClick: () => {
+                     onClick: () => {
                             if(!ts.name) return alert('Enter Test Name!');
                             const keys = isNEET ? ['phy', 'chem', 'bio'] : ['phy', 'chem', 'math'];
+                            
+                            // Check logic: Blank ko Number 0 banayenge
                             for(let k of keys) {
                                 const max = (isNEET && k === 'bio') ? 90 : (isNEET ? 45 : 25);
-                                if((ts[k].c + ts[k].i + ts[k].u) !== max) return alert(`Check ${k.toUpperCase()}! Total must be ${max}`);
+                                const totalQs = Number(ts[k].c) + Number(ts[k].i) + Number(ts[k].u);
+                                if(totalQs !== max) {
+                                    return alert(`${k.toUpperCase()} check karein! Total ${max} hona chahiye (Abhi ${totalQs} hai)`);
+                                }
                             }
-                            const calc = (k) => (ts[k].c * 4) - ts[k].i;
+
+                            const calc = (k) => (Number(ts[k].c) * 4) - Number(ts[k].i);
                             const totalScore = keys.reduce((sum, k) => sum + calc(k), 0);
                             
                             if(editingId) {
