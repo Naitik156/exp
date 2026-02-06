@@ -1656,75 +1656,115 @@ const DailyGoalsView = () => {
         );
     };
 
-   const TestAnalysisView = () => {
+const TestAnalysisView = () => {
         const [activeTab, setActiveTab] = useState('OVERALL');
         const lineRef = React.useRef(null);
         const pieRef = React.useRef(null);
         const [showModal, setShowModal] = useState(false);
+        const isNEET = currentExam === 'NEET';
+        const subjects = isNEET ? ['OVERALL', 'PHY', 'CHEM', 'BIO'] : ['OVERALL', 'PHY', 'CHEM', 'MATH'];
+
+        // Correct Question Input State
         const [ts, setTs] = useState({ 
-            name: '', phy: {c:0,i:0}, chem: {c:0,i:0}, bot: {c:0,i:0}, zoo: {c:0,i:0}, math: {c:0,i:0} 
+            name: '', 
+            phy: {c:0, i:0, u:0}, 
+            chem: {c:0, i:0, u:0}, 
+            bio: {c:0, i:0, u:0}, 
+            math: {c:0, i:0, u:0} 
         });
 
-        const isNEET = currentExam === 'NEET';
-        const subjects = isNEET ? ['OVERALL', 'PHY', 'CHEM', 'BOT', 'ZOO'] : ['OVERALL', 'PHY', 'CHEM', 'MATH'];
+        // Test History Delete Logic
+        const deleteTest = (id) => {
+            setModalConfig({
+                title: 'Delete Test',
+                message: 'Kya aap is test result ko delete karna chahte hain?',
+                onConfirm: () => {
+                    setData(p => ({ ...p, tests: (p.tests || []).filter(t => t.id !== id) }));
+                    setShowModal(false);
+                    showToast("Test deleted successfully");
+                }
+            });
+            setShowModal(true);
+        };
 
         useEffect(() => {
-            if (!lineRef.current || typeof Chart === 'undefined' || !data.tests || data.tests.length === 0) return;
+            if (!lineRef.current || !data.tests || data.tests.length === 0) return;
             const ctx = lineRef.current.getContext('2d');
-            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, 'rgba(15, 118, 110, 0.2)');
-            gradient.addColorStop(1, 'rgba(15, 118, 110, 0)');
+            const isSubView = activeTab !== 'OVERALL';
+            
+            // Scaling Logic strictly as requested
+            let maxLimit = isNEET ? 720 : 300;
+            if(isSubView) {
+                if(isNEET) {
+                    maxLimit = (activeTab === 'BIO' ? 360 : 180);
+                } else {
+                    maxLimit = 100;
+                }
+            }
+
+            const chartData = data.tests.map(t => {
+                if(activeTab === 'OVERALL') return t.total || 0;
+                const key = activeTab.toLowerCase();
+                const sub = t[key] || {c:0, i:0};
+                return (sub.c * 4) - sub.i;
+            });
 
             const lineChart = new Chart(lineRef.current, {
                 type: 'line',
                 data: {
                     labels: data.tests.map(t => t.name),
                     datasets: [{
-                        label: activeTab,
-                        data: data.tests.map(t => {
-                            if(activeTab === 'OVERALL') return t.total || 0;
-                            const key = activeTab.toLowerCase();
-                            const subData = t[key] || {c:0, i:0};
-                            return (subData.c * 4) - subData.i;
-                        }),
-                        borderColor: '#0F766E', borderWidth: 3, backgroundColor: gradient, fill: true,
-                        tension: 0.4, // Smooth Spline
-                        pointBackgroundColor: '#000', // Black Dots
-                        pointBorderColor: '#fff', pointBorderWidth: 2, pointRadius: 6
+                        label: activeTab + ' Score',
+                        data: chartData,
+                        borderColor: '#0F766E', borderWidth: 3, tension: 0.4,
+                        backgroundColor: 'rgba(15, 118, 110, 0.1)', fill: true,
+                        pointRadius: 6, pointBackgroundColor: '#000', pointBorderColor: '#fff'
                     }]
                 },
                 options: {
                     responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, grid: { color: '#f3f4f6' } }, x: { grid: { display: false } } }
+                    scales: { y: { beginAtZero: true, max: maxLimit, grid: { color: '#f3f4f6' } } }
                 }
             });
             return () => lineChart.destroy();
-        }, [data.tests, activeTab]);
+        }, [data.tests, activeTab, isNEET]);
 
         useEffect(() => {
-            if (!pieRef.current || typeof Chart === 'undefined' || !data.mistakes || data.mistakes.length === 0) return;
+            if (!pieRef.current || !data.mistakes) return;
+            
+            // Pie chart sync with tabs: Bio tab shows both Bot & Zoo mistakes
+            const subFilter = activeTab === 'OVERALL' ? null : 
+                             (activeTab === 'BIO' ? 'BIO_MERGED' : 
+                             (activeTab === 'PHY' ? 'Physics' : 
+                             (activeTab === 'CHEM' ? 'Chemistry' : 'Mathematics')));
+            
+            const filteredMistakes = data.mistakes.filter(m => {
+                if (!subFilter) return true;
+                if (subFilter === 'BIO_MERGED') return (m.sub === 'Botany' || m.sub === 'Zoology');
+                return m.sub === subFilter;
+            });
+            
             const counts = {};
-            data.mistakes.forEach(m => counts[m.type] = (counts[m.type] || 0) + 1);
+            filteredMistakes.forEach(m => counts[m.type] = (counts[m.type] || 0) + 1);
+            
             const pieChart = new Chart(pieRef.current, {
                 type: 'doughnut',
                 data: {
                     labels: Object.keys(counts),
-                    datasets: [{ data: Object.values(counts), backgroundColor: ['#0F766E', '#14B8A6', '#F59E0B', '#EF4444', '#6366F1'], borderWidth: 0 }]
+                    datasets: [{ 
+                        data: Object.values(counts), 
+                        backgroundColor: ['#0F766E', '#14B8A6', '#F59E0B', '#EF4444', '#6366F1'],
+                        borderWidth: 0 
+                    }]
                 },
-                options: { cutout: '75%', plugins: { legend: { position: 'bottom' } } }
+                options: { cutout: '70%', plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: {size: 11} } } } }
             });
             return () => pieChart.destroy();
-        }, [data.mistakes]);
+        }, [data.mistakes, activeTab]);
 
         return React.createElement('div', { className: 'container' },
-            React.createElement('div', { className: 'nav-breadcrumb' }, 
-                React.createElement('span', { onClick: () => setView('home'), style:{cursor:'pointer'} }, 'Home'), 
-                React.createElement('span', null, ' / '),
-                React.createElement('span', { className: 'active' }, 'Performance Analysis')
-            ),
             React.createElement('div', { className: 'analysis-header' }, 
-                React.createElement('h2', { style:{fontFamily: 'DM Serif Display', fontSize: '2rem'} }, 'Test Analysis'),
+                React.createElement('h2', { className: 'logo', style:{fontSize:'2rem'} }, 'Test Analysis'),
                 React.createElement('div', { className: 'tab-modern-container' },
                     subjects.map((s, idx) => React.createElement(React.Fragment, { key: s },
                         React.createElement('span', { className: `tab-modern ${activeTab === s ? 'active' : ''}`, onClick: () => setActiveTab(s) }, s),
@@ -1733,45 +1773,87 @@ const DailyGoalsView = () => {
                 )
             ),
             React.createElement('div', { className: 'analysis-main-grid' },
-                React.createElement('div', { className: 'chart-main-card' },
-                    data.tests && data.tests.length > 0 ? React.createElement('canvas', { ref: lineRef }) : React.createElement('div', { className: 'empty-msg', style:{textAlign:'center', marginTop:'150px'} }, 'No test data found.')
-                ),
+                React.createElement('div', { className: 'chart-main-card' }, React.createElement('canvas', { ref: lineRef })),
                 React.createElement('div', { className: 'mistake-stats-card' },
-                    React.createElement('h3', { style:{marginBottom:'15px'} }, 'Mistake Pattern'),
-                    data.mistakes && data.mistakes.length > 0 ? React.createElement('canvas', { ref: pieRef }) : React.createElement('div', { className: 'empty-msg' }, 'No mistakes logged.')
+                    React.createElement('h3', {style:{fontSize:'1rem', marginBottom:'10px'}}, `${activeTab} Mistake Pattern`),
+                    React.createElement('canvas', { ref: pieRef })
                 )
             ),
+            
+            // History Section
+            React.createElement('div', { className: 'test-history-card' },
+                React.createElement('h3', {style:{marginBottom:'15px', fontSize:'1.2rem'}}, 'Test History'),
+                (data.tests || []).length === 0 ? React.createElement('p', {className:'empty-msg'}, 'No tests recorded yet.') :
+                data.tests.slice().reverse().map(t => React.createElement('div', { key: t.id, className: 'test-list-item' },
+                    React.createElement('div', null, 
+                        React.createElement('div', {style:{fontWeight:'700'}}, t.name), 
+                        React.createElement('div', {style:{fontSize:'0.8rem', color:'#666'}}, `Total Score: ${t.total}`)
+                    ),
+                    React.createElement('button', { 
+                        onClick: () => deleteTest(t.id), 
+                        style:{border:'none', background:'none', cursor:'pointer', fontSize:'1.3rem', padding:'10px'} 
+                    }, '🗑️')
+                ))
+            ),
+
             React.createElement('div', { className: 'analysis-footer-actions' },
-                React.createElement('button', { className: 'btn-action primary', onClick: () => setShowModal(true) }, '➕ Add Test Score'),
+                React.createElement('button', { className: 'btn-action primary', onClick: () => setShowModal(true) }, '➕ Add New Test Result'),
                 React.createElement('button', { className: 'btn-action secondary', onClick: () => setView('error-book') }, '📖 Open Error Book')
             ),
+
+            // RECORD TEST MODAL
             showModal && React.createElement('div', { className: 'modal' },
                 React.createElement('div', { className: 'modal-content modern-modal' },
-                    React.createElement('h3', { style:{marginBottom:'20px'} }, 'Record New Test'),
-                    React.createElement('input', { className: 'modern-input', placeholder: 'Test Name', style: {width:'100%', padding:'12px', borderRadius:'10px', border:'1px solid #ddd', marginBottom:'20px'}, onChange: e => setTs({...ts, name: e.target.value}) }),
-                    React.createElement('div', { className: 'score-input-grid' },
-                        (isNEET ? ['phy', 'chem', 'bot', 'zoo'] : ['phy', 'chem', 'math']).map(k => 
-                            React.createElement('div', { key: k, className: 'score-row' },
-                                React.createElement('label', {style:{fontWeight:'bold', display:'block', marginBottom:'5px'}}, k.toUpperCase()),
-                                React.createElement('div', { className: 'input-pair', style:{display:'flex', gap:'10px'} },
-                                    React.createElement('input', { type: 'number', placeholder: 'Correct', style:{width:'50%', padding:'8px', borderRadius:'8px', border:'1px solid #eee'}, onChange: e => { let n = {...ts}; n[k].c = parseInt(e.target.value)||0; setTs(n); } }),
-                                    React.createElement('input', { type: 'number', placeholder: 'Wrong', style:{width:'50%', padding:'8px', borderRadius:'8px', border:'1px solid #eee'}, onChange: e => { let n = {...ts}; n[k].i = parseInt(e.target.value)||0; setTs(n); } })
-                                )
+                    React.createElement('button', { className: 'modal-close-x', onClick: () => setShowModal(false) }, '×'),
+                    React.createElement('h3', {style:{marginBottom:'20px'}}, 'Record New Test'),
+                    React.createElement('input', { 
+                        className: 'modern-input', 
+                        placeholder: 'Test Name (e.g. AIATS-01)', 
+                        style:{width:'100%', padding:'12px', borderRadius:'10px', border:'1.5px solid #e5e7eb', marginBottom:'20px'}, 
+                        onChange: e => setTs({...ts, name: e.target.value}) 
+                    }),
+                    
+                    (isNEET ? ['phy', 'chem', 'bio'] : ['phy', 'chem', 'math']).map(k => {
+                        const maxQ = (isNEET && k === 'bio') ? 90 : (isNEET ? 45 : 25);
+                        const currentTotal = (ts[k].c || 0) + (ts[k].i || 0) + (ts[k].u || 0);
+                        const isInvalid = currentTotal !== maxQ;
+                        
+                        return React.createElement('div', { key: k, className: 'score-row' },
+                            React.createElement('div', {style:{display:'flex', justifyContent:'space-between', alignItems:'center'}}, 
+                                React.createElement('label', {style:{fontWeight:'800', fontSize:'0.9rem'}}, k === 'bio' ? 'BIOLOGY (90 Qs)' : `${k.toUpperCase()} (45 Qs)`),
+                                React.createElement('span', {className: `validation-msg ${isInvalid ? 'v-error' : 'v-success'}`}, `${currentTotal}/${maxQ} Entered`)
+                            ),
+                            React.createElement('div', { className: 'input-pair' },
+                                React.createElement('input', { type: 'number', placeholder: 'Correct', onChange: e => { let n = {...ts}; n[k].c = parseInt(e.target.value)||0; setTs(n); } }),
+                                React.createElement('input', { type: 'number', placeholder: 'Wrong', onChange: e => { let n = {...ts}; n[k].i = parseInt(e.target.value)||0; setTs(n); } }),
+                                React.createElement('input', { type: 'number', placeholder: 'Skipped', onChange: e => { let n = {...ts}; n[k].u = parseInt(e.target.value)||0; setTs(n); } })
                             )
-                        )
-                    ),
-                    React.createElement('div', { className: 'modal-btns', style:{display:'flex', gap:'10px', marginTop:'25px'} },
-                        React.createElement('button', { className: 'btn-save', style: {flex:2, background:'#0F766E', color:'white', border:'none', padding:'12px', borderRadius:'10px', fontWeight:'bold', cursor:'pointer'},
-                            onClick: () => {
-                                if(!ts.name) return alert('Enter Test Name!');
-                                const scoreCalc = (k) => (ts[k].c * 4) - ts[k].i;
-                                const tot = isNEET ? (scoreCalc('phy') + scoreCalc('chem') + scoreCalc('bot') + scoreCalc('zoo')) : (scoreCalc('phy') + scoreCalc('chem') + scoreCalc('math'));
-                                setData(p => ({ ...p, tests: [...(p.tests || []), {...ts, total: tot, id: Date.now()}] }));
-                                setShowModal(false); showToast('Score Added!');
-                            } 
-                        }, 'Save Results'),
-                        React.createElement('button', { className: 'btn-cancel', style: {flex:1, background:'#f3f4f6', border:'none', padding:'12px', borderRadius:'10px', cursor:'pointer'}, onClick: () => setShowModal(false) }, 'Cancel')
-                    )
+                        );
+                    }),
+
+                    React.createElement('button', { 
+                        className: 'btn-save', 
+                        style: {width:'100%', background:'#0F766E', color:'white', border:'none', padding:'15px', borderRadius:'12px', fontWeight:'800', marginTop:'20px', cursor:'pointer', opacity: ts.name ? 1 : 0.5},
+                        onClick: () => {
+                            if(!ts.name) return alert('Pehle Test ka Naam likhein!');
+                            const keys = isNEET ? ['phy', 'chem', 'bio'] : ['phy', 'chem', 'math'];
+                            
+                            // Check for 45/90 questions strictly
+                            for(let k of keys) {
+                                const max = (isNEET && k === 'bio') ? 90 : (isNEET ? 45 : 25);
+                                if((ts[k].c + ts[k].i + ts[k].u) !== max) {
+                                    return alert(`${k.toUpperCase()} mein total ${max} questions hone chahiye! (Abhi ${ts[k].c + ts[k].i + ts[k].u} hain)`);
+                                }
+                            }
+
+                            const calc = (k) => (ts[k].c * 4) - ts[k].i;
+                            const totalScore = keys.reduce((sum, k) => sum + calc(k), 0);
+                            
+                            setData(p => ({ ...p, tests: [...(p.tests || []), {...ts, total: totalScore, id: Date.now()}] }));
+                            setShowModal(false); 
+                            showToast(`Test Saved! Final Score: ${totalScore}`);
+                        }
+                    }, 'Calculate & Save Results')
                 )
             )
         );
