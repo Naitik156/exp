@@ -1903,7 +1903,15 @@ const TestAnalysisView = () => {
         );
     };
 
-    return React.createElement(React.Fragment, null,
+   return React.createElement(React.Fragment, null,
+        // --- 1. FLOATING REVISION BUTTON (Always visible if mistakes exist) ---
+        (data.mistakes || []).length > 0 && React.createElement('button', { 
+            className: 'floating-rev-btn', 
+            onClick: triggerRevision, 
+            title: 'Quick Revision' 
+        }, '💡'),
+
+        // --- 2. MAIN VIEWS ---
         view === 'exam-select' && React.createElement(ExamSelectView),
         view === 'home' && React.createElement(HomePage),
         view === 'subjects' && React.createElement(SubjectsView),
@@ -1913,21 +1921,47 @@ const TestAnalysisView = () => {
         view === 'daily-goals' && React.createElement(DailyGoalsView),
         view === 'test-analysis' && React.createElement(TestAnalysisView),
         view === 'error-book' && React.createElement(ErrorBookView),
+
+        // --- 3. GLOBAL MODAL (Reset Chapter, Delete, etc.) WITH 'X' ---
         showModal && React.createElement('div', { className: 'modal', onClick: () => setShowModal(false) },
-            React.createElement('div', { className: 'modal-content', onClick: (e) => e.stopPropagation() },
+            React.createElement('div', { className: 'modal-content modern-modal', onClick: (e) => e.stopPropagation() },
+                React.createElement('button', { className: 'modal-close-x', onClick: () => setShowModal(false) }, '×'),
                 React.createElement('h3', { className: 'modal-title' }, modalConfig.title),
-                React.createElement('p', { style: { marginBottom: '1.5rem' } }, modalConfig.message),
+                React.createElement('p', { style: { marginBottom: '1.5rem', color: '#57534E' } }, modalConfig.message),
                 React.createElement('div', { className: 'modal-buttons' },
-                    React.createElement('button', { className: 'btn btn-secondary', onClick: () => setShowModal(false), style: { flex: 1 } }, '✕ Cancel'),
+                    React.createElement('button', { className: 'btn btn-secondary', onClick: () => setShowModal(false), style: { flex: 1 } }, '✕ Close'),
                     React.createElement('button', { className: 'btn btn-danger', onClick: () => { if (modalConfig.onConfirm) modalConfig.onConfirm(); }, style: { flex: 1 } }, '✓ Confirm')
                 )
             )
         ),
+
+        // --- 4. TOAST NOTIFICATIONS ---
         toast.show && React.createElement('div', { className: 'toast' }, toast.message),
+
+        // --- 5. ENHANCED REVISION NOTIFICATION (The Popup) ---
         notifShow && activeNotif && React.createElement('div', { className: 'error-notification show', onClick: () => { setNotifShow(false); setView('error-book'); } },
-            React.createElement('div', { className: 'notif-header' }, React.createElement('span', null, '💡 FAST REVISION'), React.createElement('span', { className: 'notif-close', onClick: e => { e.stopPropagation(); setNotifShow(false); } }, '×')),
-            React.createElement('div', { style:{fontSize:'0.85rem', fontWeight:'700', color:'#b91c1c'} }, `❌ ${activeNotif.myMistake.substring(0,60)}...`),
-            React.createElement('div', { style:{fontSize:'0.8rem', color:'#15803d', marginTop:'4px'} }, `✅ ${activeNotif.correctLogic.substring(0,60)}...`)
+            React.createElement('div', { className: 'notif-header' }, 
+                React.createElement('span', null, '💡 QUICK REVISION FLASHCARD'), 
+                React.createElement('span', { className: 'notif-close', onClick: e => { e.stopPropagation(); setNotifShow(false); } }, '×')
+            ),
+            React.createElement('div', { style:{fontSize:'0.95rem', fontWeight:'800', color:'#b91c1c', marginBottom:'10px'} }, 
+                `Galti: "${activeNotif.myMistake.substring(0,85)}${activeNotif.myMistake.length > 85 ? '...' : ''}"`
+            ),
+            React.createElement('div', { 
+                style:{
+                    fontSize:'0.9rem', 
+                    color:'#15803d', 
+                    background:'#f0fdf4', 
+                    padding:'12px', 
+                    borderRadius:'12px', 
+                    border:'1.5px solid #dcfce7',
+                    fontWeight: '600',
+                    lineHeight: '1.4'
+                } 
+            }, 
+                `Sahi Concept: ${activeNotif.correctLogic.substring(0,120)}${activeNotif.correctLogic.length > 120 ? '...' : ''}`
+            ),
+            React.createElement('p', { style:{fontSize:'0.7rem', color:'#9ca3af', marginTop:'8px', textAlign:'right'} }, 'Tap to open Error Book →')
         )
     );
 };
