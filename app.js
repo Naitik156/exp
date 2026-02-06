@@ -1645,6 +1645,151 @@ const DailyGoalsView = () => {
             )
         );
     };
+  const TestAnalysisView = () => {
+        const [activeTab, setActiveTab] = useState('OVERALL');
+        const lineRef = React.useRef(null);
+        const pieRef = React.useRef(null);
+        const [showModal, setShowModal] = useState(false);
+        const [ts, setTs] = useState({ name: '', phy: {c:0,i:0}, chem: {c:0,i:0}, sub: {c:0,i:0} });
+        const subLabel = currentExam === 'NEET' ? 'BIO' : 'MATH';
+
+        useEffect(() => {
+            if (!lineRef.current || typeof Chart === 'undefined' || data.tests.length === 0) return;
+            const lineChart = new Chart(lineRef.current, {
+                type: 'line',
+                data: {
+                    labels: data.tests.map(t => t.name),
+                    datasets: [{
+                        label: activeTab,
+                        data: data.tests.map(t => {
+                            if(activeTab === 'OVERALL') return t.total;
+                            if(activeTab === 'PHY') return (t.phy.c*4)-t.phy.i;
+                            if(activeTab === 'CHEM') return (t.chem.c*4)-t.chem.i;
+                            return (t.sub.c*4)-t.sub.i;
+                        }),
+                        borderColor: '#0F766E', backgroundColor: 'rgba(15, 118, 110, 0.1)', fill: true, tension: 0.4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+            return () => lineChart.destroy();
+        }, [data.tests, activeTab]);
+
+        useEffect(() => {
+            if (!pieRef.current || typeof Chart === 'undefined' || data.mistakes.length === 0) return;
+            const counts = {};
+            data.mistakes.forEach(m => counts[m.type] = (counts[m.type] || 0) + 1);
+            const pieChart = new Chart(pieRef.current, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(counts),
+                    datasets: [{
+                        data: Object.values(counts),
+                        backgroundColor: ['#3b82f6', '#9ca3af', '#facc15', '#ef4444', '#f97316']
+                    }]
+                }
+            });
+            return () => pieChart.destroy();
+        }, [data.mistakes]);
+
+        const getTrends = () => {
+            if (data.tests.length < 2) return "Add at least 2 tests to see performance trends.";
+            const last = data.tests[data.tests.length - 1];
+            const prev = data.tests[data.tests.length - 2];
+            const diff = last.total - prev.total;
+            return diff >= 0 ? `📈 Score increased by ${diff} marks since last test! Keep it up.` : `📉 Score dropped by ${Math.abs(diff)} marks. Review your mistakes!`;
+        };
+
+        return React.createElement('div', { className: 'container' },
+            React.createElement('div', { className: 'nav-breadcrumb' }, React.createElement('span', { onClick: () => setView('home') }, 'Home'), ' / Analysis'),
+            React.createElement('div', { className: 'analysis-grid' },
+                React.createElement('div', { className: 'chart-container' },
+                    React.createElement('div', { className: 'chart-tabs' }, ['OVERALL', 'PHY', 'CHEM', subLabel].map(t => React.createElement('button', { className: `chart-tab ${activeTab === t ? 'active' : ''}`, onClick: () => setActiveTab(t) }, t))),
+                    React.createElement('canvas', { ref: lineRef })
+                ),
+                React.createElement('div', { className: 'trend-card' },
+                    React.createElement('h3', null, 'Mistake Analysis'),
+                    data.mistakes.length > 0 ? React.createElement('canvas', { ref: pieRef }) : React.createElement('p', null, 'No mistakes recorded yet.')
+                )
+            ),
+            React.createElement('div', { className: 'trend-card', style: {marginBottom: '20px'} }, 
+                React.createElement('h3', null, 'Performance Trend'),
+                React.createElement('p', null, getTrends())
+            ),
+            React.createElement('div', { style: {display:'flex', gap:'10px'} },
+                React.createElement('button', { className: 'btn btn-primary', style:{flex:1}, onClick: () => setShowModal(true) }, 'Add Test Score'),
+                React.createElement('button', { className: 'btn btn-secondary', style:{flex:1}, onClick: () => setView('error-book') }, 'Error Book')
+            ),
+            showModal && React.createElement('div', { className: 'modal' },
+                React.createElement('div', { className: 'modal-content' },
+                    React.createElement('h3', null, 'Record Test Score'),
+                    React.createElement('input', { className: 'input-style', placeholder: 'Test Name', onChange: e => setTs({...ts, name: e.target.value}) }),
+                    ['phy', 'chem', 'sub'].map(k => React.createElement('div', { key: k, style: {margin: '10px 0'} },
+                        React.createElement('strong', null, k === 'sub' ? subLabel : k.toUpperCase()),
+                        React.createElement('div', { style: {display:'flex', gap: '5px'} },
+                            React.createElement('input', { className:'input-style', type: 'number', placeholder: 'Correct', onChange: e => { let n = {...ts}; n[k].c = parseInt(e.target.value)||0; setTs(n); } }),
+                            React.createElement('input', { className:'input-style', type: 'number', placeholder: 'Wrong', onChange: e => { let n = {...ts}; n[k].i = parseInt(e.target.value)||0; setTs(n); } })
+                        )
+                    )),
+                    React.createElement('button', { className: 'btn btn-primary', style:{width:'100%'}, onClick: () => {
+                        const tot = (ts.phy.c*4-ts.phy.i) + (ts.chem.c*4-ts.chem.i) + (ts.sub.c*4-ts.sub.i);
+                        setData(p => ({ ...p, tests: [...p.tests, {...ts, total: tot, id: Date.now()}] }));
+                        setShowModal(false); showToast('Saved!');
+                    } }, 'Save Score')
+                )
+            )
+        );
+    };
+
+    const ErrorBookView = () => {
+        const [f, setF] = useState({ tid: '', sub: 'Physics', search: '' });
+        const [showAdd, setShowAdd] = useState(false);
+        const [m, setM] = useState({ type: 'Silly Mistake', img: '', myMistake: '', correctLogic: '' });
+        
+        const filtered = data.mistakes.filter(x => 
+            (f.tid ? x.tid == f.tid : true) && 
+            x.sub == f.sub && 
+            (x.myMistake.toLowerCase().includes(f.search.toLowerCase()))
+        );
+
+        const toggleMastery = (id) => {
+            setData(p => ({ ...p, mistakes: p.mistakes.map(x => x.id === id ? {...x, mastered: !x.mastered} : x) }));
+            showToast('Mistake status updated!');
+        };
+
+        return React.createElement('div', { className: 'container' },
+            React.createElement('div', { className: 'nav-breadcrumb' }, React.createElement('span', { onClick: () => setView('test-analysis') }, 'Analysis'), ' / Error Book'),
+            React.createElement('input', { className: 'search-bar', placeholder: '🔍 Search mistakes (e.g. "gravity", "integration")...', onChange: e => setF({...f, search: e.target.value}) }),
+            React.createElement('div', { style: {display:'flex', gap:'10px', marginBottom: '15px'} },
+                React.createElement('select', { className: 'chart-tab', onChange: e => setF({...f, tid: e.target.value}) }, React.createElement('option', {value:''}, 'All Tests'), data.tests.map(t => React.createElement('option', { key: t.id, value: t.id }, t.name))),
+                React.createElement('select', { className: 'chart-tab', onChange: e => setF({...f, sub: e.target.value}) }, ['Physics', 'Chemistry', 'Botany', 'Zoology', 'Mathematics'].map(s => React.createElement('option', { key: s }, s)))
+            ),
+            React.createElement('button', { className: 'btn btn-primary', style: {width:'100%', marginBottom: '20px'}, onClick: () => setShowAdd(true) }, '+ Add New Mistake'),
+            filtered.length === 0 ? React.createElement('p', {style:{textAlign:'center'}}, 'No mistakes found.') : filtered.map(x => React.createElement('div', { key: x.id, className: `mistake-card level-${x.type.toLowerCase().replace(' ', '-')} ${x.mastered ? 'mastered' : ''}` },
+                React.createElement('div', { style:{display:'flex', justifyContent:'space-between'} }, React.createElement('div', { className: 'type-tag', style: {background:'#333'} }, x.type), React.createElement('button', { onClick: () => setData(p => ({...p, mistakes: p.mistakes.filter(y => y.id !== x.id)})), style:{border:'none', background:'none', cursor:'pointer'} }, '🗑️')),
+                x.img && React.createElement('img', { src: x.img, style:{maxWidth:'100%', borderRadius:'10px', margin:'10px 0'} }),
+                React.createElement('div', { className: 'mistake-grid' },
+                    React.createElement('div', { className: 'mistake-box box-wrong' }, React.createElement('strong', null, 'Mistake: '), x.myMistake),
+                    React.createElement('div', { className: 'mistake-box box-right' }, React.createElement('strong', null, 'Correct Logic: '), x.correctLogic)
+                ),
+                React.createElement('button', { className: 'mastered-btn', onClick: () => toggleMastery(x.id) }, x.mastered ? '🔙 Unmark Mastery' : '✅ Mark as Mastered')
+            )),
+            showAdd && React.createElement('div', { className: 'modal' },
+                React.createElement('div', { className: 'modal-content' },
+                    React.createElement('h3', null, 'Record Mistake'),
+                    React.createElement('select', { className: 'input-style', onChange: e => setM({...m, type: e.target.value}) }, ['Conceptual Error', 'Never Studied', 'Silly Mistake', 'Blunder', 'Calculation Mistake'].map(t => React.createElement('option', { key: t }, t))),
+                    React.createElement('input', { type: 'file', accept: 'image/*', onChange: async e => { const c = await compressImage(e.target.files[0]); setM({...m, img: c}); } }),
+                    React.createElement('textarea', { className: 'input-style', placeholder: 'What I did wrong...', onChange: e => setM({...m, myMistake: e.target.value}) }),
+                    React.createElement('textarea', { className: 'input-style', placeholder: 'What is the correct logic?', onChange: e => setM({...m, correctLogic: e.target.value}) }),
+                    React.createElement('button', { className: 'btn btn-primary', style:{width:'100%', marginTop:'10px'}, onClick: () => {
+                        if(!f.tid) return alert('Select a Test first!');
+                        setData(p => ({ ...p, mistakes: [...p.mistakes, { ...m, ...f, mastered: false, id: Date.now() }] }));
+                        setShowAdd(false); showToast('Saved!');
+                    } }, 'Save Mistake')
+                )
+            )
+        );
+    };
     return React.createElement(React.Fragment, null,
         view === 'exam-select' && React.createElement(ExamSelectView),
         view === 'home' && React.createElement(HomePage),
