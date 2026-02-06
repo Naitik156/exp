@@ -1590,10 +1590,36 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 0;
+    padding: 15px;
     border-bottom: 1px solid #f3f4f6;
+    transition: background 0.2s;
 }
-.test-list-item:last-child { border: none; }
+.test-list-item:hover { background: #f9fafb; }
+
+.test-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    position: relative;
+    z-index: 50; /* Isse button card ke upar aa jayega aur clickable banega */
+}
+
+.action-icon-btn {
+    border: none;
+    background: #f3f4f6;
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 8px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    line-height: 1;
+}
+.action-icon-btn:hover { transform: scale(1.1); }
+.btn-edit:hover { background: #e0f2fe; color: #0284c7; }
+.btn-delete:hover { background: #fee2e2; color: #ef4444; }
 
 /* --- FLOATING REVISION BUTTON --- */
 .floating-rev-btn {
