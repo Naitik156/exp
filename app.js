@@ -239,7 +239,11 @@ const App = () => {
     const [selectedClass, setSelectedClass] = useState(null);
     const [selectedSubject, setSelectedSubject] = useState(null);
     const [selectedChapter, setSelectedChapter] = useState(null);
-    const [data, setData] = useState({ NEET: {}, JEE: {}, dailyGoals: [] });
+    const [data, setData] = useState({ 
+        NEET: {}, JEE: {}, dailyGoals: [], tests: [], mistakes: [] 
+    });
+    const [activeNotif, setActiveNotif] = useState(null);
+    const [notifShow, setNotifShow] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [modalConfig, setModalConfig] = useState({});
