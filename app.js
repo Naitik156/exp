@@ -1650,103 +1650,158 @@ const DailyGoalsView = () => {
             )
         );
     };
-  const TestAnalysisView = () => {
-        const [activeTab, setActiveTab] = useState('OVERALL');
-        const lineRef = React.useRef(null);
-        const pieRef = React.useRef(null);
-        const [showModal, setShowModal] = useState(false);
-        const [ts, setTs] = useState({ name: '', phy: {c:0,i:0}, chem: {c:0,i:0}, sub: {c:0,i:0} });
-        const subLabel = currentExam === 'NEET' ? 'BIO' : 'MATH';
 
-        useEffect(() => {
-            if (!lineRef.current || typeof Chart === 'undefined' || data.tests.length === 0) return;
-            const lineChart = new Chart(lineRef.current, {
-                type: 'line',
-                data: {
-                    labels: data.tests.map(t => t.name),
-                    datasets: [{
-                        label: activeTab,
-                        data: data.tests.map(t => {
-                            if(activeTab === 'OVERALL') return t.total;
-                            if(activeTab === 'PHY') return (t.phy.c*4)-t.phy.i;
-                            if(activeTab === 'CHEM') return (t.chem.c*4)-t.chem.i;
-                            return (t.sub.c*4)-t.sub.i;
-                        }),
-                        borderColor: '#0F766E', backgroundColor: 'rgba(15, 118, 110, 0.1)', fill: true, tension: 0.4
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-            return () => lineChart.destroy();
-        }, [data.tests, activeTab]);
+    const TestAnalysisView = () => {
+    const [activeTab, setActiveTab] = useState('OVERALL');
+    const lineRef = React.useRef(null);
+    const pieRef = React.useRef(null);
+    const [showModal, setShowModal] = useState(false);
+    
+    // Updated state to handle separate BOT and ZOO for NEET
+    const [ts, setTs] = useState({ 
+        name: '', 
+        phy: {c:0,i:0}, 
+        chem: {c:0,i:0}, 
+        bot: {c:0,i:0}, 
+        zoo: {c:0,i:0},
+        math: {c:0,i:0} 
+    });
 
-        useEffect(() => {
-            if (!pieRef.current || typeof Chart === 'undefined' || data.mistakes.length === 0) return;
-            const counts = {};
-            data.mistakes.forEach(m => counts[m.type] = (counts[m.type] || 0) + 1);
-            const pieChart = new Chart(pieRef.current, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(counts),
-                    datasets: [{
-                        data: Object.values(counts),
-                        backgroundColor: ['#3b82f6', '#9ca3af', '#facc15', '#ef4444', '#f97316']
-                    }]
+    const isNEET = currentExam === 'NEET';
+    const subjects = isNEET ? ['OVERALL', 'PHY', 'CHEM', 'BOT', 'ZOO'] : ['OVERALL', 'PHY', 'CHEM', 'MATH'];
+
+    useEffect(() => {
+        if (!lineRef.current || typeof Chart === 'undefined' || data.tests.length === 0) return;
+        
+        const ctx = lineRef.current.getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(15, 118, 110, 0.2)');
+        gradient.addColorStop(1, 'rgba(15, 118, 110, 0)');
+
+        const lineChart = new Chart(lineRef.current, {
+            type: 'line',
+            data: {
+                labels: data.tests.map(t => t.name),
+                datasets: [{
+                    label: activeTab,
+                    data: data.tests.map(t => {
+                        if(activeTab === 'OVERALL') return t.total;
+                        const key = activeTab.toLowerCase();
+                        return (t[key].c * 4) - t[key].i;
+                    }),
+                    borderColor: '#0F766E',
+                    borderWidth: 3,
+                    backgroundColor: gradient,
+                    fill: true,
+                    tension: 0.4, // Smooth spline curve like Image 2
+                    pointBackgroundColor: '#000', // Black dots like Image 2
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f3f4f6' }, border: { display: false } },
+                    x: { grid: { display: false }, border: { display: false } }
                 }
-            });
-            return () => pieChart.destroy();
-        }, [data.mistakes]);
+            }
+        });
+        return () => lineChart.destroy();
+    }, [data.tests, activeTab]);
 
-        const getTrends = () => {
-            if (data.tests.length < 2) return "Add at least 2 tests to see performance trends.";
-            const last = data.tests[data.tests.length - 1];
-            const prev = data.tests[data.tests.length - 2];
-            const diff = last.total - prev.total;
-            return diff >= 0 ? `📈 Score increased by ${diff} marks since last test! Keep it up.` : `📉 Score dropped by ${Math.abs(diff)} marks. Review your mistakes!`;
-        };
+    useEffect(() => {
+        if (!pieRef.current || typeof Chart === 'undefined' || data.mistakes.length === 0) return;
+        const counts = {};
+        data.mistakes.forEach(m => counts[m.type] = (counts[m.type] || 0) + 1);
+        const pieChart = new Chart(pieRef.current, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(counts),
+                datasets: [{
+                    data: Object.values(counts),
+                    backgroundColor: ['#0F766E', '#14B8A6', '#F59E0B', '#EF4444', '#6366F1'],
+                    borderWidth: 0
+                }]
+            },
+            options: { cutout: '70%', plugins: { legend: { position: 'bottom' } } }
+        });
+        return () => pieChart.destroy();
+    }, [data.mistakes]);
 
-        return React.createElement('div', { className: 'container' },
-            React.createElement('div', { className: 'nav-breadcrumb' }, React.createElement('span', { onClick: () => setView('home') }, 'Home'), ' / Analysis'),
-            React.createElement('div', { className: 'analysis-grid' },
-                React.createElement('div', { className: 'chart-container' },
-                    React.createElement('div', { className: 'chart-tabs' }, ['OVERALL', 'PHY', 'CHEM', subLabel].map(t => React.createElement('button', { className: `chart-tab ${activeTab === t ? 'active' : ''}`, onClick: () => setActiveTab(t) }, t))),
-                    React.createElement('canvas', { ref: lineRef })
-                ),
-                React.createElement('div', { className: 'trend-card' },
-                    React.createElement('h3', null, 'Mistake Analysis'),
-                    data.mistakes.length > 0 ? React.createElement('canvas', { ref: pieRef }) : React.createElement('p', null, 'No mistakes recorded yet.')
-                )
+    return React.createElement('div', { className: 'container' },
+        React.createElement('div', { className: 'nav-breadcrumb' }, 
+            React.createElement('span', { onClick: () => setView('home') }, 'Home'), 
+            React.createElement('span', null, ' / '),
+            React.createElement('span', { className: 'active' }, 'Test Analysis')
+        ),
+        
+        React.createElement('div', { className: 'analysis-header' }, 
+            React.createElement('h2', null, 'Performance Analytics'),
+            React.createElement('div', { className: 'tab-modern-container' },
+                subjects.map((s, idx) => React.createElement(React.Fragment, { key: s },
+                    React.createElement('span', { 
+                        className: `tab-modern ${activeTab === s ? 'active' : ''}`, 
+                        onClick: () => setActiveTab(s) 
+                    }, s),
+                    idx < subjects.length - 1 && React.createElement('span', { className: 'tab-sep' }, '/')
+                ))
+            )
+        ),
+
+        React.createElement('div', { className: 'analysis-main-grid' },
+            React.createElement('div', { className: 'chart-main-card' },
+                React.createElement('canvas', { ref: lineRef })
             ),
-            React.createElement('div', { className: 'trend-card', style: {marginBottom: '20px'} }, 
-                React.createElement('h3', null, 'Performance Trend'),
-                React.createElement('p', null, getTrends())
+            React.createElement('div', { className: 'mistake-stats-card' },
+                React.createElement('h3', null, 'Mistake Pattern'),
+                data.mistakes.length > 0 ? 
+                    React.createElement('canvas', { ref: pieRef }) : 
+                    React.createElement('div', { className: 'empty-msg' }, 'No mistakes recorded yet.')
+            )
+        ),
+
+        React.createElement('div', { className: 'analysis-footer-actions' },
+            React.createElement('button', { className: 'btn-action primary', onClick: () => setShowModal(true) }, 
+                React.createElement('span', null, '➕'), ' Record Test Score'
             ),
-            React.createElement('div', { style: {display:'flex', gap:'10px'} },
-                React.createElement('button', { className: 'btn btn-primary', style:{flex:1}, onClick: () => setShowModal(true) }, 'Add Test Score'),
-                React.createElement('button', { className: 'btn btn-secondary', style:{flex:1}, onClick: () => setView('error-book') }, 'Error Book')
-            ),
-            showModal && React.createElement('div', { className: 'modal' },
-                React.createElement('div', { className: 'modal-content' },
-                    React.createElement('h3', null, 'Record Test Score'),
-                    React.createElement('input', { className: 'input-style', placeholder: 'Test Name', onChange: e => setTs({...ts, name: e.target.value}) }),
-                    ['phy', 'chem', 'sub'].map(k => React.createElement('div', { key: k, style: {margin: '10px 0'} },
-                        React.createElement('strong', null, k === 'sub' ? subLabel : k.toUpperCase()),
-                        React.createElement('div', { style: {display:'flex', gap: '5px'} },
-                            React.createElement('input', { className:'input-style', type: 'number', placeholder: 'Correct', onChange: e => { let n = {...ts}; n[k].c = parseInt(e.target.value)||0; setTs(n); } }),
-                            React.createElement('input', { className:'input-style', type: 'number', placeholder: 'Wrong', onChange: e => { let n = {...ts}; n[k].i = parseInt(e.target.value)||0; setTs(n); } })
+            React.createElement('button', { className: 'btn-action secondary', onClick: () => setView('error-book') }, 
+                React.createElement('span', null, '📖'), ' Open Error Book'
+            )
+        ),
+
+        showModal && React.createElement('div', { className: 'modal' },
+            React.createElement('div', { className: 'modal-content modern-modal' },
+                React.createElement('h3', null, 'Add Test Performance'),
+                React.createElement('input', { className: 'modern-input', placeholder: 'Test Name (e.g. Major Test 1)', onChange: e => setTs({...ts, name: e.target.value}) }),
+                React.createElement('div', { className: 'score-input-grid' },
+                    (isNEET ? ['phy', 'chem', 'bot', 'zoo'] : ['phy', 'chem', 'math']).map(k => 
+                        React.createElement('div', { key: k, className: 'score-row' },
+                            React.createElement('label', null, k.toUpperCase()),
+                            React.createElement('div', { className: 'input-pair' },
+                                React.createElement('input', { type: 'number', placeholder: 'Correct', onChange: e => { let n = {...ts}; n[k].c = parseInt(e.target.value)||0; setTs(n); } }),
+                                React.createElement('input', { type: 'number', placeholder: 'Wrong', onChange: e => { let n = {...ts}; n[k].i = parseInt(e.target.value)||0; setTs(n); } })
+                            )
                         )
-                    )),
-                    React.createElement('button', { className: 'btn btn-primary', style:{width:'100%'}, onClick: () => {
-                        const tot = (ts.phy.c*4-ts.phy.i) + (ts.chem.c*4-ts.chem.i) + (ts.sub.c*4-ts.sub.i);
+                    )
+                ),
+                React.createElement('div', { className: 'modal-btns' },
+                    React.createElement('button', { className: 'btn-save', onClick: () => {
+                        const scoreCalc = (k) => (ts[k].c * 4) - ts[k].i;
+                        const tot = isNEET ? (scoreCalc('phy') + scoreCalc('chem') + scoreCalc('bot') + scoreCalc('zoo')) : (scoreCalc('phy') + scoreCalc('chem') + scoreCalc('math'));
                         setData(p => ({ ...p, tests: [...p.tests, {...ts, total: tot, id: Date.now()}] }));
-                        setShowModal(false); showToast('Saved!');
-                    } }, 'Save Score')
+                        setShowModal(false); showToast('Score saved successfully!');
+                    } }, 'Save Results'),
+                    React.createElement('button', { className: 'btn-cancel', onClick: () => setShowModal(false) }, 'Cancel')
                 )
             )
-        );
-    };
-
-    const ErrorBookView = () => {
+        )
+    );
+};
         const [f, setF] = useState({ tid: '', sub: 'Physics', search: '' });
         const [showAdd, setShowAdd] = useState(false);
         const [m, setM] = useState({ type: 'Silly Mistake', img: '', myMistake: '', correctLogic: '' });
