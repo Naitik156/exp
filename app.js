@@ -1822,7 +1822,7 @@ const TestAnalysisView = () => {
                     
                     (isNEET ? ['phy', 'chem', 'bio'] : ['phy', 'chem', 'math']).map(k => {
                         const maxQ = (isNEET && k === 'bio') ? 90 : (isNEET ? 45 : 25);
-                        const currentTotal = (ts[k].c || 0) + (ts[k].i || 0) + (ts[k].u || 0);
+                        const currentTotal = Number(ts[k].c) + Number(ts[k].i) + Number(ts[k].u);
                         return React.createElement('div', { key: k, className: 'score-row' },
                             React.createElement('div', {style:{display:'flex', justifyContent:'space-between', alignItems:'center'}}, 
                                 React.createElement('label', {style:{fontWeight:'800', fontSize:'0.9rem'}}, k === 'bio' ? 'BIOLOGY (90 Qs)' : `${k.toUpperCase()} (45 Qs)`),
