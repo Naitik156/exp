@@ -1669,12 +1669,12 @@ const TestAnalysisView = () => {
         const isNEET = currentExam === 'NEET';
         const subjects = isNEET ? ['OVERALL', 'PHY', 'CHEM', 'BIO'] : ['OVERALL', 'PHY', 'CHEM', 'MATH'];
 
-        const [ts, setTs] = useState({ 
+     const [ts, setTs] = useState({ 
             name: '', 
-            phy: {c:0, i:0, u:0}, 
-            chem: {c:0, i:0, u:0}, 
-            bio: {c:0, i:0, u:0}, 
-            math: {c:0, i:0, u:0} 
+            phy: {c:'', i:'', u:''}, 
+            chem: {c:'', i:'', u:''}, 
+            bio: {c:'', i:'', u:''}, 
+            math: {c:'', i:'', u:''} 
         });
 
         // Add Result Handler
