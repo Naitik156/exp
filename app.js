@@ -1679,7 +1679,7 @@ const TestAnalysisView = () => {
 
         // Add Result Handler
         const handleOpenAdd = () => {
-            setTs({ name: '', phy: {c:0,i:0,u:0}, chem: {c:0,i:0,u:0}, bio: {c:0,i:0,u:0}, math: {c:0,i:0,u:0} });
+            setTs({ name: '', phy: {c:'',i:'',u:''}, chem: {c:'',i:'',u:''}, bio: {c:'',i:'',u:''}, math: {c:'',i:'',u:''} });
             setEditingId(null);
             setShowEntryModal(true);
         };
