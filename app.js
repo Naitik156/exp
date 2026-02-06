@@ -801,6 +801,12 @@ const getAnalytics = (filterClass = 'Overall') => {
                     style: { fontSize: '1.1rem', padding: '1rem 2rem' }
                 }, '📊 View Analytics Dashboard')
             ),// --- NAYA DAILY GOALS BUTTON ---
+                               React.createElement('div', { style: { textAlign: 'center', marginTop: '1.5rem' } },
+    React.createElement('button', {
+        className: 'btn', onClick: () => navigateTo('test-analysis'),
+        style: { fontSize: '1.1rem', padding: '1rem 2.5rem', background: 'linear-gradient(135deg, #0F766E, #14B8A6)', color: 'white', border: 'none', borderRadius: '12px', width: '100%', maxWidth: '500px', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(15, 118, 110, 0.3)' }
+    }, '📊 Test Analysis & Error Book')
+),
 React.createElement('div', { style: { textAlign: 'center', marginTop: '1.5rem' } },
     React.createElement('button', {
         className: 'btn',
