@@ -250,7 +250,37 @@ const App = () => {
     const [toast, setToast] = useState({ show: false, message: '' });
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [isFetched, setIsFetched] = useState(false);
+const compressImage = (file) => {
+        return new Promise((resolve) => {
+            const reader = new FileReader(); reader.readAsDataURL(file);
+            reader.onload = (e) => {
+                const img = new Image(); img.src = e.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 500; let width = img.width, height = img.height;
+                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.4));
+                };
+            };
+        });
+    };
 
+    useEffect(() => {
+        // Reminder Logic: Only shows Non-Mastered mistakes
+        if (!isFetched || !data.mistakes || data.mistakes.length === 0) return;
+        const trigger = () => {
+            const pending = data.mistakes.filter(m => !m.mastered);
+            if (pending.length === 0) return;
+            const random = pending[Math.floor(Math.random() * pending.length)];
+            setActiveNotif(random); setNotifShow(true);
+            setTimeout(() => setNotifShow(false), 20000);
+        };
+        const init = setTimeout(trigger, 10000);
+        const loop = setInterval(trigger, 900000);
+        return () => { clearTimeout(init); clearInterval(loop); };
+    }, [isFetched, data.mistakes]);
     // 1. Auth Status (Login Check)
     useEffect(() => {
         if (!window.auth) return;
