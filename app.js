@@ -1886,11 +1886,8 @@ const TestAnalysisView = () => {
                 React.createElement('button', { className: 'mastered-btn', style:{background:'#10b981', color:'white', border:'none', padding:'8px', borderRadius:'8px', marginTop:'10px', cursor:'pointer'}, onClick: () => toggleMastery(x.id) }, x.mastered ? '🔙 Unmark' : '✅ Mastered')
             )),
             showAdd && React.createElement('div', { className: 'modal' },
-                React.createElement('div', { className: 'modal-content' },
-                                    showAdd && React.createElement('div', { className: 'modal' },
                 React.createElement('div', { className: 'modal-content modern-modal' },
                     React.createElement('button', { className: 'modal-close-x', onClick: () => setShowAdd(false) }, '×'),
-                    React.createElement('h3', null, 'Record Mistake'),
                     React.createElement('h3', null, 'Record Mistake'),
                     React.createElement('select', { className: 'input-style', style:{width:'100%', marginBottom:'10px'}, onChange: e => setM({...m, type: e.target.value}) }, ['Conceptual Error', 'Never Studied', 'Silly Mistake', 'Blunder', 'Calculation Mistake'].map(t => React.createElement('option', { key: t }, t))),
                     React.createElement('input', { type: 'file', accept: 'image/*', onChange: async e => { const c = await compressImage(e.target.files[0]); setM({...m, img: c}); } }),
