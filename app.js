@@ -1510,7 +1510,7 @@ const DailyGoalsView = () => {
 
         const addGoal = () => {
             if (!newGoal.title.trim()) {
-                showToast('DARSH MADHRCHOD HAI!');
+                showToast('SLECT A GOAL NAME!');
                 return;
             }
             const updatedGoals = [...goals, { ...newGoal, id: Date.now(), completed: false }];
