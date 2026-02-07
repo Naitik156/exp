@@ -310,17 +310,26 @@ const compressImage = (file) => {
 
     // 2. Navigation Logic
     const navigateTo = (viewName, params = {}) => {
+        // Naye params ko current state ke sath merge karein
+        const nextClass = params.selectedClass !== undefined ? params.selectedClass : selectedClass;
+        const nextSub = params.selectedSubject !== undefined ? params.selectedSubject : selectedSubject;
+        const nextChap = params.selectedChapter !== undefined ? params.selectedChapter : selectedChapter;
+
         const state = {
             view: viewName,
-            selectedClass: params.selectedClass !== undefined ? params.selectedClass : selectedClass,
-            selectedSubject: params.selectedSubject !== undefined ? params.selectedSubject : selectedSubject,
-            selectedChapter: params.selectedChapter !== undefined ? params.selectedChapter : selectedChapter
+            selectedClass: nextClass,
+            selectedSubject: nextSub,
+            selectedChapter: nextChap
         };
+
+        // Browser history mein naya stop add karein
         window.history.pushState(state, "");
+
+        // React states update karein
         setView(viewName);
-        if (params.selectedClass !== undefined) setSelectedClass(params.selectedClass);
-        if (params.selectedSubject !== undefined) setSelectedSubject(params.selectedSubject);
-        if (params.selectedChapter !== undefined) setSelectedChapter(params.selectedChapter);
+        setSelectedClass(nextClass);
+        setSelectedSubject(nextSub);
+        setSelectedChapter(nextChap);
     };
 
     useEffect(() => {
