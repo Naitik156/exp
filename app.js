@@ -1727,7 +1727,7 @@ const TestAnalysisView = () => {
         };
 
         useEffect(() => {
-            if (!lineRef.current || !data.tests || data.tests.length === 0) return;
+            if (!lineRef.current) return;
             const ctx = lineRef.current.getContext('2d');
             const isSubView = activeTab !== 'OVERALL';
             
@@ -1737,26 +1737,40 @@ const TestAnalysisView = () => {
                 else maxLimit = 100;
             }
 
+            const hasData = data.tests && data.tests.length > 0;
+            const labels = hasData ? data.tests.map(t => t.name) : ["-", "-", "-", "-", "-"];
+            const points = hasData ? data.tests.map(t => {
+                if(activeTab === 'OVERALL') return t.total || 0;
+                const key = activeTab.toLowerCase();
+                const sub = t[key] || {c:0, i:0};
+                return (Number(sub.c) * 4) - Number(sub.i);
+            }) : [0, 0, 0, 0, 0];
+
             const lineChart = new Chart(lineRef.current, {
                 type: 'line',
                 data: {
-                    labels: data.tests.map(t => t.name),
+                    labels: labels,
                     datasets: [{
                         label: activeTab + ' Score',
-                        data: data.tests.map(t => {
-                            if(activeTab === 'OVERALL') return t.total || 0;
-                            const key = activeTab.toLowerCase();
-                            const sub = t[key] || {c:0, i:0};
-                            return (sub.c * 4) - sub.i;
-                        }),
-                        borderColor: '#0F766E', borderWidth: 3, tension: 0.4, fill: true,
-                        backgroundColor: 'rgba(15, 118, 110, 0.1)', pointRadius: 5
+                        data: points,
+                        // Agar data hai toh Teal (#0F766E), varna Light Grey
+                        borderColor: hasData ? '#0F766E' : '#E7E5E4', 
+                        borderWidth: 3,
+                        tension: 0.4, // Wahi purna Spline curve
+                        fill: true,
+                        backgroundColor: hasData ? 'rgba(15, 118, 110, 0.1)' : 'rgba(231, 229, 228, 0.1)',
+                        pointRadius: hasData ? 5 : 0,
+                        pointBackgroundColor: '#000'
                     }]
                 },
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
-                    scales: { y: { beginAtZero: true, max: maxLimit, grid: { color: '#f3f4f6' } } } 
+                    scales: { 
+                        y: { beginAtZero: true, max: maxLimit, grid: { color: '#f3f4f6' } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
                 }
             });
             return () => lineChart.destroy();
