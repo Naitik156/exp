@@ -1496,6 +1496,10 @@ body {
     border-radius: 12px;
     font-size: 0.9rem;
     line-height: 1.5;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
 }
 
 .box-wrong { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
