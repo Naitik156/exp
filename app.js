@@ -1966,7 +1966,27 @@ const TestAnalysisView = () => {
                         style: { wordBreak: 'break-word', overflowWrap: 'anywhere' } 
                     }, React.createElement('strong', null, 'Correct Logic: '), x.correctLogic)
                 ),
-                React.createElement('button', { className: 'mastered-btn', style:{background:'#10b981', color:'white', border:'none', padding:'8px', borderRadius:'8px', marginTop:'10px', cursor:'pointer'}, onClick: () => toggleMastery(x.id) }, x.mastered ? '🔙 Unmark' : '✅ Mastered')
+                React.createElement('div', { style: { display: 'flex', alignItems: 'center', marginTop: '15px', flexWrap: 'wrap', gap: '10px' } },
+                    React.createElement('button', { 
+                        className: 'mastered-btn', 
+                        style: { 
+                            background: x.mastered ? '#9ca3af' : '#10b981', 
+                            color: 'white', 
+                            border: 'none', 
+                            padding: '8px 18px', 
+                            borderRadius: '10px', 
+                            cursor: 'pointer',
+                            fontWeight: '700',
+                            fontSize: '0.85rem',
+                            transition: 'all 0.2s'
+                        }, 
+                        onClick: () => toggleMastery(x.id) 
+                    }, x.mastered ? '🔙 Revision Needed' : '✅ Concept Clear'),
+                    
+                    !x.mastered && React.createElement('span', { 
+                        style: { fontSize: '0.75rem', color: '#6b7280', fontStyle: 'italic', maxWidth: '220px', lineHeight: '1.3' } 
+                    }, '💡 "Concept Clear" karne se ye popup alerts mein aana band ho jayega.')
+                )
             )),
             showAdd && React.createElement('div', { className: 'modal' },
                 React.createElement('div', { className: 'modal-content modern-modal' },
