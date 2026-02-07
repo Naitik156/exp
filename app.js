@@ -1890,8 +1890,14 @@ const TestAnalysisView = () => {
                 React.createElement('div', { style:{display:'flex', justifyContent:'space-between'} }, React.createElement('div', { className: 'type-tag', style: {background:'#333', color:'white', padding:'4px 10px', borderRadius:'5px', fontSize:'0.7rem'} }, x.type), React.createElement('button', { onClick: () => setData(p => ({...p, mistakes: p.mistakes.filter(y => y.id !== x.id)})), style:{border:'none', background:'none', cursor:'pointer'} }, '🗑️')),
                 x.img && React.createElement('img', { src: x.img, style:{maxWidth:'100%', borderRadius:'10px', margin:'10px 0'} }),
                 React.createElement('div', { className: 'mistake-grid' },
-                    React.createElement('div', { className: 'mistake-box box-wrong' }, React.createElement('strong', null, 'Mistake: '), x.myMistake),
-                    React.createElement('div', { className: 'mistake-box box-right' }, React.createElement('strong', null, 'Correct Logic: '), x.correctLogic)
+                    React.createElement('div', { 
+                        className: 'mistake-box box-wrong',
+                        style: { wordBreak: 'break-word', overflowWrap: 'anywhere' } 
+                    }, React.createElement('strong', null, 'Mistake: '), x.myMistake),
+                    React.createElement('div', { 
+                        className: 'mistake-box box-right',
+                        style: { wordBreak: 'break-word', overflowWrap: 'anywhere' } 
+                    }, React.createElement('strong', null, 'Correct Logic: '), x.correctLogic)
                 ),
                 React.createElement('button', { className: 'mastered-btn', style:{background:'#10b981', color:'white', border:'none', padding:'8px', borderRadius:'8px', marginTop:'10px', cursor:'pointer'}, onClick: () => toggleMastery(x.id) }, x.mastered ? '🔙 Unmark' : '✅ Mastered')
             )),
