@@ -1886,7 +1886,13 @@ const TestAnalysisView = () => {
             showToast('Status updated!');
         };
         return React.createElement('div', { className: 'container' },
-            React.createElement('div', { className: 'nav-breadcrumb' }, React.createElement('span', { onClick: () => setView('test-analysis'), style:{cursor:'pointer'} }, 'Analysis'), ' / Error Book'),
+            React.createElement('div', { className: 'nav-breadcrumb' },
+                React.createElement('span', { className: 'breadcrumb-item', onClick: () => setView('home') }, 'Home'),
+                React.createElement('span', { className: 'breadcrumb-separator' }, '/'),
+                React.createElement('span', { className: 'breadcrumb-item', onClick: () => setView('test-analysis') }, 'Test Analysis'),
+                React.createElement('span', { className: 'breadcrumb-separator' }, '/'),
+                React.createElement('span', { className: 'breadcrumb-item active' }, 'Error Book')
+            ),
             React.createElement('input', { className: 'search-bar', placeholder: '🔍 Search mistakes...', onChange: e => setF({...f, search: e.target.value}) }),
             React.createElement('div', { style: {display:'flex', gap:'10px', marginBottom: '15px'} },
                 React.createElement('select', { className: 'chart-tab', style:{padding:'10px', borderRadius:'10px'}, onChange: e => setF({...f, tid: e.target.value}) }, React.createElement('option', {value:''}, 'All Tests'), (data.tests || []).map(t => React.createElement('option', { key: t.id, value: t.id }, t.name))),
