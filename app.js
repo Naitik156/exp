@@ -1886,9 +1886,12 @@ const TestAnalysisView = () => {
                         const currentTotal = Number(ts[k].c) + Number(ts[k].i) + Number(ts[k].u);
                         return React.createElement('div', { key: k, className: 'score-row' },
                             React.createElement('div', {style:{display:'flex', justifyContent:'space-between', alignItems:'center'}}, 
-                                React.createElement('label', {style:{fontWeight:'800', fontSize:'0.9rem'}}, k === 'bio' ? 'BIOLOGY (90 Qs)' : `${k.toUpperCase()} (45 Qs)`),
+                                React.createElement('label', {style:{fontWeight:'800', fontSize:'0.9rem'}}, 
+                                    k === 'bio' ? 'BIOLOGY (90 Qs)' : `${k.toUpperCase()} (${isNEET ? '45' : '25'} Qs)`
+                                ),
                                 React.createElement('span', {className: `validation-msg ${currentTotal !== maxQ ? 'v-error' : 'v-success'}`}, `${currentTotal}/${maxQ} Entered`)
                             ),
+                           
                             React.createElement('div', { className: 'input-pair' },
                                 React.createElement('input', { type: 'number', value: ts[k].c, placeholder: 'Correct', onChange: e => { let n = {...ts}; n[k].c = parseInt(e.target.value)||0; setTs(n); } }),
                                 React.createElement('input', { type: 'number', value: ts[k].i, placeholder: 'Wrong', onChange: e => { let n = {...ts}; n[k].i = parseInt(e.target.value)||0; setTs(n); } }),
