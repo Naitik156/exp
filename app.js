@@ -1777,28 +1777,47 @@ const TestAnalysisView = () => {
         }, [data.tests, activeTab, isNEET]);
 
         useEffect(() => {
-            if (!pieRef.current || !data.mistakes) return;
+            if (!pieRef.current) return;
             const subFilter = activeTab === 'OVERALL' ? null : 
                              (activeTab === 'BIO' ? 'BIO_MERGED' : 
                              (activeTab === 'PHY' ? 'Physics' : 
                              (activeTab === 'CHEM' ? 'Chemistry' : 'Mathematics')));
             
-            const filteredMistakes = data.mistakes.filter(m => {
+            const filteredMistakes = (data.mistakes || []).filter(m => {
                 if (!subFilter) return true;
                 if (subFilter === 'BIO_MERGED') return (m.sub === 'Botany' || m.sub === 'Zoology');
                 return m.sub === subFilter;
             });
             
-            const counts = {};
-            filteredMistakes.forEach(m => counts[m.type] = (counts[m.type] || 0) + 1);
+            const hasMistakes = filteredMistakes.length > 0;
+            let chartData, chartLabels, chartColors;
+
+            if (hasMistakes) {
+                const counts = {};
+                filteredMistakes.forEach(m => counts[m.type] = (counts[m.type] || 0) + 1);
+                chartLabels = Object.keys(counts);
+                chartData = Object.values(counts);
+                chartColors = ['#0F766E', '#14B8A6', '#F59E0B', '#EF4444', '#6366F1'];
+            } else {
+                // Khali state mein professional grey ring
+                chartLabels = ["No Mistakes"];
+                chartData = [1];
+                chartColors = ['#F5F5F4'];
+            }
             
             const pieChart = new Chart(pieRef.current, {
                 type: 'doughnut',
                 data: { 
-                    labels: Object.keys(counts), 
-                    datasets: [{ data: Object.values(counts), backgroundColor: ['#0F766E', '#14B8A6', '#F59E0B', '#EF4444', '#6366F1'], borderWidth: 0 }] 
+                    labels: chartLabels, 
+                    datasets: [{ data: chartData, backgroundColor: chartColors, borderWidth: 0 }] 
                 },
-                options: { cutout: '70%', plugins: { legend: { position: 'bottom' } } }
+                options: { 
+                    cutout: '75%', 
+                    plugins: { 
+                        legend: { display: hasMistakes, position: 'bottom' },
+                        tooltip: { enabled: hasMistakes }
+                    } 
+                }
             });
             return () => pieChart.destroy();
         }, [data.mistakes, activeTab]);
