@@ -1769,7 +1769,14 @@ const TestAnalysisView = () => {
         }, [data.mistakes, activeTab]);
 
         return React.createElement('div', { className: 'container' },
-            React.createElement('div', { className: 'analysis-header' }, 
+            // --- BREADCRUMB NAVIGATION ADDED ---
+            React.createElement('div', { className: 'nav-breadcrumb' },
+                React.createElement('span', { className: 'breadcrumb-item', onClick: () => setView('home') }, 'Home'),
+                React.createElement('span', { className: 'breadcrumb-separator' }, '/'),
+                React.createElement('span', { className: 'breadcrumb-item active' }, 'Test Analysis')
+            ),
+
+            React.createElement('div', { className: 'analysis-header' },
                 React.createElement('h2', { className: 'logo', style:{fontSize:'2rem'} }, 'Test Analysis'),
                 React.createElement('div', { className: 'tab-modern-container' },
                     subjects.map((s, idx) => React.createElement(React.Fragment, { key: s },
