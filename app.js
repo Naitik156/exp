@@ -287,6 +287,18 @@ const compressImage = (file) => {
         return () => { clearTimeout(init); clearInterval(loop); };
     }, [isFetched]);
     // 1. Auth Status (Login Check)
+    // --- BROWSER BACK BUTTON FIX ---
+    useEffect(() => {
+        // App load hote hi Home state ko history mein replace karein
+        if (view === 'home' && !window.history.state) {
+            window.history.replaceState({ 
+                view: 'home', 
+                selectedClass: null, 
+                selectedSubject: null, 
+                selectedChapter: null 
+            }, "");
+        }
+    }, [view]);
     useEffect(() => {
         if (!window.auth) return;
         const unsubscribe = window.auth.onAuthStateChanged((u) => {
