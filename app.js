@@ -1948,14 +1948,23 @@ const TestAnalysisView = () => {
         // --- 4. TOAST NOTIFICATIONS ---
         toast.show && React.createElement('div', { className: 'toast' }, toast.message),
 
-        // --- 5. ENHANCED REVISION NOTIFICATION (The Popup) ---
+  // --- 5. ENHANCED REVISION NOTIFICATION (The Popup) ---
         notifShow && activeNotif && React.createElement('div', { className: 'error-notification show', onClick: () => { setNotifShow(false); setView('error-book'); } },
             React.createElement('div', { className: 'notif-header' }, 
                 React.createElement('span', null, '💡 QUICK REVISION FLASHCARD'), 
                 React.createElement('span', { className: 'notif-close', onClick: e => { e.stopPropagation(); setNotifShow(false); } }, '×')
             ),
-            React.createElement('div', { style:{fontSize:'0.95rem', fontWeight:'800', color:'#b91c1c', marginBottom:'10px'} }, 
-                `Galti: "${activeNotif.myMistake.substring(0,85)}${activeNotif.myMistake.length > 85 ? '...' : ''}"`
+            React.createElement('div', { 
+                style:{
+                    fontSize:'0.95rem', 
+                    fontWeight:'800', 
+                    color:'#b91c1c', 
+                    marginBottom:'10px',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'anywhere'
+                } 
+            }, 
+                `Galti: "${activeNotif.myMistake}"`
             ),
             React.createElement('div', { 
                 style:{
@@ -1966,10 +1975,12 @@ const TestAnalysisView = () => {
                     borderRadius:'12px', 
                     border:'1.5px solid #dcfce7',
                     fontWeight: '600',
-                    lineHeight: '1.4'
+                    lineHeight: '1.4',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'anywhere'
                 } 
             }, 
-                `Sahi Concept: ${activeNotif.correctLogic.substring(0,120)}${activeNotif.correctLogic.length > 120 ? '...' : ''}`
+                `Sahi Concept: ${activeNotif.correctLogic}`
             ),
             React.createElement('p', { style:{fontSize:'0.7rem', color:'#9ca3af', marginTop:'8px', textAlign:'right'} }, 'Tap to open Error Book →')
         )
