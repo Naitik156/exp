@@ -737,18 +737,19 @@ const getAnalytics = (filterClass = 'Overall') => {
 
     const HomePage = () => {
     return React.createElement('div', { className: 'container' },
-        React.createElement('div', { style: { display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' } },
-            React.createElement('button', { 
-                className: 'btn btn-danger', 
-                onClick: window.logoutUser,
-                style: { padding: '0.6rem 1.2rem', fontSize: '0.9rem', borderRadius: '10px' } 
-            }, '🚪 Logout')
-        ),
-            React.createElement('div', { className: 'nav-breadcrumb' },
+        return React.createElement('div', { className: 'container' },
+        // --- COMPACT HEADER (Breadcrumb + Small Logout) ---
+        React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', gap: '10px' } },
+            React.createElement('div', { className: 'nav-breadcrumb', style: { margin: 0 } },
                 React.createElement('span', { className: 'breadcrumb-item', onClick: changeExam }, 'Exam Select'),
                 React.createElement('span', { className: 'breadcrumb-separator' }, '/'),
                 React.createElement('span', { className: 'breadcrumb-item active' }, 'Home')
             ),
+            React.createElement('button', { 
+                className: 'btn btn-logout-small', 
+                onClick: window.logoutUser 
+            }, 'Logout 🚪')
+        ),
             React.createElement('div', { className: 'header' },
                 React.createElement('h1', { className: 'logo' }, `${currentExam} Syllabus Tracker`),
                 React.createElement('p', { className: 'tagline' }, 'Track Your Progress • Stay Focused • Achieve Success')
