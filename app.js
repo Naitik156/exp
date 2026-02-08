@@ -1713,12 +1713,19 @@ const TestAnalysisView = () => {
         };
 
         // Delete with Confirmation Logic
-        const handleDelete = (id, name) => {
+    const handleDelete = (id, name) => {
             setModalConfig({
                 title: 'Confirm Delete',
-                message: `Are you sure you want to delete the result for "${name}"? This cannot be undone.`,
+                message: `Are you sure you want to delete "${name}"?`,
                 onConfirm: () => {
-                    setData(p => ({ ...p, tests: (p.tests || []).filter(t => t.id !== id) }));
+                    const currentTests = data[currentExam]?.tests || [];
+                    setData(p => ({ 
+                        ...p, 
+                        [currentExam]: {
+                            ...p[currentExam],
+                            tests: currentTests.filter(t => t.id !== id)
+                        }
+                    }));
                     setShowModal(false);
                     showToast("Test record deleted");
                 }
