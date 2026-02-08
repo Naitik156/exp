@@ -2036,8 +2036,8 @@ React.createElement('div', { className: 'test-history-card' },
     };
 
    return React.createElement(React.Fragment, null,
-        // --- 1. FLOATING REVISION BUTTON (Always visible if mistakes exist) ---
-        (data.mistakes || []).length > 0 && React.createElement('button', { 
+        // --- 1. SMART FLOATING REVISION BUTTON (Disappears when all clear) ---
+        (data.mistakes || []).some(m => !m.mastered) && React.createElement('button', { 
             className: 'floating-rev-btn', 
             onClick: triggerRevision, 
             title: 'Quick Revision' 
