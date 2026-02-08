@@ -1518,31 +1518,33 @@ body {
 
 /* --- MOBILE OPTIMIZATION --- */
 /* --- TABLET & MOBILE VIEW (UP TO 1024px) --- */
+/* --- TABLET & MOBILE OPTIMIZATION (UP TO 1024px) --- */
 @media (max-width: 1024px) {
     .analysis-main-grid {
-        grid-template-columns: 1fr; /* Isse Pie chart niche shift ho jayega */
-        gap: 20px;
+        grid-template-columns: 1fr;
+        gap: 25px;
     }
     .chart-main-card {
-        height: 450px; /* Graph ko thoda lamba kiya taaki iPad par sundar dikhe */
+        height: 400px;
         padding: 20px;
     }
+    /* --- PIE CHART SIZE FIX (Isse hathi jitna bada nahi hoga) --- */
     .mistake-stats-card {
-        padding: 25px;
-    }
-    .chart-main-card {
-        height: 320px;
-        padding: 15px;
+        max-width: 480px; 
+        margin: 0 auto;
+        width: 100%;
+        padding: 20px;
     }
     .analysis-header {
         flex-direction: column;
         align-items: center;
+        gap: 20px;
     }
     .tab-modern-container {
         width: 100%;
         overflow-x: auto;
         justify-content: flex-start;
-        padding: 10px 15px;
+        padding: 10px 20px;
     }
     .analysis-footer-actions {
         flex-direction: column;
@@ -1552,6 +1554,27 @@ body {
     }
 }
 
+/* --- LOGOUT BUTTON COMPACT STYLE (Capsule Look) --- */
+.btn-logout-small {
+    padding: 8px 18px !important;
+    font-size: 0.85rem !important;
+    border-radius: 50px !important;
+    width: auto !important;
+    background: rgba(239, 68, 68, 0.08) !important;
+    color: #ef4444 !important;
+    border: 1.5px solid #ef4444 !important;
+    font-weight: 700 !important;
+    box-shadow: none !important;
+    transition: all 0.2s !important;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-logout-small:hover {
+    background: #ef4444 !important;
+    color: white !important;
+}
 /* --- MODAL CLOSE BUTTON & IMPROVED INPUTS --- */
 .modal-close-x {
     position: absolute;
