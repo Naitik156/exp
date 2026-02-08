@@ -1517,9 +1517,18 @@ body {
 }
 
 /* --- MOBILE OPTIMIZATION --- */
-@media (max-width: 768px) {
+/* --- TABLET & MOBILE VIEW (UP TO 1024px) --- */
+@media (max-width: 1024px) {
     .analysis-main-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr; /* Isse Pie chart niche shift ho jayega */
+        gap: 20px;
+    }
+    .chart-main-card {
+        height: 450px; /* Graph ko thoda lamba kiya taaki iPad par sundar dikhe */
+        padding: 20px;
+    }
+    .mistake-stats-card {
+        padding: 25px;
     }
     .chart-main-card {
         height: 320px;
