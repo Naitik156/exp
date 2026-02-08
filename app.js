@@ -1616,7 +1616,16 @@ const goalChartRef = React.useRef(null);
                     )
                 )
             ),
-
+// --- GOAL CONSISTENCY TREND GRAPH ---
+            React.createElement('div', { className: 'card', style: { marginBottom: '2rem', padding: '20px', borderLeft: '6px solid #F59E0B' } },
+                React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' } },
+                    React.createElement('h3', { style: { fontSize: '1.1rem', fontWeight: '700', color: 'var(--text)' } }, '📈 Consistency Trend'),
+                    React.createElement('span', { style: { fontSize: '0.8rem', color: '#F59E0B', fontWeight: '600' } }, 'Past 7 Days')
+                ),
+                React.createElement('div', { style: { height: '200px', position: 'relative' } },
+                    React.createElement('canvas', { ref: goalChartRef })
+                )
+            ),
             // 3. Add Goal Button (Full width professional button)
             React.createElement('div', { style: { textAlign: 'center', marginBottom: '2rem' } },
                 React.createElement('button', { 
