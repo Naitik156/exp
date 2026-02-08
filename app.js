@@ -1961,7 +1961,14 @@ React.createElement('div', { className: 'test-history-card' },
             ),
             React.createElement('input', { className: 'search-bar', placeholder: '🔍 Search mistakes...', onChange: e => setF({...f, search: e.target.value}) }),
             React.createElement('div', { style: {display:'flex', gap:'10px', marginBottom: '15px'} },
-                React.createElement('select', { className: 'chart-tab', style:{padding:'10px', borderRadius:'10px'}, onChange: e => setF({...f, tid: e.target.value}) }, React.createElement('option', {value:''}, 'All Tests'), (data.tests || []).map(t => React.createElement('option', { key: t.id, value: t.id }, t.name))),
+                React.createElement('select', { 
+                    className: 'chart-tab', 
+                    style:{padding:'10px', borderRadius:'10px'}, 
+                    onChange: e => setF({...f, tid: e.target.value}) 
+                }, 
+                    React.createElement('option', {value:''}, 'All Tests'), 
+                    (data[currentExam]?.tests || []).map(t => React.createElement('option', { key: t.id, value: t.id }, t.name))
+                ),
                 React.createElement('select', { className: 'chart-tab', style:{padding:'10px', borderRadius:'10px'}, onChange: e => setF({...f, sub: e.target.value}) }, ['Physics', 'Chemistry', 'Botany', 'Zoology', 'Mathematics'].map(s => React.createElement('option', { key: s }, s)))
             ),
             React.createElement('button', { className: 'btn btn-primary', style: {width:'100%', marginBottom: '20px'}, onClick: () => setShowAdd(true) }, '+ Add New Mistake'),
