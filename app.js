@@ -1521,8 +1521,23 @@ const DailyGoalsView = () => {
         };
 
         const toggleGoal = (id) => {
-            const updatedGoals = goals.map(g => g.id === id ? { ...g, completed: !g.completed } : g);
-            setData(prev => ({ ...prev, dailyGoals: updatedGoals }));
+            const updatedGoals = (data.dailyGoals || []).map(g => g.id === id ? { ...g, completed: !g.completed } : g);
+            
+            // Percentage Calculate karein
+            const completedCount = updatedGoals.filter(g => g.completed).length;
+            const percent = updatedGoals.length > 0 ? Math.round((completedCount / updatedGoals.length) * 100) : 0;
+            
+            // Aaj ki date nikaalein (Format: YYYY-MM-DD)
+            const today = new Date().toISOString().split('T')[0];
+            
+            // History update karein
+            const updatedHistory = { ...(data.goalsHistory || {}), [today]: percent };
+
+            setData(prev => ({ 
+                ...prev, 
+                dailyGoals: updatedGoals,
+                goalsHistory: updatedHistory 
+            }));
         };
 
         const deleteGoal = (id) => {
