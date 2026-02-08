@@ -1909,10 +1909,17 @@ const TestAnalysisView = () => {
                             
                             // Check logic: Blank ko Number 0 banayenge
                             for(let k of keys) {
-                                const max = (isNEET && k === 'bio') ? 90 : (isNEET ? 45 : 25);
-                                const totalQs = Number(ts[k].c) + Number(ts[k].i) + Number(ts[k].u);
-                                if(totalQs !== max) {
-                                    return alert(`${k.toUpperCase()} check karein! Total ${max} hona chahiye (Abhi ${totalQs} hai)`);
+                                const target = (isNEET && k === 'bio') ? 90 : (isNEET ? 45 : 25);
+                                const current = Number(ts[k].c) + Number(ts[k].i) + Number(ts[k].u);
+                                const diff = Math.abs(target - current);
+                                const subName = k === 'bio' ? 'BIOLOGY' : k.toUpperCase();
+
+                                if(current !== target) {
+                                    const message = current < target 
+                                        ? `⚠️ ${subName} mein abhi ${diff} sawal kam hain!\n\nTarget: ${target}\nFilled: ${current}\n\nKripya ${diff} sawal aur add karein (Correct, Wrong ya Skip mein).`
+                                        : `⚠️ ${subName} mein aapne ${diff} sawal zyada bhar diye hain!\n\nTarget: ${target}\nFilled: ${current}\n\nKripya ${diff} sawal kam karein.`;
+                                    
+                                    return alert(message);
                                 }
                             }
 
