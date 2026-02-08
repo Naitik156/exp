@@ -737,7 +737,6 @@ const getAnalytics = (filterClass = 'Overall') => {
 
     const HomePage = () => {
     return React.createElement('div', { className: 'container' },
-        return React.createElement('div', { className: 'container' },
         // --- COMPACT HEADER (Breadcrumb + Small Logout) ---
         React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', gap: '10px' } },
             React.createElement('div', { className: 'nav-breadcrumb', style: { margin: 0 } },
