@@ -1505,7 +1505,51 @@ const DailyGoalsView = () => {
             icon: '📖', 
             isRecurring: true 
         });
+const goalChartRef = React.useRef(null);
 
+        React.useEffect(() => {
+            if (!goalChartRef.current || typeof Chart === 'undefined') return;
+            const ctx = goalChartRef.current.getContext('2d');
+            
+            // Pichle 7 dinon ka data nikalna
+            const history = data.goalsHistory || {};
+            const dates = Object.keys(history).sort().slice(-7); 
+            const scores = dates.map(d => history[d]);
+
+            // Agar data nahi hai toh khali placeholders dikhayega
+            const finalLabels = dates.length > 0 ? dates.map(d => d.split('-').slice(1).reverse().join('/')) : ["-", "-", "-", "-", "-", "-", "-"];
+            const finalData = scores.length > 0 ? scores : [0, 0, 0, 0, 0, 0, 0];
+
+            const chart = new Chart(goalChartRef.current, {
+                type: 'line',
+                data: {
+                    labels: finalLabels,
+                    datasets: [{
+                        label: 'Completion %',
+                        data: finalData,
+                        borderColor: '#F59E0B', // Professional Gold Theme
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(245, 158, 11, 0.08)',
+                        pointRadius: 5,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#F59E0B',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { 
+                        y: { beginAtZero: true, max: 100, grid: { color: '#f3f4f6' }, ticks: { callback: v => v + '%' } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+            return () => chart.destroy();
+        }, [data.goalsHistory]);
         const goals = data.dailyGoals || [];
 
         const addGoal = () => {
