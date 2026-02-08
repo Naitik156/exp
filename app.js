@@ -1585,8 +1585,19 @@ const goalChartRef = React.useRef(null);
         };
 
         const deleteGoal = (id) => {
-            const updatedGoals = goals.filter(g => g.id !== id);
-            setData(prev => ({ ...prev, dailyGoals: updatedGoals }));
+            const updatedGoals = (data.dailyGoals || []).filter(g => g.id !== id);
+            
+            // Re-calculate today's percentage after deletion
+            const completedCount = updatedGoals.filter(g => g.completed).length;
+            const percent = updatedGoals.length > 0 ? Math.round((completedCount / updatedGoals.length) * 100) : 0;
+            const today = new Date().toISOString().split('T')[0];
+            
+            setData(prev => ({ 
+                ...prev, 
+                dailyGoals: updatedGoals,
+                goalsHistory: { ...(prev.goalsHistory || {}), [today]: percent }
+            }));
+            showToast("Goal removed");
         };
 
         const completedCount = goals.filter(g => g.completed).length;
