@@ -2015,11 +2015,21 @@ React.createElement('div', { className: 'test-history-card' },
                     React.createElement('input', { type: 'file', accept: 'image/*', onChange: async e => { const c = await compressImage(e.target.files[0]); setM({...m, img: c}); } }),
                     React.createElement('textarea', { className: 'input-style', style:{width:'100%', height:'80px', marginTop:'10px'}, placeholder: 'Mistake...', onChange: e => setM({...m, myMistake: e.target.value}) }),
                     React.createElement('textarea', { className: 'input-style', style:{width:'100%', height:'80px', marginTop:'10px'}, placeholder: 'Correct logic...', onChange: e => setM({...m, correctLogic: e.target.value}) }),
-                    React.createElement('button', { className: 'btn btn-primary', style:{width:'100%', marginTop:'10px'}, onClick: () => {
-                        if(!f.tid) return alert('Select a Test first!');
-                        setData(p => ({ ...p, mistakes: [...(p.mistakes || []), { ...m, ...f, mastered: false, id: Date.now() }] }));
-                        setShowAdd(false); showToast('Saved!');
-                    } }, 'Save')
+                    React.createElement('button', { 
+                        className: 'btn btn-primary', 
+                        style:{width:'100%', marginTop:'15px'}, 
+                        onClick: () => {
+                            if(!f.tid) {
+                                return alert('⚠️ Error: Pehle upar dropdown se wo "Test" select karein jisme ye galti hui thi!');
+                            }
+                            setData(p => ({ 
+                                ...p, 
+                                mistakes: [...(data.mistakes || []), { ...m, ...f, mastered: false, id: Date.now() }] 
+                            }));
+                            setShowAdd(false); 
+                            showToast('Mistake Saved in Error Book!');
+                        } 
+                    }, '✓ Save Mistake')
                 )
             )
         );
