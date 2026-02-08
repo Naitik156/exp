@@ -1730,16 +1730,17 @@ const TestAnalysisView = () => {
             if (!lineRef.current) return;
             const ctx = lineRef.current.getContext('2d');
             const isSubView = activeTab !== 'OVERALL';
-            
             let maxLimit = isNEET ? 720 : 300;
             if(isSubView) {
                 if(isNEET) maxLimit = (activeTab === 'BIO' ? 360 : 180);
                 else maxLimit = 100;
             }
 
-            const hasData = data.tests && data.tests.length > 0;
-            const labels = hasData ? data.tests.map(t => t.name) : ["-", "-", "-", "-", "-"];
-            const points = hasData ? data.tests.map(t => {
+            // NEET/JEE ke hisab se data filter karna
+            const currentTests = data[currentExam]?.tests || [];
+            const hasData = currentTests.length > 0;
+            const labels = hasData ? currentTests.map(t => t.name) : ["-", "-", "-", "-", "-"];
+            const points = hasData ? currentTests.map(t => {
                 if(activeTab === 'OVERALL') return t.total || 0;
                 const key = activeTab.toLowerCase();
                 const sub = t[key] || {c:0, i:0};
@@ -1753,29 +1754,20 @@ const TestAnalysisView = () => {
                     datasets: [{
                         label: activeTab + ' Score',
                         data: points,
-                        // Agar data hai toh Teal (#0F766E), varna Light Grey
                         borderColor: hasData ? '#0F766E' : '#E7E5E4', 
-                        borderWidth: 3,
-                        tension: 0.4, // Wahi purna Spline curve
-                        fill: true,
+                        borderWidth: 3, tension: 0.4, fill: true,
                         backgroundColor: hasData ? 'rgba(15, 118, 110, 0.1)' : 'rgba(231, 229, 228, 0.1)',
-                        pointRadius: hasData ? 5 : 0,
-                        pointBackgroundColor: '#000'
+                        pointRadius: hasData ? 5 : 0
                     }]
                 },
                 options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    scales: { 
-                        y: { beginAtZero: true, max: maxLimit, grid: { color: '#f3f4f6' } },
-                        x: { grid: { display: false } }
-                    },
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: maxLimit, grid: { color: '#f3f4f6' } } },
                     plugins: { legend: { display: false } }
                 }
             });
             return () => lineChart.destroy();
-        }, [data.tests, activeTab, isNEET]);
-
+        }, [data, activeTab, currentExam]);
         useEffect(() => {
             if (!pieRef.current) return;
             const subFilter = activeTab === 'OVERALL' ? null : 
