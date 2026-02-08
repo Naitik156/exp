@@ -1925,11 +1925,14 @@ React.createElement('div', { className: 'test-history-card' },
                             const calc = (k) => (Number(ts[k].c) * 4) - Number(ts[k].i);
                             const totalScore = keys.reduce((sum, k) => sum + calc(k), 0);
                             
+                            const currentTests = data[currentExam]?.tests || [];
                             if(editingId) {
-                                setData(p => ({ ...p, tests: p.tests.map(t => t.id === editingId ? {...ts, total: totalScore, id: editingId} : t) }));
-                                showToast("Changes saved successfully!");
+                                const updated = currentTests.map(t => t.id === editingId ? {...ts, total: totalScore, id: editingId} : t);
+                                setData(p => ({ ...p, [currentExam]: { ...p[currentExam], tests: updated } }));
+                                showToast("Changes saved!");
                             } else {
-                                setData(p => ({ ...p, tests: [...(p.tests || []), {...ts, total: totalScore, id: Date.now()}] }));
+                                const newTests = [...currentTests, {...ts, total: totalScore, id: Date.now()}];
+                                setData(p => ({ ...p, [currentExam]: { ...p[currentExam], tests: newTests } }));
                                 showToast("Test result added!");
                             }
                             setShowEntryModal(false);
