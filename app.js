@@ -1847,20 +1847,20 @@ const TestAnalysisView = () => {
             ),
             
             // --- TEST HISTORY SECTION WITH EDIT/DELETE ---
-            React.createElement('div', { className: 'test-history-card' },
-                React.createElement('h3', {style:{marginBottom:'15px', fontSize:'1.2rem'}}, 'Test History'),
-                (data.tests || []).length === 0 ? React.createElement('p', null, 'No history found.') :
-                data.tests.slice().reverse().map(t => React.createElement('div', { key: t.id, className: 'test-list-item' },
+React.createElement('div', { className: 'test-history-card' },
+                React.createElement('h3', {style:{marginBottom:'15px'}}, `${currentExam} History`),
+                (!data[currentExam]?.tests || data[currentExam].tests.length === 0) ? React.createElement('p', null, 'No history found.') :
+                data[currentExam].tests.slice().reverse().map(t => React.createElement('div', { key: t.id, className: 'test-list-item' },
                     React.createElement('div', null, 
                         React.createElement('div', {style:{fontWeight:'700'}}, t.name), 
                         React.createElement('div', {style:{fontSize:'0.8rem', color:'#666'}}, `Total Score: ${t.total}`)
                     ),
                     React.createElement('div', { className: 'test-actions' },
-                        React.createElement('button', { className: 'action-icon-btn btn-edit', onClick: () => handleOpenEdit(t), title: 'Edit details' }, '✏️'),
-                        React.createElement('button', { className: 'action-icon-btn btn-delete', onClick: () => handleDelete(t.id, t.name), title: 'Delete record' }, '🗑️')
+                        React.createElement('button', { className: 'action-icon-btn btn-edit', onClick: () => handleOpenEdit(t) }, '✏️'),
+                        React.createElement('button', { className: 'action-icon-btn btn-delete', onClick: () => handleDelete(t.id, t.name) }, '🗑️')
                     )
                 ))
-            ),
+            ),                
 
             React.createElement('div', { className: 'analysis-footer-actions' },
                 React.createElement('button', { className: 'btn-action primary', onClick: handleOpenAdd }, '➕ Add New Result'),
