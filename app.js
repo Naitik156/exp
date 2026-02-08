@@ -825,37 +825,51 @@ const getAnalytics = (filterClass = 'Overall') => {
                     )
                 )
             ),
-            React.createElement('div', { style: { textAlign: 'center', marginTop: '3rem' } },
-                React.createElement('button', {
-                    className: 'btn btn-primary',
+            // --- NEW BENTO FEATURE CARDS GRID ---
+            React.createElement('div', { className: 'grid grid-3', style: { marginTop: '3rem', gap: '1.5rem' } },
+                
+                // Analytics Card
+                React.createElement('div', { 
+                    className: 'card', 
                     onClick: () => navigateTo('dashboard'),
-                    style: { fontSize: '1.1rem', padding: '1rem 2rem' }
-                }, '📊 View Analytics Dashboard')
-            ),// --- NAYA DAILY GOALS BUTTON ---
-                               React.createElement('div', { style: { textAlign: 'center', marginTop: '1.5rem' } },
-    React.createElement('button', {
-        className: 'btn', onClick: () => navigateTo('test-analysis'),
-        style: { fontSize: '1.1rem', padding: '1rem 2.5rem', background: 'linear-gradient(135deg, #0F766E, #14B8A6)', color: 'white', border: 'none', borderRadius: '12px', width: '100%', maxWidth: '500px', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(15, 118, 110, 0.3)' }
-    }, '📊 Test Analysis & Error Book')
-),
-React.createElement('div', { style: { textAlign: 'center', marginTop: '1.5rem' } },
-    React.createElement('button', {
-        className: 'btn',
-        onClick: () => navigateTo('daily-goals'),
-        style: { 
-            fontSize: '1.1rem', 
-            padding: '1rem 2.5rem', 
-            background: 'linear-gradient(135deg, #F59E0B, #D97706)', // Professional Gold/Orange Gradient
-            color: 'white',
-            border: 'none',
-            borderRadius: '12px',
-            boxShadow: '0 4px 15px rgba(245, 158, 11, 0.3)',
-            cursor: 'pointer',
-            fontWeight: 'bold',
-            transition: 'transform 0.2s ease'
-        }
-    }, '🎯 My Daily Goals')
-),
+                    style: { textAlign: 'center', cursor: 'pointer', minHeight: '180px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '1.5rem' }
+                },
+                    React.createElement('div', { style: { fontSize: '3rem', marginBottom: '0.75rem' } }, '📈'),
+                    React.createElement('h3', { className: 'card-title', style: { fontSize: '1.25rem', margin: 0 } }, 'Analytics'),
+                    React.createElement('p', { className: 'card-subtitle', style: { fontSize: '0.9rem', marginTop: '5px' } }, 'Full Performance Report')
+                ),
+
+                // Test Analysis Card
+                React.createElement('div', { 
+                    className: 'card', 
+                    onClick: () => navigateTo('test-analysis'),
+                    style: { textAlign: 'center', cursor: 'pointer', minHeight: '180px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '1.5rem' }
+                },
+                    React.createElement('div', { style: { fontSize: '3rem', marginBottom: '0.75rem' } }, '📝'),
+                    React.createElement('h3', { className: 'card-title', style: { fontSize: '1.25rem', margin: 0 } }, 'Test & Error'),
+                    React.createElement('p', { className: 'card-subtitle', style: { fontSize: '0.9rem', marginTop: '5px' } }, 'Master Your Mistakes')
+                ),
+
+                // Daily Goals Card
+                React.createElement('div', { 
+                    className: 'card', 
+                    onClick: () => navigateTo('daily-goals'),
+                    style: { 
+                        textAlign: 'center', 
+                        cursor: 'pointer', 
+                        minHeight: '180px', 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        justifyContent: 'center',
+                        padding: '1.5rem',
+                        borderBottom: '5px solid #F59E0B' // Premium Gold border
+                    }
+                },
+                    React.createElement('div', { style: { fontSize: '3rem', marginBottom: '0.75rem' } }, '🎯'),
+                    React.createElement('h3', { className: 'card-title', style: { fontSize: '1.25rem', margin: 0 } }, 'Daily Goals'),
+                    React.createElement('p', { className: 'card-subtitle', style: { fontSize: '0.9rem', marginTop: '5px' } }, 'Check Today\'s Targets')
+                )
+            ),
             React.createElement('div', { className: 'social-links', style: { marginTop: '3rem', display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' } },
                 React.createElement('a', {
                     href: 'https://www.instagram.com/naitik_156_?igsh=ejF0ZmV4dTJoa3Iz',
