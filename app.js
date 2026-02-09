@@ -1716,14 +1716,15 @@ const todayStr = getFreshIST();
                     React.createElement('p', {style: {color: 'var(--text-light)'}}, 'Naya goal jorein aur padhai shuru karein!'))
                 : goals.map(goal => React.createElement('div', { 
                     key: goal.id, 
-                    className: `card goal-card ${goal.completed ? 'completed' : ''}`, 
+                    className: `card goal-card ${!!(data.doneGoals?.[selectedDate]?.[goal.id]) ? 'completed' : ''}`, 
                     style: { 
                         marginBottom: '1rem', 
                         borderLeft: '6px solid var(--secondary)',
                         padding: '1.25rem',
-                        cursor: isFuture ? 'not-allowed' : 'pointer',
-                        opacity: isFuture ? 0.6 : (goal.completed ? 0.7 : 1)
+                        cursor: isToday ? 'pointer' : 'not-allowed',
+                        opacity: isToday ? 1 : 0.6
                     },
+                    
                     onClick: () => toggleGoal(goal.id) 
                 },
                     React.createElement('div', { style: {display: 'flex', alignItems: 'center', gap: '15px'} },
