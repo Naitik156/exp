@@ -2055,7 +2055,12 @@ React.createElement('div', { className: 'test-history-card' },
             const data = await res.json();
             return data.secure_url;
         };
-        const filtered = (data.mistakes || []).filter(x => (f.tid ? x.tid == f.tid : true) && x.sub == f.sub && (x.myMistake.toLowerCase().includes(f.search.toLowerCase())));
+        const filtered = (data.mistakes || []).filter(x => {
+            const matchTest = f.tid ? x.tid == f.tid : true;
+            const matchSub = x.sub == f.sub;
+            const matchSearch = x.myMistake ? x.myMistake.toLowerCase().includes(f.search.toLowerCase()) : true;
+            return matchTest && matchSub && matchSearch;
+        });
         const toggleMastery = (id) => {
             setData(p => ({ ...p, mistakes: p.mistakes.map(x => x.id === id ? {...x, mastered: !x.mastered} : x) }));
             showToast('Status updated!');
