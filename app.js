@@ -1654,7 +1654,7 @@ const goalChartRef = React.useRef(null);
         const dateDoneMap = data.doneGoals?.[selectedDate] || {};
         const completedCount = goals.filter(g => !!dateDoneMap[g.id]).length;
         const progressPercent = goals.length > 0 ? Math.round((completedCount / goals.length) * 100) : 0;
-const todayStr = new Date().toISOString().split('T')[0];
+const todayStr = getTodayLocal();
         const isFuture = selectedDate > todayStr;
         return React.createElement('div', { className: 'container daily-goals-page' },
             // 1. Breadcrumb (Wapas jaane ke liye)
