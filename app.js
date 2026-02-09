@@ -2040,7 +2040,21 @@ React.createElement('div', { className: 'test-history-card' },
     const ErrorBookView = () => {
         const [f, setF] = useState({ tid: '', sub: 'Physics', search: '' });
         const [showAdd, setShowAdd] = useState(false);
-        const [m, setM] = useState({ type: 'Silly Mistake', img: '', myMistake: '', correctLogic: '' });
+        const [m, setM] = useState({ type: 'Silly Mistake', img1: '', img2: '', myMistake: '', correctLogic: '' });
+        const [isUploading, setIsUploading] = useState(false);
+        const [fileTargets, setFileTargets] = useState({ q: null, s: null });
+
+        const uploadToCloudinary = async (file) => {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', UPLOAD_PRESET);
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            return data.secure_url;
+        };
         const filtered = (data.mistakes || []).filter(x => (f.tid ? x.tid == f.tid : true) && x.sub == f.sub && (x.myMistake.toLowerCase().includes(f.search.toLowerCase())));
         const toggleMastery = (id) => {
             setData(p => ({ ...p, mistakes: p.mistakes.map(x => x.id === id ? {...x, mastered: !x.mastered} : x) }));
