@@ -1638,7 +1638,15 @@ const goalChartRef = React.useRef(null);
 
             // 2. Main Header Card (Title aur Progress ek card ke andar)
             React.createElement('div', { className: 'goals-header-card' },
-                React.createElement('h2', { className: 'logo', style: {fontSize: '2.5rem', marginBottom: '1rem'} }, 'Today\'s Targets'),
+                React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1.5rem', gap: '10px' } },
+                    React.createElement('h2', { className: 'logo', style: {fontSize: '2.2rem', margin: 0} }, 'Targets'),
+                    React.createElement('input', { 
+                        type: 'date', 
+                        value: selectedDate,
+                        onChange: (e) => setSelectedDate(e.target.value),
+                        style: { padding: '8px 12px', borderRadius: '10px', border: '2px solid var(--secondary)', fontWeight: '700', fontFamily: 'inherit', color: 'var(--text)' }
+                    })
+                ),
                 React.createElement('div', { className: 'progress-container' },
                     React.createElement('div', { className: 'progress-label' },
                         React.createElement('span', {style: {fontWeight: '700'}}, 'Daily Task Progress:'),
