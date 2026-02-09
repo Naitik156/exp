@@ -2186,17 +2186,22 @@ React.createElement('div', { className: 'test-history-card' },
                         className: 'btn btn-primary', 
                         style:{width:'100%', marginTop:'15px'}, 
                         disabled: isUploading,
+                        style: { width: '100%', marginTop: '10px', height: '50px' },
                         onClick: async () => {
-                            if (!f.tid) return alert('⚠️ Error: Pehle Test select karein!');
-                            if (!fileTargets.q || !fileTargets.s) return alert('⚠️ Error: Dono images select karein!');
-                            if (!m.myMistake) return alert('⚠️ Error: Details fill karein!');
+                            if (!f.tid) return alert('⚠️ Error: Pehle Test Select karein!');
+                            if (!m.myMistake) return alert('⚠️ Error: Galti kya thi wo batayein!');
+                            if (!m.correctLogic) return alert('⚠️ Error: Sahi logic batayein!');
 
                             setIsUploading(true);
-                            showToast('Cloudinary par images upload ho rahi hain...');
+                            let qUrl = "";
+                            let sUrl = "";
 
                             try {
-                                const qUrl = await uploadToCloudinary(fileTargets.q);
-                                const sUrl = await uploadToCloudinary(fileTargets.s);
+                                if (fileTargets.q || fileTargets.s) {
+                                    showToast('Uploading images...');
+                                    if (fileTargets.q) qUrl = await uploadToCloudinary(fileTargets.q);
+                                    if (fileTargets.s) sUrl = await uploadToCloudinary(fileTargets.s);
+                                }
 
                                 const finalMistake = { 
                                     ...m, 
@@ -2209,15 +2214,16 @@ React.createElement('div', { className: 'test-history-card' },
 
                                 setData(p => ({ 
                                     ...p, 
-                                    mistakes: [...(data.mistakes || []), finalMistake] 
+                                    mistakes: [...(p.mistakes || []), finalMistake] 
                                 }));
 
                                 setShowAdd(false);
                                 setFileTargets({ q: null, s: null });
+                                // State reset including images
                                 setM({ type: 'Silly Mistake', img1: '', img2: '', myMistake: '', correctLogic: '' });
-                                showToast('Mistake Saved with 2 Images!');
+                                showToast('Mistake Saved Successfully!');
                             } catch (err) {
-                                alert('Upload Failed! Cloudinary settings check karein.');
+                                alert('Error saving! Check Internet/Cloudinary.');
                             } finally {
                                 setIsUploading(false);
                             }
