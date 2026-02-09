@@ -2151,17 +2151,43 @@ React.createElement('div', { className: 'test-history-card' },
                     React.createElement('button', { 
                         className: 'btn btn-primary', 
                         style:{width:'100%', marginTop:'15px'}, 
-                        onClick: () => {
-                            if(!f.tid) {
-                                return alert('⚠️ Error: Pehle upar dropdown se wo "Test" select karein jisme ye galti hui thi!');
+                        disabled: isUploading,
+                        onClick: async () => {
+                            if (!f.tid) return alert('⚠️ Error: Pehle Test select karein!');
+                            if (!fileTargets.q || !fileTargets.s) return alert('⚠️ Error: Dono images select karein!');
+                            if (!m.myMistake) return alert('⚠️ Error: Details fill karein!');
+
+                            setIsUploading(true);
+                            showToast('Cloudinary par images upload ho rahi hain...');
+
+                            try {
+                                const qUrl = await uploadToCloudinary(fileTargets.q);
+                                const sUrl = await uploadToCloudinary(fileTargets.s);
+
+                                const finalMistake = { 
+                                    ...m, 
+                                    ...f, 
+                                    img1: qUrl, 
+                                    img2: sUrl, 
+                                    mastered: false, 
+                                    id: Date.now() 
+                                };
+
+                                setData(p => ({ 
+                                    ...p, 
+                                    mistakes: [...(data.mistakes || []), finalMistake] 
+                                }));
+
+                                setShowAdd(false);
+                                setFileTargets({ q: null, s: null });
+                                setM({ type: 'Silly Mistake', img1: '', img2: '', myMistake: '', correctLogic: '' });
+                                showToast('Mistake Saved with 2 Images!');
+                            } catch (err) {
+                                alert('Upload Failed! Cloudinary settings check karein.');
+                            } finally {
+                                setIsUploading(false);
                             }
-                            setData(p => ({ 
-                                ...p, 
-                                mistakes: [...(data.mistakes || []), { ...m, ...f, mastered: false, id: Date.now() }] 
-                            }));
-                            setShowAdd(false); 
-                            showToast('Mistake Saved in Error Book!');
-                        } 
+                        }
                     }, '✓ Save Mistake')
                 )
             )
