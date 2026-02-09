@@ -1,4 +1,6 @@
 const { useState, useEffect } = React;
+const CLOUD_NAME = "dbprdbrzk";
+const UPLOAD_PRESET = "sylltrack";
 
 // Inhe hum abhi variable mein store nahi karenge, 
 // balki seedhe component ke andar se access karenge.
