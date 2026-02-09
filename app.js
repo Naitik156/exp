@@ -1766,6 +1766,17 @@ const goalChartRef = React.useRef(null);
                             ['📖', '🏋🏻', '✍️', '📝', '⏰', '🎯', '💡'].map(i => React.createElement('option', {key: i, value: i}, i))
                         )
                     ),
+                                    React.createElement('div', { className: 'input-group' },
+                        React.createElement('label', null, 'Target Date'),
+                        React.createElement('input', { 
+                            type: 'date',
+                            className: 'input-style', 
+                            value: newGoal.date,
+                            disabled: newGoal.isRecurring, // Agar recurring hai toh date ki zarurat nahi
+                            style: { opacity: newGoal.isRecurring ? 0.5 : 1 },
+                            onChange: (e) => setNewGoal({...newGoal, date: e.target.value})
+                        })
+                    ),
                     React.createElement('div', { className: 'active-for-container' },
                         React.createElement('div', { className: 'active-for-row' },
                             React.createElement('span', { className: 'active-for-title' }, 'Active For'),
