@@ -635,7 +635,7 @@ const getAnalytics = (filterClass = 'Overall') => {
         const url = URL.createObjectURL(dataBlob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `${currentExam}_syllabus_backup_${new Date().toISOString().split('T')[0]}.json`;
+        link.download = `${currentExam}_syllabus_backup_${getTodayIST()}.json`;
         link.click();
         URL.revokeObjectURL(url);
         showToast('Data exported successfully!');
@@ -1529,7 +1529,7 @@ const DailyGoalsView = () => {
             desc: '', 
             icon: '📖', 
             isRecurring: false,
-            date: new Date().toISOString().split('T')[0]
+            date: getTodayIST()
         });
 const goalChartRef = React.useRef(null);
 
@@ -1600,7 +1600,7 @@ const goalChartRef = React.useRef(null);
             const updatedGoals = [...(data.dailyGoals || []), { ...newGoal, id: Date.now(), completed: false }];
             setData(prev => ({ ...prev, dailyGoals: updatedGoals }));
             setShowAddModal(false);
-            setNewGoal({ title: '', desc: '', icon: '📖', isRecurring: false, date: new Date().toISOString().split('T')[0] });
+            setNewGoal({ title: '', desc: '', icon: '📖', isRecurring: false, date: getTodayIST() });
             showToast('🎯 Target Set Ho Gaya!');
         };
 
@@ -1638,7 +1638,7 @@ const goalChartRef = React.useRef(null);
             // Re-calculate today's percentage after deletion
             const completedCount = updatedGoals.filter(g => g.completed).length;
             const percent = updatedGoals.length > 0 ? Math.round((completedCount / updatedGoals.length) * 100) : 0;
-            const today = new Date().toISOString().split('T')[0];
+            const today = getTodayIST();
             
             setData(prev => ({ 
                 ...prev, 
