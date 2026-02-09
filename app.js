@@ -1576,7 +1576,7 @@ const goalChartRef = React.useRef(null);
             });
             return () => chart.destroy();
         }, [data.goalsHistory]);
-        const [selectedDate, setSelectedDate] = React.useState(getTodayLocal());
+        const [selectedDate, setSelectedDate] = React.useState(getTodayIST());
 
         // Jab bhi page khule, naya local date set ho jaye
         React.useEffect(() => {
@@ -1605,7 +1605,7 @@ const goalChartRef = React.useRef(null);
         };
 
       const toggleGoal = (id) => {
-            const today = new Date().toISOString().split('T')[0];
+            const today = getTodayIST().split('T')[0];
             if (selectedDate > today) {
                 showToast("Future targets ko aaj tick nahi kar sakte!");
                 return;
@@ -1651,7 +1651,7 @@ const goalChartRef = React.useRef(null);
         const dateDoneMap = data.doneGoals?.[selectedDate] || {};
         const completedCount = goals.filter(g => !!dateDoneMap[g.id]).length;
         const progressPercent = goals.length > 0 ? Math.round((completedCount / goals.length) * 100) : 0;
-const todayStr = getTodayLocal();
+const todayStr = getISTDate();
         const isFuture = selectedDate > todayStr;
         return React.createElement('div', { className: 'container daily-goals-page' },
             // 1. Breadcrumb (Wapas jaane ke liye)
