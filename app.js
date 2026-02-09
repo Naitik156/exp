@@ -1675,7 +1675,10 @@ const todayStr = new Date().toISOString().split('T')[0];
             React.createElement('div', { style: { textAlign: 'center', marginBottom: '2rem' } },
                 React.createElement('button', { 
                     className: 'btn btn-primary', 
-                    onClick: () => setShowAddModal(true), 
+                    onClick: () => {
+                        setNewGoal(prev => ({ ...prev, date: selectedDate, isRecurring: false }));
+                        setShowAddModal(true);
+                    },
                     style: {
                         background: 'var(--secondary)', 
                         padding: '1rem 2.5rem', 
