@@ -1597,13 +1597,14 @@ const goalChartRef = React.useRef(null);
         };
 
       const toggleGoal = (id) => {
-            const today = getTodayIST().split('T')[0];
-            if (selectedDate > today) {
-                showToast("Future targets ko aaj tick nahi kar sakte!");
+            const today = getFreshIST();
+            
+            // Strictly block if selected date is NOT today (Locks both Past and Future)
+            if (selectedDate !== today) {
+                showToast("Sirf 'Aaj' ke targets hi tick/untick kar sakte hain!");
                 return;
             }
 
-            // Hum completion status ko ek alag object 'doneGoals' mein date ke hisaab se save karenge
             const currentDone = data.doneGoals || {};
             const dateDone = currentDone[selectedDate] || {};
             const isDone = !!dateDone[id];
@@ -1611,7 +1612,6 @@ const goalChartRef = React.useRef(null);
             const updatedDateDone = { ...dateDone, [id]: !isDone };
             const updatedDoneGoals = { ...currentDone, [selectedDate]: updatedDateDone };
 
-            // Progress calculate karne ke liye
             const currentGoals = (data.dailyGoals || []).filter(g => g.date === selectedDate || g.isRecurring);
             const doneCount = Object.values(updatedDateDone).filter(val => val === true).length;
             const percent = currentGoals.length > 0 ? Math.round((doneCount / currentGoals.length) * 100) : 0;
@@ -1620,7 +1620,7 @@ const goalChartRef = React.useRef(null);
 
             setData(prev => ({ 
                 ...prev, 
-                doneGoals: updatedDoneGoals,
+                doneGoals: updatedDoneGoals, 
                 goalsHistory: updatedHistory 
             }));
         };
