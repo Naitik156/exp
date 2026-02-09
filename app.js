@@ -1591,21 +1591,29 @@ const goalChartRef = React.useRef(null);
 
       const toggleGoal = (id) => {
             const today = new Date().toISOString().split('T')[0];
-            
-            // Block interaction if selected date is in the future
             if (selectedDate > today) {
                 showToast("Future targets ko aaj tick nahi kar sakte!");
                 return;
             }
 
-            const updatedGoals = (data.dailyGoals || []).map(g => g.id === id ? { ...g, completed: !g.completed } : g);
-            const completedCount = updatedGoals.filter(g => g.completed).length;
-            const percent = updatedGoals.length > 0 ? Math.round((completedCount / updatedGoals.length) * 100) : 0;
-            const updatedHistory = { ...(data.goalsHistory || {}), [today]: percent };
+            // Hum completion status ko ek alag object 'doneGoals' mein date ke hisaab se save karenge
+            const currentDone = data.doneGoals || {};
+            const dateDone = currentDone[selectedDate] || {};
+            const isDone = !!dateDone[id];
+
+            const updatedDateDone = { ...dateDone, [id]: !isDone };
+            const updatedDoneGoals = { ...currentDone, [selectedDate]: updatedDateDone };
+
+            // Progress calculate karne ke liye
+            const currentGoals = (data.dailyGoals || []).filter(g => g.date === selectedDate || g.isRecurring);
+            const doneCount = Object.values(updatedDateDone).filter(val => val === true).length;
+            const percent = currentGoals.length > 0 ? Math.round((doneCount / currentGoals.length) * 100) : 0;
+            
+            const updatedHistory = { ...(data.goalsHistory || {}), [selectedDate]: percent };
 
             setData(prev => ({ 
                 ...prev, 
-                dailyGoals: updatedGoals,
+                doneGoals: updatedDoneGoals,
                 goalsHistory: updatedHistory 
             }));
         };
