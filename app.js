@@ -2086,9 +2086,13 @@ React.createElement('div', { className: 'test-history-card' },
                 React.createElement('select', { className: 'chart-tab', style:{padding:'10px', borderRadius:'10px'}, onChange: e => setF({...f, sub: e.target.value}) }, ['Physics', 'Chemistry', 'Botany', 'Zoology', 'Mathematics'].map(s => React.createElement('option', { key: s }, s)))
             ),
             React.createElement('button', { className: 'btn btn-primary', style: {width:'100%', marginBottom: '20px'}, onClick: () => setShowAdd(true) }, '+ Add New Mistake'),
-            filtered.length === 0 ? React.createElement('p', {style:{textAlign:'center'}}, 'No mistakes found.') : filtered.map(x => React.createElement('div', { key: x.id, className: `mistake-card level-${x.type.toLowerCase().replace(' ', '-')} ${x.mastered ? 'mastered' : ''}` },
-                React.createElement('div', { style:{display:'flex', justifyContent:'space-between'} }, React.createElement('div', { className: 'type-tag', style: {background:'#333', color:'white', padding:'4px 10px', borderRadius:'5px', fontSize:'0.7rem'} }, x.type), React.createElement('button', { onClick: () => setData(p => ({...p, mistakes: p.mistakes.filter(y => y.id !== x.id)})), style:{border:'none', background:'none', cursor:'pointer'} }, '🗑️')),
-                React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', margin: '10px 0' } },
+filtered.length === 0 ? React.createElement('p', {style:{textAlign:'center', padding:'2rem'}}, 'No mistakes found.') : 
+            filtered.map(x => React.createElement('div', { key: x.id, className: `mistake-card level-${x.type.toLowerCase().replace(' ', '-')} ${x.mastered ? 'mastered' : ''}` },
+                React.createElement('div', { style:{display:'flex', justifyContent:'space-between'} }, 
+                    React.createElement('div', { className: 'type-tag', style: {background:'#333', color:'white', padding:'4px 10px', borderRadius:'5px', fontSize:'0.7rem'} }, x.type), 
+                    React.createElement('button', { onClick: () => setData(p => ({...p, mistakes: p.mistakes.filter(y => y.id !== x.id)})), style:{border:'none', background:'none', cursor:'pointer'} }, '🗑️')
+                ),
+                (x.img1 || x.img2) && React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', margin: '10px 0' } },
                     x.img1 && React.createElement('img', { 
                         src: x.img1, 
                         onClick: () => window.open(x.img1, '_blank'),
@@ -2101,47 +2105,28 @@ React.createElement('div', { className: 'test-history-card' },
                     })
                 ),
                 React.createElement('div', { className: 'mistake-grid' },
-                    React.createElement('div', { 
-                        className: 'mistake-box box-wrong',
-                        style: { wordBreak: 'break-word', overflowWrap: 'anywhere' } 
-                    }, React.createElement('strong', null, 'Mistake: '), x.myMistake),
-                    React.createElement('div', { 
-                        className: 'mistake-box box-right',
-                        style: { wordBreak: 'break-word', overflowWrap: 'anywhere' } 
-                    }, React.createElement('strong', null, 'Correct Logic: '), x.correctLogic)
+                    React.createElement('div', { className: 'mistake-box box-wrong' }, React.createElement('strong', null, 'Mistake: '), x.myMistake),
+                    React.createElement('div', { className: 'mistake-box box-right' }, React.createElement('strong', null, 'Correct Logic: '), x.correctLogic)
                 ),
-                React.createElement('div', { style: { display: 'flex', alignItems: 'center', marginTop: '15px', flexWrap: 'wrap', gap: '10px' } },
+                React.createElement('div', { style: { display: 'flex', alignItems: 'center', marginTop: '15px', gap: '10px' } },
                     React.createElement('button', { 
                         className: 'mastered-btn', 
-                        style: { 
-                            background: x.mastered ? '#9ca3af' : '#10b981', 
-                            color: 'white', 
-                            border: 'none', 
-                            padding: '8px 18px', 
-                            borderRadius: '10px', 
-                            cursor: 'pointer',
-                            fontWeight: '700',
-                            fontSize: '0.85rem',
-                            transition: 'all 0.2s'
-                        }, 
+                        style: { background: x.mastered ? '#9ca3af' : '#10b981', color: 'white', border: 'none', padding: '8px 18px', borderRadius: '10px', cursor: 'pointer', fontWeight: '700' }, 
                         onClick: () => toggleMastery(x.id) 
-                    }, x.mastered ? '🔙 Revision Needed' : '✅ Concept Clear'),
-                    
-                    !x.mastered && React.createElement('span', { 
-                        style: { fontSize: '0.75rem', color: '#6b7280', fontStyle: 'italic', maxWidth: '220px', lineHeight: '1.3' } 
-                    }, '💡 "Concept Clear" karne se ye popup alerts mein aana band ho jayega.')
+                    }, x.mastered ? '🔙 Revision Needed' : '✅ Concept Clear')
                 )
             )),
-            React.createElement('div', { className: 'modal-content modern-modal', style: { padding: '2rem', maxWidth: '500px' } },
+            showAdd && React.createElement('div', { className: 'modal' },
+                React.createElement('div', { className: 'modal-content modern-modal', style: { padding: '2rem', maxWidth: '500px' } },
                     React.createElement('button', { className: 'modal-close-x', onClick: () => setShowAdd(false) }, '×'),
                     React.createElement('h3', { style: { marginBottom: '1.5rem', fontSize: '1.5rem', color: 'var(--primary)' } }, '📝 Record Mistake'),
                     
-                    React.createElement('div', { className: 'input-group', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '1rem' } },
+                    React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '1rem' } },
                         React.createElement('div', null,
                             React.createElement('label', { style: { fontSize: '0.8rem', fontWeight: '700' } }, 'Select Test'),
                             React.createElement('select', { 
                                 className: 'input-style', 
-                                style: { width: '100%', border: '1.5px solid var(--primary-light)' },
+                                style: { width: '100%' },
                                 value: f.tid,
                                 onChange: e => setF({...f, tid: e.target.value})
                             }, 
@@ -2153,7 +2138,7 @@ React.createElement('div', { className: 'test-history-card' },
                             React.createElement('label', { style: { fontSize: '0.8rem', fontWeight: '700' } }, 'Subject'),
                             React.createElement('select', { 
                                 className: 'input-style', 
-                                style: { width: '100%', border: '1.5px solid var(--primary-light)' },
+                                style: { width: '100%' },
                                 value: f.sub,
                                 onChange: e => setF({...f, sub: e.target.value})
                             }, 
@@ -2162,7 +2147,7 @@ React.createElement('div', { className: 'test-history-card' },
                         )
                     ),
 
-                    React.createElement('div', { className: 'input-group', style: { marginBottom: '1rem' } },
+                    React.createElement('div', { style: { marginBottom: '1rem' } },
                         React.createElement('label', { style: { fontSize: '0.8rem', fontWeight: '700' } }, 'Mistake Type'),
                         React.createElement('select', { 
                             className: 'input-style', 
@@ -2172,7 +2157,7 @@ React.createElement('div', { className: 'test-history-card' },
                     ),
 
                     React.createElement('div', { style: { background: '#f8fafc', padding: '10px', borderRadius: '12px', marginBottom: '1rem', border: '1px solid #e2e8f0' } },
-                        React.createElement('p', { style: { fontSize: '0.75rem', color: '#64748b', marginBottom: '8px', fontWeight: '700' } }, '📸 Upload Photos (Optional)'),
+                        React.createElement('p', { style: { fontSize: '0.75rem', color: '#64748b', marginBottom: '8px', fontWeight: '700' } }, '📸 Photos (Optional)'),
                         React.createElement('div', { style: { display: 'flex', gap: '10px' } },
                             React.createElement('div', { style: { flex: 1 } },
                                 React.createElement('span', { style: { fontSize: '0.65rem', display: 'block' } }, 'Question'),
@@ -2185,60 +2170,34 @@ React.createElement('div', { className: 'test-history-card' },
                         )
                     ),
 
-                    React.createElement('textarea', { className: 'input-style', style:{width:'100%', height:'70px', marginBottom:'10px'}, placeholder: 'Explain your mistake briefly...', onChange: e => setM({...m, myMistake: e.target.value}) }),
-                    React.createElement('textarea', { className: 'input-style', style:{width:'100%', height:'70px', marginBottom:'10px'}, placeholder: 'What is the correct logic/formula?', onChange: e => setM({...m, correctLogic: e.target.value}) }),
+                    React.createElement('textarea', { className: 'input-style', style:{width:'100%', height:'70px', marginBottom:'10px'}, placeholder: 'Explain your mistake...', onChange: e => setM({...m, myMistake: e.target.value}) }),
+                    React.createElement('textarea', { className: 'input-style', style:{width:'100%', height:'70px', marginBottom:'10px'}, placeholder: 'Correct logic/formula...', onChange: e => setM({...m, correctLogic: e.target.value}) }),
+                    
                     React.createElement('button', { 
                         className: 'btn btn-primary', 
-                        style:{width:'100%', marginTop:'15px'}, 
                         disabled: isUploading,
-                        style: { width: '100%', marginTop: '10px', height: '50px' },
+                        style: { width: '100%', height: '50px' },
                         onClick: async () => {
-                            if (!f.tid) return alert('⚠️ Error: Pehle Test Select karein!');
-                            if (!m.myMistake) return alert('⚠️ Error: Galti kya thi wo batayein!');
-                            if (!m.correctLogic) return alert('⚠️ Error: Sahi logic batayein!');
-
+                            if (!f.tid) return alert('⚠️ Error: Test select karein!');
+                            if (!m.myMistake || !m.correctLogic) return alert('⚠️ Error: Details bhariye!');
                             setIsUploading(true);
-                            let qUrl = "";
-                            let sUrl = "";
-
+                            let qUrl = ""; let sUrl = "";
                             try {
-                                if (fileTargets.q || fileTargets.s) {
-                                    showToast('Uploading images...');
-                                    if (fileTargets.q) qUrl = await uploadToCloudinary(fileTargets.q);
-                                    if (fileTargets.s) sUrl = await uploadToCloudinary(fileTargets.s);
-                                }
-
-                                const finalMistake = { 
-                                    ...m, 
-                                    ...f, 
-                                    img1: qUrl, 
-                                    img2: sUrl, 
-                                    mastered: false, 
-                                    id: Date.now() 
-                                };
-
-                                setData(p => ({ 
-                                    ...p, 
-                                    mistakes: [...(p.mistakes || []), finalMistake] 
-                                }));
-
+                                if (fileTargets.q) qUrl = await uploadToCloudinary(fileTargets.q);
+                                if (fileTargets.s) sUrl = await uploadToCloudinary(fileTargets.s);
+                                const finalMistake = { ...m, ...f, img1: qUrl, img2: sUrl, mastered: false, id: Date.now() };
+                                setData(p => ({ ...p, mistakes: [...(p.mistakes || []), finalMistake] }));
                                 setShowAdd(false);
                                 setFileTargets({ q: null, s: null });
-                                // State reset including images
                                 setM({ type: 'Silly Mistake', img1: '', img2: '', myMistake: '', correctLogic: '' });
-                                showToast('Mistake Saved Successfully!');
-                            } catch (err) {
-                                alert('Error saving! Check Internet/Cloudinary.');
-                            } finally {
-                                setIsUploading(false);
-                            }
-                        }
+                                showToast('Mistake Saved!');
+                            } catch (err) { alert('Upload failed!'); } finally { setIsUploading(false); }
+                        } 
                     }, isUploading ? '⏳ Uploading...' : '✓ Save Mistake')
                 )
             )
         );
     };
-
    return React.createElement(React.Fragment, null,
         // --- 1. SMART FLOATING REVISION BUTTON (Disappears when all clear) ---
         (data.mistakes || []).some(m => !m.mastered) && React.createElement('button', { 
