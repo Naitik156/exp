@@ -1572,6 +1572,11 @@ const goalChartRef = React.useRef(null);
             return () => chart.destroy();
         }, [data.goalsHistory]);
         const [selectedDate, setSelectedDate] = React.useState(new Date().toISOString().split('T')[0]);
+    // Auto-refresh date when view changes
+        React.useEffect(() => {
+            const today = new Date().toISOString().split('T')[0];
+            setSelectedDate(today);
+        }, [view]);
         const allGoals = data.dailyGoals || [];
         
         // Filter goals: Jo selected date ke hain YA jo recurring (all months) hain
