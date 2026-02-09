@@ -1585,7 +1585,7 @@ const goalChartRef = React.useRef(null);
             const updatedGoals = [...goals, { ...newGoal, id: Date.now(), completed: false }];
             setData(prev => ({ ...prev, dailyGoals: updatedGoals }));
             setShowAddModal(false);
-            setNewGoal({ title: '', desc: '', icon: '📖', isRecurring: true });
+            setNewGoal({ title: '', desc: '', icon: '📖', isRecurring: false, date: new Date().toISOString().split('T')[0] });
             showToast('🎯 Target Set Ho Gaya!');
         };
 
