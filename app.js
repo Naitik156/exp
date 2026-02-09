@@ -2132,7 +2132,20 @@ React.createElement('div', { className: 'test-history-card' },
                     React.createElement('button', { className: 'modal-close-x', onClick: () => setShowAdd(false) }, '×'),
                     React.createElement('h3', null, 'Record Mistake'),
                     React.createElement('select', { className: 'input-style', style:{width:'100%', marginBottom:'10px'}, onChange: e => setM({...m, type: e.target.value}) }, ['Conceptual Error', 'Never Studied', 'Silly Mistake', 'Blunder', 'Calculation Mistake'].map(t => React.createElement('option', { key: t }, t))),
-                    React.createElement('input', { type: 'file', accept: 'image/*', onChange: async e => { const c = await compressImage(e.target.files[0]); setM({...m, img: c}); } }),
+                    React.createElement('div', { style: { marginBottom: '10px', display: 'flex', flexDirection: 'column', gap: '8px' } },
+                        React.createElement('label', { style: { fontSize: '0.8rem', fontWeight: 'bold' } }, '1. Question Image (Mandatory):'),
+                        React.createElement('input', { 
+                            type: 'file', 
+                            accept: 'image/*', 
+                            onChange: e => setFileTargets(prev => ({ ...prev, q: e.target.files[0] })) 
+                        }),
+                        React.createElement('label', { style: { fontSize: '0.8rem', fontWeight: 'bold' } }, '2. Solution Image (Mandatory):'),
+                        React.createElement('input', { 
+                            type: 'file', 
+                            accept: 'image/*', 
+                            onChange: e => setFileTargets(prev => ({ ...prev, s: e.target.files[0] })) 
+                        })
+                    ),
                     React.createElement('textarea', { className: 'input-style', style:{width:'100%', height:'80px', marginTop:'10px'}, placeholder: 'Mistake...', onChange: e => setM({...m, myMistake: e.target.value}) }),
                     React.createElement('textarea', { className: 'input-style', style:{width:'100%', height:'80px', marginTop:'10px'}, placeholder: 'Correct logic...', onChange: e => setM({...m, correctLogic: e.target.value}) }),
                     React.createElement('button', { 
