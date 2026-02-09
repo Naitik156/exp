@@ -2127,27 +2127,61 @@ React.createElement('div', { className: 'test-history-card' },
                     }, '💡 "Concept Clear" karne se ye popup alerts mein aana band ho jayega.')
                 )
             )),
-            showAdd && React.createElement('div', { className: 'modal' },
-                React.createElement('div', { className: 'modal-content modern-modal' },
+            React.createElement('div', { className: 'modal-content modern-modal', style: { padding: '2rem', maxWidth: '500px' } },
                     React.createElement('button', { className: 'modal-close-x', onClick: () => setShowAdd(false) }, '×'),
-                    React.createElement('h3', null, 'Record Mistake'),
-                    React.createElement('select', { className: 'input-style', style:{width:'100%', marginBottom:'10px'}, onChange: e => setM({...m, type: e.target.value}) }, ['Conceptual Error', 'Never Studied', 'Silly Mistake', 'Blunder', 'Calculation Mistake'].map(t => React.createElement('option', { key: t }, t))),
-                    React.createElement('div', { style: { marginBottom: '10px', display: 'flex', flexDirection: 'column', gap: '8px' } },
-                        React.createElement('label', { style: { fontSize: '0.8rem', fontWeight: 'bold' } }, '1. Question Image (Mandatory):'),
-                        React.createElement('input', { 
-                            type: 'file', 
-                            accept: 'image/*', 
-                            onChange: e => setFileTargets(prev => ({ ...prev, q: e.target.files[0] })) 
-                        }),
-                        React.createElement('label', { style: { fontSize: '0.8rem', fontWeight: 'bold' } }, '2. Solution Image (Mandatory):'),
-                        React.createElement('input', { 
-                            type: 'file', 
-                            accept: 'image/*', 
-                            onChange: e => setFileTargets(prev => ({ ...prev, s: e.target.files[0] })) 
-                        })
+                    React.createElement('h3', { style: { marginBottom: '1.5rem', fontSize: '1.5rem', color: 'var(--primary)' } }, '📝 Record Mistake'),
+                    
+                    React.createElement('div', { className: 'input-group', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '1rem' } },
+                        React.createElement('div', null,
+                            React.createElement('label', { style: { fontSize: '0.8rem', fontWeight: '700' } }, 'Select Test'),
+                            React.createElement('select', { 
+                                className: 'input-style', 
+                                style: { width: '100%', border: '1.5px solid var(--primary-light)' },
+                                value: f.tid,
+                                onChange: e => setF({...f, tid: e.target.value})
+                            }, 
+                                React.createElement('option', { value: '' }, 'Choose Test'),
+                                (data[currentExam]?.tests || []).map(t => React.createElement('option', { key: t.id, value: t.id }, t.name))
+                            )
+                        ),
+                        React.createElement('div', null,
+                            React.createElement('label', { style: { fontSize: '0.8rem', fontWeight: '700' } }, 'Subject'),
+                            React.createElement('select', { 
+                                className: 'input-style', 
+                                style: { width: '100%', border: '1.5px solid var(--primary-light)' },
+                                value: f.sub,
+                                onChange: e => setF({...f, sub: e.target.value})
+                            }, 
+                                (currentExam === 'NEET' ? ['Physics', 'Chemistry', 'Botany', 'Zoology'] : ['Physics', 'Chemistry', 'Mathematics']).map(s => React.createElement('option', { key: s, value: s }, s))
+                            )
+                        )
                     ),
-                    React.createElement('textarea', { className: 'input-style', style:{width:'100%', height:'80px', marginTop:'10px'}, placeholder: 'Mistake...', onChange: e => setM({...m, myMistake: e.target.value}) }),
-                    React.createElement('textarea', { className: 'input-style', style:{width:'100%', height:'80px', marginTop:'10px'}, placeholder: 'Correct logic...', onChange: e => setM({...m, correctLogic: e.target.value}) }),
+
+                    React.createElement('div', { className: 'input-group', style: { marginBottom: '1rem' } },
+                        React.createElement('label', { style: { fontSize: '0.8rem', fontWeight: '700' } }, 'Mistake Type'),
+                        React.createElement('select', { 
+                            className: 'input-style', 
+                            style: { width: '100%' }, 
+                            onChange: e => setM({...m, type: e.target.value}) 
+                        }, ['Conceptual Error', 'Silly Mistake', 'Calculation Mistake', 'Never Studied', 'Blunder'].map(t => React.createElement('option', { key: t }, t)))
+                    ),
+
+                    React.createElement('div', { style: { background: '#f8fafc', padding: '10px', borderRadius: '12px', marginBottom: '1rem', border: '1px solid #e2e8f0' } },
+                        React.createElement('p', { style: { fontSize: '0.75rem', color: '#64748b', marginBottom: '8px', fontWeight: '700' } }, '📸 Upload Photos (Optional)'),
+                        React.createElement('div', { style: { display: 'flex', gap: '10px' } },
+                            React.createElement('div', { style: { flex: 1 } },
+                                React.createElement('span', { style: { fontSize: '0.65rem', display: 'block' } }, 'Question'),
+                                React.createElement('input', { type: 'file', accept: 'image/*', style: { fontSize: '0.7rem', width: '100%' }, onChange: e => setFileTargets(prev => ({ ...prev, q: e.target.files[0] })) })
+                            ),
+                            React.createElement('div', { style: { flex: 1 } },
+                                React.createElement('span', { style: { fontSize: '0.65rem', display: 'block' } }, 'Solution'),
+                                React.createElement('input', { type: 'file', accept: 'image/*', style: { fontSize: '0.7rem', width: '100%' }, onChange: e => setFileTargets(prev => ({ ...prev, s: e.target.files[0] })) })
+                            )
+                        )
+                    ),
+
+                    React.createElement('textarea', { className: 'input-style', style:{width:'100%', height:'70px', marginBottom:'10px'}, placeholder: 'Explain your mistake briefly...', onChange: e => setM({...m, myMistake: e.target.value}) }),
+                    React.createElement('textarea', { className: 'input-style', style:{width:'100%', height:'70px', marginBottom:'10px'}, placeholder: 'What is the correct logic/formula?', onChange: e => setM({...m, correctLogic: e.target.value}) }),
                     React.createElement('button', { 
                         className: 'btn btn-primary', 
                         style:{width:'100%', marginTop:'15px'}, 
