@@ -1582,7 +1582,7 @@ const goalChartRef = React.useRef(null);
                 showToast('SLECT A GOAL NAME!');
                 return;
             }
-            const updatedGoals = [...goals, { ...newGoal, id: Date.now(), completed: false }];
+            const updatedGoals = [...(data.dailyGoals || []), { ...newGoal, id: Date.now(), completed: false }];
             setData(prev => ({ ...prev, dailyGoals: updatedGoals }));
             setShowAddModal(false);
             setNewGoal({ title: '', desc: '', icon: '📖', isRecurring: false, date: new Date().toISOString().split('T')[0] });
