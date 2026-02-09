@@ -1727,7 +1727,7 @@ const todayStr = new Date().toISOString().split('T')[0];
                     React.createElement('div', { style: {display: 'flex', alignItems: 'center', gap: '15px'} },
                         React.createElement('input', { 
                             type: 'checkbox', 
-                            checked: goal.completed, 
+                            checked: !!(data.doneGoals?.[selectedDate]?.[goal.id]),
                             readOnly: true, 
                             className: 'custom-checkbox', 
                             style: {width: '22px', height: '22px', cursor: isFuture ? 'not-allowed' : 'pointer'},
