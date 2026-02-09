@@ -1570,7 +1570,11 @@ const goalChartRef = React.useRef(null);
             });
             return () => chart.destroy();
         }, [data.goalsHistory]);
-        const goals = data.dailyGoals || [];
+        const [selectedDate, setSelectedDate] = React.useState(new Date().toISOString().split('T')[0]);
+        const allGoals = data.dailyGoals || [];
+        
+        // Filter goals: Jo selected date ke hain YA jo recurring (all months) hain
+        const goals = allGoals.filter(g => g.date === selectedDate || g.isRecurring);
 
         const addGoal = () => {
             if (!newGoal.title.trim()) {
