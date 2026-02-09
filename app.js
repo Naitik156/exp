@@ -2100,12 +2100,12 @@ filtered.length === 0 ? React.createElement('p', {style:{textAlign:'center', pad
                     x.img1 && React.createElement('img', { 
                         src: x.img1, 
                         onClick: () => window.open(x.img1, '_blank'),
-                        style: { width: '100%', maxHeight: '250px', objectFit: 'contain', borderRadius: '10px', cursor: 'zoom-in', border: '1px solid #eee', background: '#f8fafc' } 
+                        style: { width: '100%', maxHeight: '350px', objectFit: 'contain', borderRadius: '10px', cursor: 'zoom-in', border: '1px solid #eee', background: '#f8fafc' } 
                     }),
                     x.img2 && React.createElement('img', { 
                         src: x.img2, 
                         onClick: () => window.open(x.img2, '_blank'),
-                        style: { width: '100%', maxHeight: '250px', objectFit: 'contain', borderRadius: '10px', cursor: 'zoom-in', border: '1px solid #eee', background: '#f8fafc' }
+                        style: { width: '100%', maxHeight: '350px', objectFit: 'contain', borderRadius: '10px', cursor: 'zoom-in', border: '1px solid #eee', background: '#f8fafc' }
                     })
                 ),
                 React.createElement('div', { className: 'mistake-grid' },
