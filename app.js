@@ -259,11 +259,15 @@ const compressImage = (file) => {
                 const img = new Image(); img.src = e.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 500; let width = img.width, height = img.height;
+                    // HARD COMPRESSION: Width 400px and Quality 0.25 (Ideal for 30-40KB)
+                    const MAX_WIDTH = 400; 
+                    let width = img.width, height = img.height;
                     if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
                     canvas.width = width; canvas.height = height;
-                    const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
-                    resolve(canvas.toDataURL('image/jpeg', 0.4));
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    // jpeg format at 0.25 quality gives very small file size
+                    resolve(canvas.toDataURL('image/jpeg', 0.25));
                 };
             };
         });
@@ -2178,21 +2182,54 @@ filtered.length === 0 ? React.createElement('p', {style:{textAlign:'center', pad
                         disabled: isUploading,
                         style: { width: '100%', height: '50px' },
                         onClick: async () => {
-                            if (!f.tid) return alert('⚠️ Error: Test select karein!');
+                            if (!f.tid) return alert('⚠️ Error: Pehle Test select karein!');
                             if (!m.myMistake || !m.correctLogic) return alert('⚠️ Error: Details bhariye!');
+
                             setIsUploading(true);
-                            let qUrl = ""; let sUrl = "";
+                            let qUrl = ""; 
+                            let sUrl = "";
+                            
                             try {
-                                if (fileTargets.q) qUrl = await uploadToCloudinary(fileTargets.q);
-                                if (fileTargets.s) sUrl = await uploadToCloudinary(fileTargets.s);
-                                const finalMistake = { ...m, ...f, img1: qUrl, img2: sUrl, mastered: false, id: Date.now() };
-                                setData(p => ({ ...p, mistakes: [...(p.mistakes || []), finalMistake] }));
+                                showToast((fileTargets.q || fileTargets.s) ? 'Hard Compressing & Uploading...' : 'Saving...');
+                                
+                                // Question Image Compression & Upload
+                                if (fileTargets.q) {
+                                    const compressedQ = await compressImage(fileTargets.q);
+                                    qUrl = await uploadToCloudinary(compressedQ);
+                                }
+                                
+                                // Solution Image Compression & Upload
+                                if (fileTargets.s) {
+                                    const compressedS = await compressImage(fileTargets.s);
+                                    sUrl = await uploadToCloudinary(compressedS);
+                                }
+
+                                const currentMistakes = data.mistakes || [];
+                                const finalMistake = { 
+                                    ...m, 
+                                    ...f, 
+                                    img1: qUrl, 
+                                    img2: sUrl, 
+                                    mastered: false, 
+                                    id: Date.now() 
+                                };
+
+                                setData(p => ({ 
+                                    ...p, 
+                                    mistakes: [...currentMistakes, finalMistake] 
+                                }));
+
                                 setShowAdd(false);
                                 setFileTargets({ q: null, s: null });
                                 setM({ type: 'Silly Mistake', img1: '', img2: '', myMistake: '', correctLogic: '' });
-                                showToast('Mistake Saved!');
-                            } catch (err) { alert('Upload failed!'); } finally { setIsUploading(false); }
-                        } 
+                                showToast('Mistake Saved (Hard Compressed)!');
+                            } catch (err) {
+                                console.error(err);
+                                alert('Error: Upload Failed! Internet ya Cloudinary check karein.');
+                            } finally {
+                                setIsUploading(false);
+                            }
+                        }
                     }, isUploading ? '⏳ Uploading...' : '✓ Save Mistake')
                 )
             )
