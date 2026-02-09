@@ -1519,11 +1519,12 @@ const handleDeleteChapter = (chapterName) => {
     };  
 const DailyGoalsView = () => {
         const [showAddModal, setShowAddModal] = React.useState(false);
-        const [newGoal, setNewGoal] = React.useState({ 
+      const [newGoal, setNewGoal] = React.useState({ 
             title: '', 
             desc: '', 
             icon: '📖', 
-            isRecurring: true 
+            isRecurring: false,
+            date: new Date().toISOString().split('T')[0]
         });
 const goalChartRef = React.useRef(null);
 
