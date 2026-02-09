@@ -1732,8 +1732,8 @@ const todayStr = getFreshIST();
                             checked: !!(data.doneGoals?.[selectedDate]?.[goal.id]),
                             readOnly: true, 
                             className: 'custom-checkbox', 
-                            style: {width: '22px', height: '22px', cursor: isFuture ? 'not-allowed' : 'pointer'},
-                            disabled: isFuture
+                            style: {width: '22px', height: '22px', cursor: isToday ? 'pointer' : 'not-allowed'},
+disabled: !isToday
                         }),
                         React.createElement('div', { className: 'goal-icon-circle', style: {background: 'rgba(245, 158, 11, 0.1)', fontSize: '1.5rem'} }, goal.icon),
                         React.createElement('div', { className: 'goal-content' },
