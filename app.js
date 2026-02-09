@@ -1701,6 +1701,13 @@ const todayStr = new Date().toISOString().split('T')[0];
                     style: { 
                         marginBottom: '1rem', 
                         borderLeft: '6px solid var(--secondary)',
+                        padding: '1.25rem',
+                        cursor: isFuture ? 'not-allowed' : 'pointer',
+                        opacity: isFuture ? 0.8 : 1
+                    },
+                    style: { 
+                        marginBottom: '1rem', 
+                        borderLeft: '6px solid var(--secondary)',
                         padding: '1.25rem'
                     },
                     onClick: () => toggleGoal(goal.id) 
