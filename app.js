@@ -1574,16 +1574,10 @@ const goalChartRef = React.useRef(null);
             });
             return () => chart.destroy();
         }, [data.goalsHistory]);
-        const [selectedDate, setSelectedDate] = React.useState(getTodayIST());
+        const [selectedDate, setSelectedDate] = React.useState(getFreshIST());
 
-        // Jab bhi page khule, naya local date set ho jaye
         React.useEffect(() => {
-            setSelectedDate(getTodayLocal());
-        }, [view]);
-    // Auto-refresh date when view changes
-        React.useEffect(() => {
-            const today = getTodayLocal();
-            setSelectedDate(today);
+            setSelectedDate(getFreshIST());
         }, [view]);
         const allGoals = data.dailyGoals || [];
         
