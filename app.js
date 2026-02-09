@@ -1587,7 +1587,7 @@ const goalChartRef = React.useRef(null);
         }, [view]);
     // Auto-refresh date when view changes
         React.useEffect(() => {
-            const today = new Date().toISOString().split('T')[0];
+            const today = getTodayLocal();
             setSelectedDate(today);
         }, [view]);
         const allGoals = data.dailyGoals || [];
