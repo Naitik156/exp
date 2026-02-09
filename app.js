@@ -2188,7 +2188,7 @@ React.createElement('div', { className: 'test-history-card' },
                                 setIsUploading(false);
                             }
                         }
-                    }, '✓ Save Mistake')
+                    }, isUploading ? '⏳ Uploading...' : '✓ Save Mistake')
                 )
             )
         );
