@@ -1518,9 +1518,7 @@ const handleDeleteChapter = (chapterName) => {
         );
     };  
 const DailyGoalsView = () => {
-    // Indian Local Date nikalne ka sahi tarika
-        const getTodayIST = () => {
-            // India Time zone calculation
+    const getFreshIST = () => {
             return new Date(new Date().getTime() + 19800000).toISOString().split('T')[0];
         };
         const [showAddModal, setShowAddModal] = React.useState(false);
