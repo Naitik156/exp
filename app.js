@@ -1633,7 +1633,8 @@ const goalChartRef = React.useRef(null);
             showToast("Goal removed");
         };
 
-        const completedCount = goals.filter(g => g.completed).length;
+        const dateDoneMap = data.doneGoals?.[selectedDate] || {};
+        const completedCount = goals.filter(g => !!dateDoneMap[g.id]).length;
         const progressPercent = goals.length > 0 ? Math.round((completedCount / goals.length) * 100) : 0;
 const todayStr = new Date().toISOString().split('T')[0];
         const isFuture = selectedDate > todayStr;
