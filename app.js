@@ -1579,7 +1579,12 @@ const goalChartRef = React.useRef(null);
             });
             return () => chart.destroy();
         }, [data.goalsHistory]);
-        const [selectedDate, setSelectedDate] = React.useState(new Date().toISOString().split('T')[0]);
+        const [selectedDate, setSelectedDate] = React.useState(getTodayLocal());
+
+        // Jab bhi page khule, naya local date set ho jaye
+        React.useEffect(() => {
+            setSelectedDate(getTodayLocal());
+        }, [view]);
     // Auto-refresh date when view changes
         React.useEffect(() => {
             const today = new Date().toISOString().split('T')[0];
