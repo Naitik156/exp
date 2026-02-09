@@ -2083,7 +2083,18 @@ React.createElement('div', { className: 'test-history-card' },
             React.createElement('button', { className: 'btn btn-primary', style: {width:'100%', marginBottom: '20px'}, onClick: () => setShowAdd(true) }, '+ Add New Mistake'),
             filtered.length === 0 ? React.createElement('p', {style:{textAlign:'center'}}, 'No mistakes found.') : filtered.map(x => React.createElement('div', { key: x.id, className: `mistake-card level-${x.type.toLowerCase().replace(' ', '-')} ${x.mastered ? 'mastered' : ''}` },
                 React.createElement('div', { style:{display:'flex', justifyContent:'space-between'} }, React.createElement('div', { className: 'type-tag', style: {background:'#333', color:'white', padding:'4px 10px', borderRadius:'5px', fontSize:'0.7rem'} }, x.type), React.createElement('button', { onClick: () => setData(p => ({...p, mistakes: p.mistakes.filter(y => y.id !== x.id)})), style:{border:'none', background:'none', cursor:'pointer'} }, '🗑️')),
-                x.img && React.createElement('img', { src: x.img, style:{maxWidth:'100%', borderRadius:'10px', margin:'10px 0'} }),
+                React.createElement('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', margin: '10px 0' } },
+                    x.img1 && React.createElement('img', { 
+                        src: x.img1, 
+                        onClick: () => window.open(x.img1, '_blank'),
+                        style: { width: '100%', borderRadius: '10px', cursor: 'zoom-in', border: '1px solid #eee' } 
+                    }),
+                    x.img2 && React.createElement('img', { 
+                        src: x.img2, 
+                        onClick: () => window.open(x.img2, '_blank'),
+                        style: { width: '100%', borderRadius: '10px', cursor: 'zoom-in', border: '1px solid #eee' } 
+                    })
+                ),
                 React.createElement('div', { className: 'mistake-grid' },
                     React.createElement('div', { 
                         className: 'mistake-box box-wrong',
