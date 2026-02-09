@@ -1589,17 +1589,18 @@ const goalChartRef = React.useRef(null);
             showToast('🎯 Target Set Ho Gaya!');
         };
 
-        const toggleGoal = (id) => {
-            const updatedGoals = (data.dailyGoals || []).map(g => g.id === id ? { ...g, completed: !g.completed } : g);
-            
-            // Percentage Calculate karein
-            const completedCount = updatedGoals.filter(g => g.completed).length;
-            const percent = updatedGoals.length > 0 ? Math.round((completedCount / updatedGoals.length) * 100) : 0;
-            
-            // Aaj ki date nikaalein (Format: YYYY-MM-DD)
+      const toggleGoal = (id) => {
             const today = new Date().toISOString().split('T')[0];
             
-            // History update karein
+            // Block interaction if selected date is in the future
+            if (selectedDate > today) {
+                showToast("Future targets ko aaj tick nahi kar sakte!");
+                return;
+            }
+
+            const updatedGoals = (data.dailyGoals || []).map(g => g.id === id ? { ...g, completed: !g.completed } : g);
+            const completedCount = updatedGoals.filter(g => g.completed).length;
+            const percent = updatedGoals.length > 0 ? Math.round((completedCount / updatedGoals.length) * 100) : 0;
             const updatedHistory = { ...(data.goalsHistory || {}), [today]: percent };
 
             setData(prev => ({ 
@@ -1608,7 +1609,6 @@ const goalChartRef = React.useRef(null);
                 goalsHistory: updatedHistory 
             }));
         };
-
         const deleteGoal = (id) => {
             const updatedGoals = (data.dailyGoals || []).filter(g => g.id !== id);
             
