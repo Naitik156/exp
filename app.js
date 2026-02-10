@@ -858,19 +858,20 @@ const getAnalytics = (filterClass = 'Overall') => {
 
                 // Daily Goals Card
                 React.createElement('div', { 
-                    className: 'card', 
-                    onClick: () => navigateTo('daily-goals'),
-                    style: { 
-                        textAlign: 'center', 
-                        cursor: 'pointer', 
-                        minHeight: '180px', 
-                        display: 'flex', 
-                        flexDirection: 'column', 
-                        justifyContent: 'center',
-                        padding: '1.5rem',
-                        borderBottom: '5px solid #F59E0B' // Premium Gold border
-                    }
-                },
+    className: 'card', 
+    onClick: () => setView('daily-goals'),
+    style: { 
+        textAlign: 'center', 
+        cursor: 'pointer', 
+        minHeight: '180px', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        justifyContent: 'center',
+        padding: '1.5rem',
+        borderBottom: '5px solid #F59E0B'
+    }
+},
+
                     React.createElement('div', { style: { fontSize: '3rem', marginBottom: '0.75rem' } }, '🎯'),
                     React.createElement('h3', { className: 'card-title', style: { fontSize: '1.25rem', margin: 0 } }, 'Daily Goals'),
                     React.createElement('p', { className: 'card-subtitle', style: { fontSize: '0.9rem', marginTop: '5px' } }, 'Check Today\'s Targets')
