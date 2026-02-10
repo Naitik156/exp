@@ -1,7 +1,8 @@
 {
   "name": "NEET Syllabus Tracker",
   "short_name": "NEET Tracker",
-  "start_url": "/exp/index.html",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#ECFDF5",
   "theme_color": "#0F766E",
