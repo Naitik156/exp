@@ -1552,11 +1552,11 @@ const DailyGoalsView = () => {
         }
         // Naya function: date: viewDate set kiya gaya hai
         const updatedGoals = [...(data.dailyGoals || []), { 
-            ...newGoal, 
-            id: Date.now(), 
-            completed: false, 
-            date: viewDate 
-        }];
+    ...newGoal, 
+    id: Date.now(), 
+    doneDates: {}, // Naya: Har din ka status yahan save hoga
+    date: viewDate 
+}];
         setData(prev => ({ ...prev, dailyGoals: updatedGoals }));
         setShowAddModal(false);
         // Reset form to default
