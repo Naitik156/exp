@@ -1694,12 +1694,21 @@ const DailyGoalsView = () => {
                 onClick: () => toggleGoal(goal.id) 
             },
                 React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '15px', width: '100%' } },
-                    React.createElement('input', { 
-    type: 'checkbox', 
-    checked: !!(goal.doneDates?.[viewDate]), 
-    readOnly: true, 
-    className: 'custom-checkbox'
-}),
+                    React.createElement('div', { 
+    className: 'custom-checkbox',
+    style: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: goal.doneDates?.[viewDate] ? 'var(--primary)' : 'transparent',
+        border: `2px solid ${goal.doneDates?.[viewDate] ? 'var(--primary)' : '#ccc'}`,
+        borderRadius: '6px',
+        color: 'white',
+        fontSize: '14px',
+        fontWeight: 'bold',
+        transition: 'all 0.2s'
+    }
+}, goal.doneDates?.[viewDate] ? '✓' : ''),
                     React.createElement('div', { className: 'goal-icon-circle' }, goal.icon),
                     React.createElement('div', { className: 'goal-content' },
                         React.createElement('span', { className: 'goal-title' }, goal.title),
