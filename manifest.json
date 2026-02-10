@@ -1,0 +1,20 @@
+{
+  "name": "NEET Syllabus Tracker",
+  "short_name": "NEET Tracker",
+  "start_url": "/exp/index.html",
+  "display": "standalone",
+  "background_color": "#ECFDF5",
+  "theme_color": "#0F766E",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
