@@ -1550,11 +1550,18 @@ const DailyGoalsView = () => {
             showToast('Goal name bhariye!');
             return;
         }
-        const updatedGoals = [...(data.dailyGoals || []), { ...newGoal, id: Date.now(), completed: false }];
+        // Naya function: date: viewDate set kiya gaya hai
+        const updatedGoals = [...(data.dailyGoals || []), { 
+            ...newGoal, 
+            id: Date.now(), 
+            completed: false, 
+            date: viewDate 
+        }];
         setData(prev => ({ ...prev, dailyGoals: updatedGoals }));
         setShowAddModal(false);
-        setNewGoal({ title: '', desc: '', icon: '📖', isRecurring: false, date: viewDate });
-        showToast(`🎯 Goal set for ${viewDate.split('-').reverse().join('/')}`);
+        // Reset form to default
+        setNewGoal({ title: '', desc: '', icon: '📖', isRecurring: false, date: todayIST });
+        showToast(`🎯 Target saved for ${viewDate.split('-').reverse().join('/')}`);
     };
 
     const toggleGoal = (id) => {
