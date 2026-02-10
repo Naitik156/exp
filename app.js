@@ -1727,17 +1727,43 @@ const DailyGoalsView = () => {
             React.createElement('div', { className: 'modal-content glass-modal' },
                 React.createElement('button', { className: 'modal-close-x', onClick: () => setShowAddModal(false) }, '×'),
                 React.createElement('h3', { className: 'custom-modal-header' }, 
-                    React.createElement('span', { className: 'target-icon' }, '🎯'), ' New Target'
+                    React.createElement('span', { className: 'target-icon' }, '🎯'), ' Naya Target Set Karein'
                 ),
+                // Goal Name
                 React.createElement('div', { className: 'input-group' },
-                    React.createElement('label', null, 'Target Name'),
+                    React.createElement('label', null, 'Goal Name'),
                     React.createElement('input', { 
                         className: 'input-style', 
                         value: newGoal.title, 
                         onChange: e => setNewGoal({...newGoal, title: e.target.value}),
-                        placeholder: 'What is the goal?' 
+                        placeholder: 'Kya karna hai?' 
                     })
                 ),
+                // Description (Restored like Image 2)
+                React.createElement('div', { className: 'input-group' },
+                    React.createElement('label', null, 'Description'),
+                    React.createElement('textarea', { 
+                        className: 'input-style', 
+                        style: { minHeight: '80px', resize: 'none' },
+                        value: newGoal.desc, 
+                        onChange: e => setNewGoal({...newGoal, desc: e.target.value}),
+                        placeholder: 'Details...' 
+                    })
+                ),
+                // Icon Selector (Restored like Image 2)
+                React.createElement('div', { className: 'input-group' },
+                    React.createElement('label', null, 'Choose Icon'),
+                    React.createElement('select', { 
+                        className: 'input-style',
+                        value: newGoal.icon,
+                        onChange: e => setNewGoal({...newGoal, icon: e.target.value})
+                    }, 
+                        ['📖', '🧪', '🧬', '📐', '📝', '🎯', '🔥', '💪'].map(emoji => 
+                            React.createElement('option', { key: emoji, value: emoji }, emoji)
+                        )
+                    )
+                ),
+                // Active For Section
                 React.createElement('div', { className: 'active-for-container' },
                     React.createElement('div', { className: 'active-for-row' },
                         React.createElement('span', { className: 'active-for-title' }, 'Active For'),
@@ -1747,11 +1773,11 @@ const DailyGoalsView = () => {
                                 checked: newGoal.isRecurring,
                                 onChange: (e) => setNewGoal({...newGoal, isRecurring: e.target.checked})
                             }),
-                            React.createElement('span', { className: 'habit-checkbox-text' }, 'All Days (Habit)')
+                            React.createElement('span', { className: 'habit-checkbox-text' }, 'All months (default)')
                         )
                     ),
                     React.createElement('p', { className: 'habit-help-text' }, 
-                        newGoal.isRecurring ? 'Will appear every day' : `Only for ${viewDate}`
+                        newGoal.isRecurring ? 'This habit will appear in all months' : `Appearing for ${viewDate.split('-').reverse().join('-')}`
                     )
                 ),
                 React.createElement('div', { className: 'modal-buttons' },
