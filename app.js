@@ -1565,26 +1565,33 @@ const DailyGoalsView = () => {
     };
 
     const toggleGoal = (id) => {
-        // IMPORTANT: Agar aaj ki date nahi hai toh marking lock rahegi
         if (!isToday) {
             showToast("⚠️ Aap sirf AAJ ke goals mark kar sakte hain!");
             return;
         }
-
-        const updatedGoals = (data.dailyGoals || []).map(g => g.id === id ? { ...g, completed: !g.completed } : g);
+        const updatedGoals = (data.dailyGoals || []).map(g => {
+            if (g.id === id) {
+                // Ab hum global "completed" ki jagah us din ki date check kar rahe hain
+                const currentStatus = g.doneDates?.[todayIST] || false;
+                return { 
+                    ...g, 
+                    doneDates: { ...(g.doneDates || {}), [todayIST]: !currentStatus } 
+                };
+            }
+            return g;
+        });
         
-        // Progress percentage for History graph
+        // History calculation logic
         const todaysTasks = updatedGoals.filter(g => g.isRecurring || g.date === todayIST);
-        const completedCount = todaysTasks.filter(g => g.completed).length;
+        const completedCount = todaysTasks.filter(g => g.doneDates?.[todayIST]).length;
         const percent = todaysTasks.length > 0 ? Math.round((completedCount / todaysTasks.length) * 100) : 0;
-        
+
         setData(prev => ({ 
             ...prev, 
             dailyGoals: updatedGoals,
             goalsHistory: { ...(prev.goalsHistory || {}), [todayIST]: percent } 
         }));
     };
-
     const deleteGoal = (id) => {
         const updatedGoals = (data.dailyGoals || []).filter(g => g.id !== id);
         setData(prev => ({ ...prev, dailyGoals: updatedGoals }));
