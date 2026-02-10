@@ -1415,6 +1415,17 @@ const handleDeleteChapter = (chapterName) => {
             )
         );
     };
+const DailyGoalsView = () => {
+    return React.createElement('div', { className: 'container' },
+        React.createElement('div', { className: 'nav-breadcrumb' },
+            React.createElement('span', { className: 'breadcrumb-item', onClick: () => setView('home') }, 'Home'),
+            React.createElement('span', { className: 'breadcrumb-separator' }, '/'),
+            React.createElement('span', { className: 'breadcrumb-item active' }, 'Daily Goals')
+        ),
+        React.createElement('h2', null, '🎯 Daily Goals'),
+        React.createElement('p', null, 'Daily goals feature coming soon...')
+    );
+};
 
   const DashboardView = () => {
         // --- NAYA STATE: Dashboard ka class filter track karne ke liye ---
