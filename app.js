@@ -1650,7 +1650,8 @@ const DailyGoalsView = () => {
                     React.createElement('span', { style: { fontWeight: '700' } }, 'Completion:'),
                     React.createElement('span', { style: { fontWeight: '700', color: 'var(--primary)' } }, `${progressPercent}%`)
                 ),
-                React.createElement('div', { className: 'progress-bar-bg', style: { height: '12px' } },
+                React.createElement('div', { className: 'progress-bar-bg', style: { height: '8px' } },
+                                
                     React.createElement('div', { className: 'progress-bar-fill', style: { width: `${progressPercent}%`, background: 'linear-gradient(90deg, #F59E0B, #fbbf24)' } })
                 )
             )
