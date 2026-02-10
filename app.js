@@ -259,15 +259,15 @@ const compressImage = (file) => {
                 const img = new Image(); img.src = e.target.result;
                 img.onload = () => {
                     const canvas = document.createElement('canvas');
-                    // HARD COMPRESSION: Width 400px and Quality 0.25 (Ideal for 30-40KB)
+                    // HARD COMPRESSION: Width 400px (Sufficient for phone screen)
                     const MAX_WIDTH = 400; 
                     let width = img.width, height = img.height;
                     if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
                     canvas.width = width; canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    // jpeg format at 0.25 quality gives very small file size
-                    resolve(canvas.toDataURL('image/jpeg', 0.25));
+                    // Quality 0.2 gives roughly 30-40KB file size
+                    resolve(canvas.toDataURL('image/jpeg', 0.2));
                 };
             };
         });
