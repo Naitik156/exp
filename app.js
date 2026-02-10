@@ -1630,7 +1630,7 @@ const DailyGoalsView = () => {
         return () => chart.destroy();
     }, [data.goalsHistory]);
 
-    const progressPercent = goals.length > 0 ? Math.round((goals.filter(g => g.completed).length / goals.length) * 100) : 0;
+    const progressPercent = goals.length > 0 ? Math.round((goals.filter(g => g.doneDates?.[viewDate]).length / goals.length) * 100) : 0;
 
     return React.createElement('div', { className: 'container daily-goals-page' },
         React.createElement('div', { className: 'nav-breadcrumb' },
