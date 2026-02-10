@@ -1703,3 +1703,124 @@ body {
 
 .notif-header { display: flex; justify-content: space-between; font-weight: 800; color: #57534E; font-size: 0.8rem; letter-spacing: 1px; margin-bottom: 12px; }
 .notif-close { cursor: pointer; font-size: 1.2rem; }
+/* --- DAILY GOALS: DATE PICKER & LOCK STYLES --- */
+
+/* Date Switcher (Top Right Corner like Img 2) */
+.date-picker-wrapper {
+    background: #ffffff;
+    padding: 10px 18px;
+    border-radius: 14px;
+    border: 2px solid var(--secondary); /* Gold border */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.date-picker-wrapper:hover {
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.15);
+    transform: translateY(-2px);
+}
+
+.date-input-modern {
+    border: none;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    color: var(--text);
+    outline: none;
+    cursor: pointer;
+    font-size: 1rem;
+    background: transparent;
+}
+
+/* Lock Banner (Pichle ya aane wale dinon ka message) */
+.lock-banner {
+    background: #FEF3C7; /* Warning yellow background */
+    color: #92400E; /* Deep orange-brown text */
+    text-align: center;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    font-size: 0.95rem;
+    font-weight: 800;
+    border: 2px dashed #F59E0B;
+    animation: fadeIn 0.5s ease;
+}
+
+/* Locked Goal Cards (Jab date aaj ki nahi ho) */
+.locked-card {
+    cursor: default !important;
+    background: #fdfdfd !important;
+    opacity: 0.85;
+    filter: grayscale(0.3); /* Thoda feeka dikhega */
+    border-left-color: #D1D5DB !important; /* Grey border for locked cards */
+}
+
+.locked-card .custom-checkbox {
+    cursor: not-allowed !important;
+    opacity: 0.5;
+    pointer-events: none; /* Clicking disable karne ke liye */
+}
+
+.locked-card:hover {
+    transform: none !important; /* Hover effect hata diya */
+    box-shadow: var(--shadow) !important;
+}
+
+/* Modal Checkbox Fixes */
+.habit-checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #FFF7ED; /* Light orange tint */
+    padding: 12px 18px;
+    border-radius: 12px;
+    cursor: pointer;
+    border: 1px solid #FFEDD5;
+    transition: background 0.2s;
+}
+
+.habit-checkbox-wrapper:hover {
+    background: #FFEDD5;
+}
+
+.active-for-title {
+    font-weight: 800;
+    font-size: 1rem;
+    color: #431407; /* Dark coffee color */
+    min-width: 90px;
+}
+
+.habit-help-text {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: #9ca3af;
+    font-weight: 600;
+    padding-left: 5px;
+}
+
+/* Modal Close Button Position */
+.modal-close-x {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 28px;
+    color: #94a3b8;
+    background: none;
+    border: none;
+    cursor: pointer;
+    line-height: 1;
+}
+
+/* Mobile responsive for date picker */
+@media (max-width: 480px) {
+    .date-picker-wrapper {
+        width: 100%;
+        justify-content: center;
+        margin-top: 10px;
+    }
+    .date-input-modern {
+        width: 100%;
+        text-align: center;
+    }
+}
