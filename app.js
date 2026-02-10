@@ -1695,11 +1695,11 @@ const DailyGoalsView = () => {
             },
                 React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '15px', width: '100%' } },
                     React.createElement('input', { 
-                        type: 'checkbox', 
-                        checked: goal.completed, 
-                        readOnly: true, 
-                        className: 'custom-checkbox'
-                    }),
+    type: 'checkbox', 
+    checked: !!(goal.doneDates?.[viewDate]), 
+    readOnly: true, 
+    className: 'custom-checkbox'
+}),
                     React.createElement('div', { className: 'goal-icon-circle' }, goal.icon),
                     React.createElement('div', { className: 'goal-content' },
                         React.createElement('span', { className: 'goal-title' }, goal.title),
