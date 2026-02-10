@@ -1690,7 +1690,7 @@ const DailyGoalsView = () => {
             ? React.createElement('div', { className: 'empty-state-container' }, 'No goals found for this date.')
             : goals.map(goal => React.createElement('div', { 
                 key: goal.id, 
-                className: `card goal-card ${goal.completed ? 'completed' : ''} ${!isToday ? 'locked-card' : ''}`, 
+                className: `card goal-card ${goal.doneDates?.[viewDate] ? 'completed' : ''} ${!isToday ? 'locked-card' : ''}`,
                 onClick: () => toggleGoal(goal.id) 
             },
                 React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '15px', width: '100%' } },
