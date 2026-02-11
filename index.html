@@ -142,5 +142,24 @@
     navigator.serviceWorker.register("sw.js");
   }
 </script>
+    <script>
+        // In lines mein se koi bhi ek line randomly screen par dikhegi
+        const quotes = [
+            "Trust the process, Success is near...",
+            "Small steps every day lead to big results.",
+            "Your hard work will pay off, keep going!",
+            "Syncing your progress with the Cloud...",
+            "Analyze your mistakes, master your future.",
+            "Almost there! Preparing your dashboard..."
+        ];
+
+        // Randomly ek quote select karne ka formula
+        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+
+        // Ye line CSS ke zariye us quote ko screen par chipka degi
+        const style = document.createElement('style');
+        style.innerHTML = `#root:empty::after { content: "${randomQuote}"; }`;
+        document.head.appendChild(style);
+    </script>
 </body>
 </html>
