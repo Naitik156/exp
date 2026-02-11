@@ -1,21 +1,23 @@
 {
   "name": "Syllabus Tracker",
-  "short_name": "Syllbus Tracker",
+  "short_name": "Syllabus Tracker",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#ECFDF5",
+  "background_color": "#0F766E",
   "theme_color": "#0F766E",
   "icons": [
     {
       "src": "favicon.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable" 
     },
     {
       "src": "favicon.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
