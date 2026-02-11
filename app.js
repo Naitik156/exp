@@ -250,7 +250,6 @@ const App = () => {
     const [showModal, setShowModal] = useState(false);
     const [modalConfig, setModalConfig] = useState({});
     const [toast, setToast] = useState({ show: false, message: '' });
-    const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [isFetched, setIsFetched] = useState(false);
 const compressImage = (file) => {
         return new Promise((resolve) => {
@@ -352,37 +351,25 @@ const compressImage = (file) => {
     }, []);
 
 // 3. LOAD DATA (Database se progress lana) - FIXED VERSION
-    useEffect(() => {
-        const loadFromDB = async () => {
-            if (user && window.dbFuncs && window.db) {
+useEffect(() => {
+    const loadFromDB = async () => {
+        if (user && window.db && window.dbFuncs) {
+            try {
                 const { doc, getDoc } = window.dbFuncs;
-                try {
-                    const docRef = doc(window.db, "users", user.uid);
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        const fetchedData = docSnap.data();
-                        // Yeh line sabse zaroori hai: Agar database mein tests/mistakes nahi hain, toh empty array set ho jayega
-                        setData({
-                            NEET: {}, JEE: {}, dailyGoals: [], tests: [], mistakes: [],
-                            ...fetchedData 
-                        });
-                    }
-                    setIsFetched(true); 
-                } catch (err) {
-                    console.error("Load error:", err);
-                    setIsFetched(true);
+                const docRef = doc(window.db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    setData(prev => ({ ...prev, ...docSnap.data() }));
                 }
+                setIsFetched(true);
+            } catch (err) {
+                console.error("Load error:", err);
+                setIsFetched(true);
             }
-        };
-
-        const timer = setInterval(() => {
-            if (window.dbFuncs && user) {
-                loadFromDB();
-                clearInterval(timer);
-            }
-        }, 500);
-        return () => clearInterval(timer);
-    }, [user]);
+        }
+    };
+    if (user) loadFromDB();
+}, [user]);
 
     // 4. SAVE DATA (Progress database mein bhejna)
     useEffect(() => {
