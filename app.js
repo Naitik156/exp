@@ -400,6 +400,10 @@ useEffect(() => {
     const changeExam = () => {
         setCurrentExam(null);
         setView('exam-select');
+        localStorage.removeItem('lastView');
+        localStorage.removeItem('lastClass');
+        localStorage.removeItem('lastSubject');
+        localStorage.removeItem('lastChapter');
         setSelectedClass(null);
         setSelectedSubject(null);
         setSelectedChapter(null);
