@@ -756,7 +756,7 @@ const getAnalytics = (filterClass = 'Overall') => {
             }, 'Logout 🚪')
         ),
             React.createElement('div', { className: 'header' },
-                React.createElement('h1', { className: 'logo' }, 'Syllabus Tracker'),
+                React.createElement('h1', { className: 'logo' }, `${currentExam} Syllabus Tracker`),
                 React.createElement('p', { className: 'tagline' }, 'Track Your Progress • Stay Focused • Achieve Success')
             ),
             React.createElement('div', { style: { textAlign: 'center', marginBottom: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' } },
