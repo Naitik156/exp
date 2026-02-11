@@ -1,4 +1,4 @@
-const CACHE_NAME = "neet-tracker-v1";
+const CACHE_NAME = "Syllbus-tracker-v1";
 
 const FILES_TO_CACHE = [
   "./",
