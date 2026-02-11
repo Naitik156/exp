@@ -51,74 +51,49 @@
     </script>
 
     <style>
-        /* Ultra-Modern Splash Screen */
+      /* Professional Splash Screen */
     #root:empty {
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         height: 100vh;
-        background: #0F766E; /* Dark Teal matching your splash */
-        font-family: 'Manrope', sans-serif;
-        color: white;
-        text-align: center;
-        padding: 20px;
+        background: linear-gradient(135deg, #ECFDF5 0%, #F0FDFA 50%, #FEF3C7 100%);
     }
 
-    /* Logo Floating Animation */
+    /* Logo Animation (N logo pulse karega) */
     #root:empty::before {
         content: "";
-        width: 130px;
-        height: 130px;
-        background-image: url('favicon.png');
+        width: 120px;
+        height: 120px;
+        background-image: url('favicon.png'); 
         background-size: contain;
         background-repeat: no-repeat;
         background-position: center;
-        filter: drop-shadow(0 0 20px rgba(20, 184, 166, 0.6));
-        animation: floatLogo 3s infinite ease-in-out;
+        margin-bottom: 30px;
+        animation: pulseLogo 1.5s infinite ease-in-out;
     }
 
-    /* Motivational Quote */
+    /* Modern Loading Spinner */
     #root:empty::after {
-        content: "Consistency is the key to Success..."; 
-        margin-top: 40px;
-        font-size: 1.1rem;
-        font-weight: 500;
-        max-width: 280px;
-        line-height: 1.5;
-        opacity: 0.9;
-        font-style: italic;
-        animation: fadeInQuote 2s ease-in;
+        content: "";
+        width: 35px;
+        height: 35px;
+        border: 4px solid rgba(15, 118, 110, 0.1);
+        border-left: 4px solid #0F766E;
+        border-radius: 50%;
+        animation: spinSpinner 1s linear infinite;
     }
 
-    /* Loading Bar line */
-    .loading-bar {
-        position: absolute;
-        bottom: 15%;
-        width: 150px;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 10px;
-        overflow: hidden;
-    }
-    .loading-bar-fill {
-        width: 40%;
-        height: 100%;
-        background: #14B8A6;
-        animation: loadingSlide 2s infinite ease-in-out;
+    @keyframes spinSpinner {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 
-    @keyframes floatLogo {
-        0%, 100% { transform: translateY(0) scale(1); }
-        50% { transform: translateY(-15px) scale(1.05); }
-    }
-    @keyframes fadeInQuote {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 0.9; transform: translateY(0); }
-    }
-    @keyframes loadingSlide {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(200%); }
+    @keyframes pulseLogo {
+        0% { transform: scale(0.9); opacity: 0.7; }
+        50% { transform: scale(1.1); opacity: 1; }
+        100% { transform: scale(0.9); opacity: 0.7; }
     }
     </style>
 </head>
