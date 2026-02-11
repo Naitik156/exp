@@ -661,7 +661,7 @@ const getAnalytics = (filterClass = 'Overall') => {
     const ExamSelectView = () => {
         return React.createElement('div', { className: 'container' },
             React.createElement('div', { className: 'header' },
-                React.createElement('h1', { className: 'logo' }, 'Exam Tracker'),
+                React.createElement('h1', { className: 'logo' }, 'SyllbusS Tracker'),
                 React.createElement('p', { className: 'tagline' }, 'Choose Your Path to Success')
             ),
             React.createElement('div', { className: 'grid grid-2' },
