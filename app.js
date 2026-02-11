@@ -359,7 +359,7 @@ useEffect(() => {
                 const docRef = doc(window.db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
-                    setData(prev => ({ ...prev, ...docSnap.data() }));
+                    setData(docSnap.data());
                 }
                 setIsFetched(true);
             } catch (err) {
@@ -463,7 +463,7 @@ useEffect(() => {
             showToast("Chapter deleted");
 
             // force re-render
-            setRefreshTrigger(prev => prev + 1);
+            
         }
     });
     setShowModal(true);
@@ -474,7 +474,7 @@ useEffect(() => {
             EXAM_SYLLABUS[currentExam][className][subject].push(chapterName);
             showToast(`Added: ${chapterName}`);
         }
-        setRefreshTrigger(prev => prev + 1);
+       
     };
 
     const getProgress = (className, subject, chapter) => {
@@ -979,7 +979,7 @@ const getAnalytics = (filterClass = 'Overall') => {
                 showToast(`Chapter added: ${trimmedName}`);
                 
                 // Force re-render to update UI and recalculate percentages
-                setRefreshTrigger(prev => prev + 1);
+            
             }
         };
 
@@ -1010,7 +1010,7 @@ const getAnalytics = (filterClass = 'Overall') => {
                     showToast(`Chapter renamed: ${oldName} → ${trimmedName}`);
                     
                     // Force re-render to update UI
-                    setRefreshTrigger(prev => prev + 1);
+                 
                 }
             }
             setEditingChapter(null);
@@ -1036,7 +1036,7 @@ const handleDeleteChapter = (chapterName) => {
 
             setShowModal(false);
             showToast(`Chapter deleted: ${chapterName}`);
-            setRefreshTrigger(p => p + 1);
+            
         }
     });
     setShowModal(true);
@@ -2252,6 +2252,8 @@ filtered.length === 0 ? React.createElement('p', {style:{textAlign:'center', pad
             )
         );
     };
+    // Agar data fetch nahi hua, toh kuch render mat karo (Splash screen chalti rahegi)
+    if (!isFetched) return null;
    return React.createElement(React.Fragment, null,
         // --- 1. SMART FLOATING REVISION BUTTON (Disappears when all clear) ---
         (data.mistakes || []).some(m => !m.mastered) && React.createElement('button', { 
