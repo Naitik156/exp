@@ -237,10 +237,10 @@ const App = () => {
  // --- AKELA AUR SAHI SYNC LOGIC ---
     const [user, setUser] = useState(null);
     const [currentExam, setCurrentExam] = useState(() => localStorage.getItem('currentExam') || null);
-    const [view, setView] = useState(currentExam ? 'home' : 'exam-select');
-    const [selectedClass, setSelectedClass] = useState(null);
-    const [selectedSubject, setSelectedSubject] = useState(null);
-    const [selectedChapter, setSelectedChapter] = useState(null);
+    const [view, setView] = useState(() => localStorage.getItem('lastView') || (currentExam ? 'home' : 'exam-select'));
+const [selectedClass, setSelectedClass] = useState(() => localStorage.getItem('lastClass') || null);
+const [selectedSubject, setSelectedSubject] = useState(() => localStorage.getItem('lastSubject') || null);
+const [selectedChapter, setSelectedChapter] = useState(() => localStorage.getItem('lastChapter') || null);
     const [data, setData] = useState({ 
         NEET: {}, JEE: {}, dailyGoals: [], tests: [], mistakes: [] 
     });
@@ -315,6 +315,10 @@ const compressImage = (file) => {
 
     // 2. Navigation Logic
     const navigateTo = (viewName, params = {}) => {
+        localStorage.setItem('lastView', viewName);
+        localStorage.setItem('lastClass', params.selectedClass !== undefined ? params.selectedClass : (selectedClass || ''));
+        localStorage.setItem('lastSubject', params.selectedSubject !== undefined ? params.selectedSubject : (selectedSubject || ''));
+        localStorage.setItem('lastChapter', params.selectedChapter !== undefined ? params.selectedChapter : (selectedChapter || ''));
         // Naye params ko current state ke sath merge karein
         const nextClass = params.selectedClass !== undefined ? params.selectedClass : selectedClass;
         const nextSub = params.selectedSubject !== undefined ? params.selectedSubject : selectedSubject;
