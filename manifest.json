@@ -1,6 +1,6 @@
 {
-  "name": "NEET Syllabus Tracker",
-  "short_name": "NEET Tracker",
+  "name": "Syllabus Tracker",
+  "short_name": "Syllbus Tracker",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
