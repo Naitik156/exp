@@ -1042,7 +1042,7 @@ const handleDeleteChapter = (chapterName) => {
     setShowModal(true);
 };
 
-        return React.createElement('div', { className: 'container', key: `chapters-view-${refreshTrigger}` },
+        return React.createElement('div', { className: 'container' },
             React.createElement('div', { className: 'nav-breadcrumb' },
                 React.createElement('span', { className: 'breadcrumb-item', onClick: changeExam }, 'Exam Select'),
                 React.createElement('span', { className: 'breadcrumb-separator' }, '/'),
