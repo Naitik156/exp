@@ -413,7 +413,11 @@ useEffect(() => {
     };
     if (user) loadFromDB();
 }, [user]);
-
+useEffect(() => {
+        if (isFetched && user) {
+            startSilentMonitoring();
+        }
+    }, [isFetched]);
     // 4. SAVE DATA (Progress database mein bhejna)
     useEffect(() => {
         const saveToDB = async () => {
