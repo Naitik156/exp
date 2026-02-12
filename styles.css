@@ -1927,3 +1927,21 @@ body {
     position: relative;
 }
 #profileVideo { width: 100%; height: 100%; object-fit: cover; }
+/* --- FINAL PROFILE WIDGET FIX --- */
+.profile-widget {
+    position: fixed !important; /* Screen par chipka rahega */
+    bottom: 25px !important;    /* Niche shift kar diya */
+    right: 20px !important;     /* Kone mein set kar diya */
+    top: auto !important;       /* Upar se overlap khatam */
+    z-index: 3000 !important;   /* Sabse upar dikhega */
+    background: white !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+}
+
+@media (max-width: 480px) {
+    .profile-widget {
+        bottom: 20px !important;
+        right: 15px !important;
+    }
+    .profile-info { display: none !important; } /* Mobile par sirf gol photo dikhegi */
+}
