@@ -783,6 +783,15 @@ const getAnalytics = (filterClass = 'Overall') => {
     return React.createElement('div', { className: 'container' },
         // --- COMPACT HEADER (Breadcrumb + Small Logout) ---
         React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', gap: '10px' } },
+                            React.createElement('div', { className: 'profile-widget', onClick: () => setShowProfileModal(true) },
+                React.createElement('div', { className: 'avatar-circle' },
+                    avatarUrl ? React.createElement('img', { src: avatarUrl, className: 'avatar-img' }) : React.createElement('span', null, '👤')
+                ),
+                React.createElement('div', { className: 'profile-info' },
+                    React.createElement('span', { className: 'profile-name' }, user?.email?.split('@')[0] || 'Student'),
+                    React.createElement('span', { className: 'profile-status' }, avatarUrl ? 'Verified' : 'Complete Profile')
+                )
+            ),
             React.createElement('div', { className: 'nav-breadcrumb', style: { margin: 0 } },
                 React.createElement('span', { className: 'breadcrumb-item', onClick: changeExam }, 'Exam Select'),
                 React.createElement('span', { className: 'breadcrumb-separator' }, '/'),
