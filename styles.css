@@ -1930,4 +1930,15 @@ body {
 }
 #profileVideo { width: 100%; height: 100%; object-fit: cover; }
 /* --- FINAL PROFILE WIDGET FIX --- */
-
+/* Camera aur Canvas ko chupane ke liye */
+.camera-hidden-element {
+    position: fixed !important;
+    top: -10000px !important; /* Screen se bahar */
+    left: -10000px !important;
+    width: 1px !important;
+    height: 1px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    z-index: -9999 !important;
+    visibility: hidden !important;
+}
