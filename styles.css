@@ -1886,20 +1886,22 @@ body {
     padding: 3rem 1rem !important;
 }
 /* --- Profile Widget & Modal Styles --- */
+ --- Profile Widget & Modal Styles --- */
 .profile-widget {
     position: fixed;
-    bottom: 25px; /* Niche shift kar diya */
-    right: 20px;  /* Kone mein set kar diya */
+    top: 15px;
+    right: 85px;
     display: flex;
     align-items: center;
     gap: 10px;
     cursor: pointer;
-    z-index: 2000; /* Sabse upar rahega */
+    z-index: 1001;
     background: white;
-    padding: 6px 12px 6px 6px;
+    padding: 5px 15px 5px 5px;
     border-radius: 50px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15); /* Thoda heavy shadow taaki niche alag dikhe */
-    border: 2px solid var(--primary);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
 }
 .avatar-circle {
     width: 38px;
