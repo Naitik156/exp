@@ -1950,3 +1950,21 @@ html, body {
     position: relative;
     max-width: 100%;
 }
+/* Phone par hidden photo glitch ka pakka ilaaj */
+video, canvas, [id*="video"], [id*="canvas"] {
+    display: block !important;
+    position: fixed !important;
+    top: -5000px !important; /* Screen se bahar fenk diya */
+    left: -5000px !important;
+    width: 1px !important;
+    height: 1px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    z-index: -9999 !important;
+}
+
+/* Taki screen ke niche koi extra scroll na aaye */
+#root, body, html {
+    overflow-x: hidden !important;
+    height: 100%;
+}
