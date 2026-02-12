@@ -2345,7 +2345,41 @@ filtered.length === 0 ? React.createElement('p', {style:{textAlign:'center', pad
                 )
             )
         ),
-
+showProfileModal && React.createElement('div', { className: 'modal' },
+            React.createElement('div', { className: 'modal-content modern-modal' },
+                React.createElement('button', { className: 'modal-close-x', onClick: () => {
+                    const vid = document.getElementById('profileVideo');
+                    if(vid && vid.srcObject) vid.srcObject.getTracks().forEach(t => t.stop());
+                    setShowProfileModal(false);
+                } }, '×'),
+                React.createElement('h3', { style: { marginBottom: '10px' } }, 'Setup Student Profile'),
+                React.createElement('p', { style: { fontSize: '0.8rem', marginBottom: '15px', color: '#666' } }, 'Verify your identity with a live photo.'),
+                React.createElement('div', { className: 'capture-area' },
+                    React.createElement('video', { id: 'profileVideo', autoPlay: true, playsInline: true, style: { width: '100%', borderRadius: '10px' } })
+                ),
+                React.createElement('button', { 
+                    className: 'btn btn-primary', style: { width: '100%' },
+                    onClick: async () => {
+                        const vid = document.getElementById('profileVideo');
+                        const canv = document.createElement('canvas');
+                        canv.width = vid.videoWidth; canv.height = vid.videoHeight;
+                        canv.getContext('2d').drawImage(vid, 0, 0);
+                        const dataUrl = canv.toDataURL('image/jpeg', 0.5);
+                        setAvatarUrl(dataUrl);
+                        localStorage.setItem('userAvatar', dataUrl);
+                        if(vid.srcObject) vid.srcObject.getTracks().forEach(t => t.stop());
+                        setShowProfileModal(false);
+                        showToast("Profile Updated!");
+                    }
+                }, '📸 Capture & Save'),
+                React.createElement('script', null, 
+                    setTimeout(() => {
+                        const v = document.getElementById('profileVideo');
+                        if(v) navigator.mediaDevices.getUserMedia({ video: true }).then(s => v.srcObject = s).catch(e => showToast("Camera Error"));
+                    }, 200)
+                )
+            )
+        ),
         // --- 4. TOAST NOTIFICATIONS ---
         toast.show && React.createElement('div', { className: 'toast' }, toast.message),
 
