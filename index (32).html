@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Syllabus Tracker</title>
+    <!-- Versioning add karne se browser naya file load karega -->
+<link rel="manifest" href="manifest.json?v=2">
+<link rel="icon" type="image/png" href="favicon.png?v=2">
+<meta name="theme-color" content="#0F766E">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Fonts aur CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyC34JnP3u8km7TlX17JcA7Xw5UkddLrfvY",
+            authDomain: "my-exam-tracker-80be7.firebaseapp.com",
+            projectId: "my-exam-tracker-80be7",
+            storageBucket: "my-exam-tracker-80be7.firebasestorage.app",
+            messagingSenderId: "507669777779",
+            appId: "1:507669777779:web:4df324624b99de359cc906"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Global Variables taaki app.js use kar sake
+        window.auth = auth;
+        window.db = db;
+        window.dbFuncs = { doc, getDoc, setDoc }; 
+        
+        // Logout Function
+        window.logoutUser = () => {
+            if(confirm("Logout karein?")) {
+                localStorage.removeItem('currentExam'); 
+                signOut(auth).then(() => {
+                    window.location.href = "login.html";
+                });
+            }
+        };
+    </script>
+
+    <style>
+      /* Professional Splash Screen */
+    #root:empty {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background: linear-gradient(135deg, #ECFDF5 0%, #F0FDFA 50%, #FEF3C7 100%);
+    }
+
+    /* Logo Animation (N logo pulse karega) */
+    #root:empty::before {
+        content: "";
+        width: 120px;
+        height: 120px;
+        background-image: url('favicon.png'); 
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        margin-bottom: 30px;
+        animation: pulseLogo 1.5s infinite ease-in-out;
+    }
+
+    /* Modern Loading Spinner */
+    #root:empty::after {
+        content: "";
+        width: 35px;
+        height: 35px;
+        border: 4px solid rgba(15, 118, 110, 0.1);
+        border-left: 4px solid #0F766E;
+        border-radius: 50%;
+        animation: spinSpinner 1s linear infinite;
+    }
+
+    @keyframes spinSpinner {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    @keyframes pulseLogo {
+        0% { transform: scale(0.9); opacity: 0.7; }
+        50% { transform: scale(1.1); opacity: 1; }
+        100% { transform: scale(0.9); opacity: 0.7; }
+    }
+    </style>
+</head>
+<body>
+    
+    <div id="root"></div>
+
+    <!-- React, ReactDOM aur Babel -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Aapki main JavaScript file -->
+    <script type="text/babel" src="app.js"></script>
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js");
+  }
+</script>
+</body>
+</html>
