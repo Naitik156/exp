@@ -254,6 +254,8 @@ const [selectedChapter, setSelectedChapter] = useState(() => localStorage.getIte
     const [modalConfig, setModalConfig] = useState({});
     const [toast, setToast] = useState({ show: false, message: '' });
     const [isFetched, setIsFetched] = useState(false);
+    const [avatarUrl, setAvatarUrl] = useState(() => localStorage.getItem('userAvatar') || null);
+    const [showProfileModal, setShowProfileModal] = useState(false);
 const compressImage = (file) => {
         return new Promise((resolve) => {
             const reader = new FileReader(); reader.readAsDataURL(file);
