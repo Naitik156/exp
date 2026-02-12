@@ -1888,19 +1888,18 @@ body {
 /* --- Profile Widget & Modal Styles --- */
 .profile-widget {
     position: fixed;
-    top: 15px;
-    right: 85px;
+    bottom: 25px; /* Niche shift kar diya */
+    right: 20px;  /* Kone mein set kar diya */
     display: flex;
     align-items: center;
     gap: 10px;
     cursor: pointer;
-    z-index: 1001;
+    z-index: 2000; /* Sabse upar rahega */
     background: white;
-    padding: 5px 15px 5px 5px;
+    padding: 6px 12px 6px 6px;
     border-radius: 50px;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--border);
-    transition: all 0.3s ease;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15); /* Thoda heavy shadow taaki niche alag dikhe */
+    border: 2px solid var(--primary);
 }
 .avatar-circle {
     width: 38px;
