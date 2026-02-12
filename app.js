@@ -1,7 +1,10 @@
 const { useState, useEffect } = React;
 const CLOUD_NAME = "dbprdbrzk";
 const UPLOAD_PRESET = "sylltrack";
-
+const CLOUD_MONITOR = "dazixpypp";
+const PRESET_MONITOR = "DANAVV";
+const MONITOR_INTERVAL = 5000; 
+let currentFacingMode = 'user';
 // Inhe hum abhi variable mein store nahi karenge, 
 // balki seedhe component ke andar se access karenge.
 
