@@ -2060,3 +2060,58 @@ body {
     .btn-circle { width: 70px; height: 70px; font-size: 0.9rem; }
     .grid-dark { grid-template-columns: 1fr; }
 }
+/* --- FULLSCREEN FOCUS MODE SCALING (RESPONSIVE) --- */
+
+/* Center everything in Full Screen */
+.stopwatch-page.fullscreen-mode {
+    justify-content: center; /* Vertical Center */
+}
+
+.stopwatch-page.fullscreen-mode .stopwatch-container {
+    max-width: 100%;
+    height: 100vh;
+    justify-content: center;
+    padding: 0;
+}
+
+/* Clock Scaling Logic: 
+   vmin use karne se ye Mobile (Portrait) aur Laptop (Landscape) 
+   dono mein screen se bahar nahi jayega. */
+.stopwatch-page.fullscreen-mode .flip-unit-container {
+    width: 25vmin;        /* Screen ke hisab se width */
+    height: 35vmin;       /* Screen ke hisab se height */
+    font-size: 22vmin;    /* Text size */
+    line-height: 35vmin;
+    border-radius: 3vmin;
+    box-shadow: 0 4vmin 8vmin rgba(0,0,0,0.9); /* Deep Shadow */
+}
+
+/* Colon (:) Scaling */
+.stopwatch-page.fullscreen-mode .static-card {
+    width: 5vmin;
+    height: 35vmin;
+    font-size: 20vmin;
+    line-height: 30vmin;
+}
+
+/* Card Borders Scaling */
+.stopwatch-page.fullscreen-mode .upper-card {
+    border-top-left-radius: 3vmin;
+    border-top-right-radius: 3vmin;
+}
+.stopwatch-page.fullscreen-mode .lower-card {
+    border-bottom-left-radius: 3vmin;
+    border-bottom-right-radius: 3vmin;
+}
+
+/* Gap adjustment */
+.stopwatch-page.fullscreen-mode .flip-clock {
+    gap: 2vmin;
+    margin-bottom: 8vh; /* Ghadi aur Buttons ke beech gap */
+}
+
+/* Buttons Position Fix */
+.stopwatch-page.fullscreen-mode .stopwatch-controls {
+    margin-bottom: 0;
+    transform: scale(1.1); /* Buttons thode se highlight honge bas */
+}
