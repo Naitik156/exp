@@ -2116,16 +2116,18 @@ React.createElement('div', { className: 'test-history-card' },
         const [now, setNow] = useState(Date.now());
         const [graphMode, setGraphMode] = useState('WEEK');
         const [graphOffset, setGraphOffset] = useState(0);
+        const [isFocusMode, setIsFocusMode] = useState(false); // New State for Clean View
         const chartRef = React.useRef(null);
-        // Default values to prevent crash
+        
+        // Default values
         const { isRunning = false, startTime = null, elapsed = 0, laps = [] } = data.timerState || {};
 
+        // 1. Timer Logic
         useEffect(() => {
             let interval = null;
             if (isRunning) {
                 interval = setInterval(() => {
                     setNow(Date.now());
-                    // Midnight Check logic same as before...
                     const indiaTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"});
                     const d = new Date(indiaTime);
                     if (d.getHours() === 0 && d.getMinutes() === 0 && d.getSeconds() <= 2) {
@@ -2137,14 +2139,13 @@ React.createElement('div', { className: 'test-history-card' },
             return () => clearInterval(interval);
         }, [isRunning]);
 
-        // GRAPH LOGIC - FIXED UNITS & LIVE UPDATE
+        // 2. Chart Logic
         useEffect(() => {
             if (!chartRef.current || typeof Chart === 'undefined') return;
             const history = data.studyHistory || {};
             const labels = [], dataPoints = [];
             const today = new Date();
             
-            // Logic to fetch data (Same as before but units handling in Chart options)
             if (graphMode === 'WEEK') {
                 const startOfWeek = new Date(today);
                 startOfWeek.setDate(today.getDate() - today.getDay() + (graphOffset * 7));
@@ -2153,7 +2154,6 @@ React.createElement('div', { className: 'test-history-card' },
                     d.setDate(startOfWeek.getDate() + i);
                     const dateStr = d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
                     labels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
-                    // Convert Seconds to Hours
                     dataPoints.push(((history[dateStr] || 0) / 3600).toFixed(2)); 
                 }
             } else {
@@ -2171,63 +2171,45 @@ React.createElement('div', { className: 'test-history-card' },
                 type: 'bar',
                 data: { labels, datasets: [{ label: 'Hours', data: dataPoints, backgroundColor: '#3b82f6', borderRadius: 6 }] },
                 options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
+                    responsive: true, maintainAspectRatio: false, 
                     scales: { 
-                        y: { 
-                            beginAtZero: true, 
-                            title: { display: true, text: 'Hours (hr)', color: '#666' },
-                            grid: { color: '#333' },
-                            ticks: { color: '#888' },
-                            suggestedMax: 2 // Kam se kam 2 ghante ka scale dikhaye
-                        }, 
+                        y: { beginAtZero: true, suggestedMax: 2, grid: { color: '#333' }, ticks: { color: '#888' } }, 
                         x: { grid: { display: false }, ticks: { color: '#888' } } 
                     }, 
-                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${c.raw} Hours` } } } 
+                    plugins: { legend: { display: false } } 
                 }
             });
             return () => chart.destroy();
-        }, [data.studyHistory, graphMode, graphOffset, isRunning]); // isRunning dependency ensures update on pause
+        }, [data.studyHistory, graphMode, graphOffset, isRunning]);
 
+        // Time Calc
         const totalSeconds = elapsed + (isRunning && startTime ? Math.floor((now - startTime) / 1000) : 0);
         const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
         const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
         const s = (totalSeconds % 60).toString().padStart(2, '0');
 
+        // Handlers
         const handleStop = () => {
             if (!isRunning) return;
             const sessionSecs = Math.floor((Date.now() - startTime) / 1000);
             const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-            
-            // Update History Immediately
-            const updatedHistory = { 
-                ...data.studyHistory, 
-                [dateStr]: (data.studyHistory?.[dateStr] || 0) + sessionSecs 
-            };
-
             setData(p => ({ 
                 ...p, 
-                studyHistory: updatedHistory, 
+                studyHistory: { ...p.studyHistory, [dateStr]: (p.studyHistory?.[dateStr] || 0) + sessionSecs }, 
                 timerState: { ...p.timerState, isRunning: false, startTime: null, elapsed: elapsed + sessionSecs } 
             }));
         };
 
         const handleStart = () => setData(p => ({ ...p, timerState: { ...p.timerState, isRunning: true, startTime: Date.now() } }));
         
-        // RESET WITH CONFIRMATION POPUP
         const handleReset = () => { 
-            // Reuse existing Modal Logic
             setModalConfig({
                 title: 'Reset Timer?',
-                message: 'Are you sure? Current session progress will be saved, but the timer will go to 00:00:00.',
+                message: 'Timer will go to 00:00:00. Session saved.',
                 onConfirm: () => {
-                    if(isRunning) handleStop(); // Save current progress before reset
-                    setData(p => ({ 
-                        ...p, 
-                        timerState: { isRunning: false, startTime: null, elapsed: 0, laps: [] } 
-                    }));
+                    if(isRunning) handleStop();
+                    setData(p => ({ ...p, timerState: { isRunning: false, startTime: null, elapsed: 0, laps: [] } }));
                     setShowModal(false);
-                    showToast("Timer Reset Successful");
                 }
             });
             setShowModal(true);
@@ -2235,18 +2217,42 @@ React.createElement('div', { className: 'test-history-card' },
 
         const handleLap = () => setData(p => ({ ...p, timerState: { ...p.timerState, laps: [`${h}:${m}:${s}`, ...p.timerState.laps] } }));
 
+        // Toggle Focus Mode
+        const toggleFullScreen = () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(e => console.log(e));
+                setIsFocusMode(true);
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                setIsFocusMode(false);
+            }
+        };
+
+        // Listen for Esc key to exit focus mode logic
+        useEffect(() => {
+            const handleEsc = () => { if (!document.fullscreenElement) setIsFocusMode(false); };
+            document.addEventListener('fullscreenchange', handleEsc);
+            return () => document.removeEventListener('fullscreenchange', handleEsc);
+        }, []);
+
         return React.createElement('div', { className: 'stopwatch-page' },
-            React.createElement('div', { style: { padding: '20px', display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '1000px', margin: '0 auto' } },
+            // Top Bar (Hidden in Focus Mode)
+            !isFocusMode && React.createElement('div', { style: { padding: '20px', display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '1000px', margin: '0 auto' } },
                 React.createElement('button', { onClick: () => setView('home'), style: { background: 'none', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' } }, '← Back'),
-                React.createElement('button', { onClick: () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(), style: { background: 'none', border: 'none', color: '#fff', fontSize: '1.5rem', cursor: 'pointer' } }, '⛶')
+                React.createElement('button', { onClick: toggleFullScreen, style: { background: 'none', border: 'none', color: '#fff', fontSize: '1.5rem', cursor: 'pointer' } }, '⛶')
             ),
+
+            // Floating Fullscreen Exit Button (Visible ONLY in Focus Mode)
+            isFocusMode && React.createElement('button', { 
+                onClick: toggleFullScreen, 
+                style: { position: 'absolute', top: '20px', right: '30px', background: 'none', border: 'none', color: '#444', fontSize: '1.5rem', cursor: 'pointer', zIndex: 100 } 
+            }, '⛶'),
+
             React.createElement('div', { className: 'stopwatch-container' },
-                // BIGGER ANIMATED CLOCK
+                // CLOCK
                 React.createElement('div', { className: 'flip-clock' }, 
-                    React.createElement(AnimatedCard, { digit: h }), 
-                    React.createElement(StaticCard, null), 
-                    React.createElement(AnimatedCard, { digit: m }), 
-                    React.createElement(StaticCard, null), 
+                    React.createElement(AnimatedCard, { digit: h }), React.createElement(StaticCard, null), 
+                    React.createElement(AnimatedCard, { digit: m }), React.createElement(StaticCard, null), 
                     React.createElement(AnimatedCard, { digit: s })
                 ),
                 
@@ -2255,16 +2261,12 @@ React.createElement('div', { className: 'test-history-card' },
                     !isRunning 
                         ? React.createElement('button', { className: 'btn-circle btn-start', onClick: handleStart }, 'Start') 
                         : React.createElement('button', { className: 'btn-circle btn-stop', onClick: handleStop }, 'Pause'),
-                    
                     React.createElement('button', { className: 'btn-circle btn-reset', onClick: handleReset }, 'Reset'),
-                    
-                    // Lap button only visible when running or paused with data
                     (isRunning || elapsed > 0) && React.createElement('button', { className: 'btn-circle btn-lap', onClick: handleLap }, 'Lap')
                 ),
 
-                // LAPS AND GRAPH GRID
-                React.createElement('div', { className: 'grid-dark' },
-                    // Laps
+                // LAPS AND GRAPH (Hidden in Focus Mode)
+                !isFocusMode && React.createElement('div', { className: 'grid-dark' },
                     React.createElement('div', { className: 'stats-container' }, 
                         React.createElement('h3', { style: { color: '#888', borderBottom: '1px solid #333', paddingBottom: '10px' } }, 'Session Laps'), 
                         React.createElement('div', { className: 'lap-list' }, 
@@ -2272,7 +2274,6 @@ React.createElement('div', { className: 'test-history-card' },
                             laps.map((l, i) => React.createElement('div', { key: i, className: 'lap-item' }, React.createElement('span', null, `#${laps.length - i}`), React.createElement('span', {style:{color:'#fff'}}, l)))
                         )
                     ),
-                    // Graph
                     React.createElement('div', { className: 'stats-container' },
                         React.createElement('div', { className: 'chart-controls' },
                             React.createElement('button', { className: 'chart-nav-btn', onClick: () => setGraphOffset(graphOffset - 1) }, '‹'),
