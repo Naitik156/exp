@@ -232,7 +232,19 @@ const EXAM_SYLLABUS = {
         }
     }
 };
-
+// --- FLIP ANIMATION COMPONENTS ---
+const AnimatedCard = ({ digit }) => {
+    return React.createElement('div', { className: 'flip-unit-container' },
+        React.createElement('div', { className: 'upper-card' }, React.createElement('span', null, digit)),
+        React.createElement('div', { className: 'lower-card' }, React.createElement('span', null, digit))
+    );
+};
+const StaticCard = ({ digit }) => {
+    return React.createElement('div', { className: 'flip-unit-container', style: { width: '30px', background: 'transparent', boxShadow: 'none', color: '#555' } },
+        React.createElement('div', { className: 'upper-card', style: {background:'transparent', border:'none'} }, React.createElement('span', null, digit)),
+        React.createElement('div', { className: 'lower-card', style: {background:'transparent', border:'none'} }, React.createElement('span', null, digit))
+    );
+};
 const App = () => {
  // --- AKELA AUR SAHI SYNC LOGIC ---
     const [user, setUser] = useState(null);
