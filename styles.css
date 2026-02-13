@@ -1886,8 +1886,9 @@ body {
     padding: 3rem 1rem !important;
 }
 /* --- STOPWATCH & FLIP CLOCK STYLES --- */
+/* --- STOPWATCH & FLIP CLOCK STYLES (UPDATED) --- */
 .stopwatch-page {
-    background-color: #09090b !important; /* Pitch Black background */
+    background-color: #000000 !important;
     color: #ffffff;
     min-height: 100vh;
     display: flex;
@@ -1895,210 +1896,167 @@ body {
 }
 
 .stopwatch-container {
-    max-width: 800px;
+    max-width: 1000px; /* Width badhayi */
     margin: 0 auto;
     width: 100%;
-    padding: 2rem;
+    padding: 1rem;
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
 }
 
-/* Flip Clock Wrapper */
+/* BIGGER FLIP CLOCK */
 .flip-clock {
     display: flex;
     gap: 15px;
-    margin: 3rem 0;
-    perspective: 400px;
+    margin-bottom: 3rem;
+    perspective: 1000px; /* 3D effect ke liye */
 }
 
 .flip-unit-container {
     display: block;
     position: relative;
-    width: 100px;
-    height: 120px;
-    background-color: #1c1917;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    font-size: 80px;
-    font-weight: 700;
-    line-height: 120px;
+    width: 140px;  /* Size bada kiya */
+    height: 180px; /* Size bada kiya */
+    background-color: #202020;
+    border-radius: 16px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.8);
+    font-size: 110px; /* Font bada kiya */
+    font-weight: 800;
+    line-height: 180px;
     text-align: center;
-    font-family: 'Courier New', monospace; /* Monospace for retro look */
+    font-family: 'Manrope', sans-serif; /* Clean font like video */
     color: #e5e5e5;
 }
 
+/* Separator (:) */
+.static-card {
+    width: 40px;
+    height: 180px;
+    background: transparent;
+    box-shadow: none;
+    font-size: 100px;
+    line-height: 160px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 20px;
+}
+
+/* Card Halves */
 .upper-card, .lower-card {
     width: 100%;
     height: 50%;
     position: absolute;
     left: 0;
     overflow: hidden;
-    background-color: #1c1917; /* Dark Grey */
+    background-color: #202020;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 .upper-card {
     top: 0;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom: 2px solid #000; /* Beech ki line */
     transform-origin: 50% 100%;
 }
 
 .lower-card {
     bottom: 0;
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
-    border-top: 1px solid rgba(0,0,0,0.5);
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
     transform-origin: 50% 0%;
     line-height: 0; 
 }
 
-/* Text positioning inside cut cards */
-.upper-card span {
-    display: block;
-    transform: translateY(0%); 
-}
-.lower-card span {
-    display: block;
-    transform: translateY(-50%);
-}
+.upper-card span { display: block; transform: translateY(0%); }
+.lower-card span { display: block; transform: translateY(-50%); }
 
-/* Animation Classes */
-.flip-card.fold {
-    animation: fold 0.6s cubic-bezier(0.455, 0.030, 0.515, 0.955) forwards;
-    transform-style: preserve-3d;
-}
-
-.flip-card.unfold {
-    animation: unfold 0.6s cubic-bezier(0.455, 0.030, 0.515, 0.955) forwards;
-    transform-style: preserve-3d;
-}
-
+/* ANIMATION KEYFRAMES - SMOOTH FLIP */
 @keyframes fold {
     0% { transform: rotateX(0deg); }
     100% { transform: rotateX(-180deg); }
 }
-
 @keyframes unfold {
     0% { transform: rotateX(180deg); }
     100% { transform: rotateX(0deg); }
 }
 
-/* Controls */
+.fold { animation: fold 0.6s cubic-bezier(0.455, 0.030, 0.515, 0.955) forwards; }
+.unfold { animation: unfold 0.6s cubic-bezier(0.455, 0.030, 0.515, 0.955) forwards; }
+
+/* CONTROLS (Updated for Clickability) */
 .stopwatch-controls {
     display: flex;
-    gap: 20px;
+    gap: 30px;
     margin-bottom: 3rem;
+    z-index: 10; /* Click issue fix */
 }
 
 .btn-circle {
-    width: 80px;
-    height: 80px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
     border: none;
-    font-size: 1.2rem;
-    font-weight: 600;
+    font-size: 1.1rem;
+    font-weight: 700;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.1s, box-shadow 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
     text-transform: uppercase;
     letter-spacing: 1px;
+    outline: none;
 }
 
-.btn-start {
-    background: #10B981;
-    color: white;
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+.btn-start { background: #3b82f6; color: white; box-shadow: 0 0 25px rgba(59, 130, 246, 0.5); }
+.btn-stop { background: #ef4444; color: white; box-shadow: 0 0 25px rgba(239, 68, 68, 0.5); }
+.btn-reset, .btn-lap { background: #333; color: white; border: 2px solid #555; }
+.btn-circle:active { transform: scale(0.92); }
+
+/* GRAPH & LAPS */
+.grid-dark {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
 }
 
-.btn-stop {
-    background: #EF4444;
-    color: white;
-    box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
-}
-
-.btn-reset {
-    background: #333;
-    color: white;
-    border: 2px solid #555;
-}
-
-.btn-circle:active { transform: scale(0.95); }
-
-/* Laps & Stats Section */
 .stats-container {
-    background: #1c1917;
+    background: #111;
     border-radius: 20px;
     padding: 20px;
-    width: 100%;
     border: 1px solid #333;
+    min-height: 300px;
 }
 
 .lap-list {
-    max-height: 200px;
+    max-height: 250px;
     overflow-y: auto;
-    margin-top: 20px;
+    margin-top: 15px;
 }
 
 .lap-item {
     display: flex;
     justify-content: space-between;
-    padding: 10px;
-    border-bottom: 1px solid #333;
-    color: #a8a29e;
+    padding: 12px;
+    border-bottom: 1px solid #222;
+    color: #888;
     font-family: monospace;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
 }
 
-.lap-item:first-child { color: #fff; font-weight: bold; }
-
-/* Chart Controls */
-.chart-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    background: #292524;
-    padding: 10px;
-    border-radius: 12px;
-}
-
-.chart-nav-btn {
-    background: transparent;
-    border: none;
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
-}
-
-.chart-filter-btn {
-    background: transparent;
-    border: 1px solid #555;
-    color: #aaa;
-    padding: 5px 15px;
-    border-radius: 20px;
-    margin: 0 5px;
-    cursor: pointer;
-}
-
-.chart-filter-btn.active {
-    background: #0F766E;
-    color: white;
-    border-color: #0F766E;
-}
-
-/* Mobile responsive for clock */
-@media (max-width: 600px) {
-    .flip-unit-container {
-        width: 60px;
-        height: 80px;
-        font-size: 45px;
-        line-height: 80px;
-    }
+/* Mobile Fix */
+@media (max-width: 768px) {
+    .flip-unit-container { width: 70px; height: 100px; font-size: 55px; line-height: 100px; }
+    .static-card { width: 20px; font-size: 50px; height: 100px; line-height: 90px; }
     .flip-clock { gap: 8px; }
-    .btn-circle { width: 65px; height: 65px; font-size: 0.9rem; }
+    .btn-circle { width: 70px; height: 70px; font-size: 0.9rem; }
+    .grid-dark { grid-template-columns: 1fr; }
 }
