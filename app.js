@@ -2235,7 +2235,7 @@ React.createElement('div', { className: 'test-history-card' },
             return () => document.removeEventListener('fullscreenchange', handleEsc);
         }, []);
 
-        return React.createElement('div', { className: 'stopwatch-page' },
+        return React.createElement('div', { className: `stopwatch-page ${isFocusMode ? 'fullscreen-mode' : ''}` },
             // Top Bar (Hidden in Focus Mode)
             !isFocusMode && React.createElement('div', { style: { padding: '20px', display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '1000px', margin: '0 auto' } },
                 React.createElement('button', { onClick: () => setView('home'), style: { background: 'none', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' } }, '← Back'),
