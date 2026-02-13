@@ -2113,24 +2113,18 @@ React.createElement('div', { className: 'test-history-card' },
         );
     };
     // --- UPDATED STOPWATCH VIEW (With Midnight Auto-Split & Graph Fixes) ---
+// --- UPDATED STOPWATCH VIEW (Fixes: Clipping, Fullscreen Stability, Graph Reset) ---
 const StopwatchView = () => {
-    // Current state track karne ke liye
     const [now, setNow] = useState(Date.now());
-    const [graphMode, setGraphMode] = useState('WEEK'); // 'WEEK' or 'MONTH'
+    const [graphMode, setGraphMode] = useState('WEEK');
     const [graphOffset, setGraphOffset] = useState(0);
     const [isFocusMode, setIsFocusMode] = useState(false);
     const chartRef = React.useRef(null);
-    
-    // Last save time track karne ke liye ref (re-render se bachne ke liye)
     const lastAutoSaveRef = React.useRef(Date.now());
-    
-    // Current Date String helper (IST)
-    const getTodayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-    
-    // Session Date track karne ke liye (taaki pata chale midnight kab cross hua)
-    const sessionDateRef = React.useRef(getTodayStr());
+    const sessionDateRef = React.useRef(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }));
 
-    // Database values
+    const getTodayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+
     const { isRunning = false, startTime = null, elapsed = 0, laps = [] } = data.timerState || {};
 
     // 1. TIMER & AUTO-SAVE LOGIC
@@ -2140,87 +2134,41 @@ const StopwatchView = () => {
             interval = setInterval(() => {
                 const currentTime = Date.now();
                 setNow(currentTime);
-
                 const currentStr = getTodayStr();
 
-                // --- A. MIDNIGHT AUTO-SPLIT LOGIC ---
-                // Agar date badal gayi (matlab 12 baj gaye)
+                // Midnight Logic
                 if (currentStr !== sessionDateRef.current) {
                     const prevDate = sessionDateRef.current;
-                    
-                    // 1. Pichle din ka hisaab calculate karein
-                    // (Abhi tak ka total elapsed + start time se midnight tak ka diff)
-                    // Note: Simplification ke liye hum current session ko 'Yesterday' me daal kar 
-                    // timer ko 0 se 'Today' ke liye start kar denge.
-                    
                     const sessionSecs = Math.floor((currentTime - startTime) / 1000);
                     const totalForPrevDay = elapsed + sessionSecs;
 
-                    // 2. Data update karein (Yesterday save + New Start for Today)
                     setData(prev => ({
                         ...prev,
-                        studyHistory: {
-                            ...prev.studyHistory,
-                            [prevDate]: (prev.studyHistory?.[prevDate] || 0) + totalForPrevDay
-                        },
-                        timerState: {
-                            ...prev.timerState,
-                            startTime: currentTime, // Naya start time abhi se
-                            elapsed: 0,            // Pichla elapsed zero kar diya (kyunki wo kal save ho gaya)
-                            laps: [`🌙 Midnight Reset`, ...prev.timerState.laps]
-                        }
+                        studyHistory: { ...prev.studyHistory, [prevDate]: (prev.studyHistory?.[prevDate] || 0) + totalForPrevDay },
+                        timerState: { ...prev.timerState, startTime: currentTime, elapsed: 0, laps: [`🌙 Midnight Reset`, ...prev.timerState.laps] }
                     }));
-
-                    // 3. References update
                     sessionDateRef.current = currentStr;
                     lastAutoSaveRef.current = currentTime;
                     showToast("Midnight! 🌙 New Day Started.");
                 }
 
-                // --- B. 3-MINUTE AUTO-SAVE LOGIC ---
-                // Har 3 minute (180,000 ms) mein graph update karein
+                // 3-Min Auto Save
                 if (currentTime - lastAutoSaveRef.current > 180000) {
                     const sessionSecs = Math.floor((currentTime - startTime) / 1000);
-                    const totalCurrent = elapsed + sessionSecs;
-                    
-                    // Sirf history update karein, timer state reset nahi karenge
+                    // Silent update to DB only, don't disrupt timer state
                     setData(prev => ({
                         ...prev,
-                        studyHistory: {
-                            ...prev.studyHistory,
-                            [currentStr]: (prev.studyHistory?.[currentStr] || 0) + totalCurrent
-                        }
+                        studyHistory: { ...prev.studyHistory, [currentStr]: (prev.studyHistory?.[currentStr] || 0) + sessionSecs },
+                        timerState: { ...prev.timerState, startTime: currentTime, elapsed: elapsed + sessionSecs }
                     }));
-                    
-                    // Note: Hum timerState reset nahi kar rahe, bas history me add kar rahe hain
-                    // taaki graph real-time dikhe. Agli baar save karte waqt overlapping handle karna padega
-                    // Isliye "Minimal Edit" approach me:
-                    // Hum temporary save kar rahe hain. Perfect consistency ke liye
-                    // hume 'elapsed' ko commit karke startTime reset karna chahiye silently.
-                    
-                    // Silent Commit Approach:
-                    setData(prev => ({
-                        ...prev,
-                        studyHistory: {
-                            ...prev.studyHistory,
-                            [currentStr]: (prev.studyHistory?.[currentStr] || 0) + sessionSecs // Sirf naya session add karo history me
-                        },
-                        timerState: {
-                            ...prev.timerState,
-                            startTime: currentTime, // Start time abhi kar do
-                            elapsed: elapsed + sessionSecs // Elapsed bada do
-                        }
-                    }));
-                    
                     lastAutoSaveRef.current = currentTime;
                 }
-
-            }, 1000); // Check every second
+            }, 1000);
         }
         return () => clearInterval(interval);
     }, [isRunning, startTime, elapsed]);
 
-    // 2. GRAPH LOGIC (Same as before)
+    // 2. GRAPH LOGIC
     useEffect(() => {
         if (!chartRef.current || typeof Chart === 'undefined') return;
         const history = data.studyHistory || {};
@@ -2228,21 +2176,17 @@ const StopwatchView = () => {
         const today = new Date();
         
         if (graphMode === 'WEEK') {
-            const currentDay = today.getDay(); // 0 (Sun) to 6 (Sat)
-            // Calculate start of week (Sunday) based on offset
+            const currentDay = today.getDay();
             const startOfWeek = new Date(today);
             startOfWeek.setDate(today.getDate() - currentDay + (graphOffset * 7));
-            
             for (let i = 0; i < 7; i++) {
                 const d = new Date(startOfWeek);
                 d.setDate(startOfWeek.getDate() + i);
                 const dateStr = d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
                 labels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
-                // Hours me convert kiya
                 dataPoints.push(((history[dateStr] || 0) / 3600).toFixed(2)); 
             }
         } else {
-             // MONTH logic
              const targetMonth = new Date(today.getFullYear(), today.getMonth() + graphOffset, 1);
              const daysInMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0).getDate();
              for(let i=1; i<=daysInMonth; i++) {
@@ -2252,37 +2196,22 @@ const StopwatchView = () => {
                  dataPoints.push(((history[dateStr] || 0) / 3600).toFixed(2));
              }
         }
-
-        // Destroy old chart if exists (Chart.js quirk handling)
+        
         const chartInstance = Chart.getChart(chartRef.current);
         if (chartInstance) chartInstance.destroy();
 
-        const chart = new Chart(chartRef.current, {
+        new Chart(chartRef.current, {
             type: 'bar',
-            data: { 
-                labels, 
-                datasets: [{ 
-                    label: 'Hours', 
-                    data: dataPoints, 
-                    backgroundColor: '#3b82f6', 
-                    borderRadius: 4,
-                    barPercentage: 0.6
-                }] 
-            },
+            data: { labels, datasets: [{ label: 'Hours', data: dataPoints, backgroundColor: '#3b82f6', borderRadius: 4, barPercentage: 0.6 }] },
             options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                scales: { 
-                    y: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#888' } }, 
-                    x: { grid: { display: false }, ticks: { color: '#888' } } 
-                }, 
+                responsive: true, maintainAspectRatio: false, 
+                scales: { y: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#888' } }, x: { grid: { display: false }, ticks: { color: '#888' } } }, 
                 plugins: { legend: { display: false } } 
             }
         });
-        return () => { if(chart) chart.destroy(); };
-    }, [data.studyHistory, graphMode, graphOffset, isRunning]); // Graph updates when studyHistory updates
+    }, [data.studyHistory, graphMode, graphOffset, isRunning]);
 
-    // Calculation for Display
+    // Calc Display
     const totalSeconds = elapsed + (isRunning && startTime ? Math.floor((now - startTime) / 1000) : 0);
     const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
     const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
@@ -2293,8 +2222,6 @@ const StopwatchView = () => {
         if (!isRunning) return;
         const sessionSecs = Math.floor((Date.now() - startTime) / 1000);
         const dateStr = getTodayStr();
-        
-        // Pause par turant save
         setData(p => ({ 
             ...p, 
             studyHistory: { ...p.studyHistory, [dateStr]: (p.studyHistory?.[dateStr] || 0) + sessionSecs }, 
@@ -2303,19 +2230,26 @@ const StopwatchView = () => {
     };
 
     const handleStart = () => {
-        // Start karte waqt session date set karein taaki midnight detect ho sake
         sessionDateRef.current = getTodayStr();
         setData(p => ({ ...p, timerState: { ...p.timerState, isRunning: true, startTime: Date.now() } }));
     };
     
+    // --- RESET FIXED: CLEARS TODAY'S GRAPH TOO ---
     const handleReset = () => { 
         setModalConfig({
-            title: 'Reset Timer?',
-            message: 'Timer will go to 00:00:00. Session saved.',
+            title: 'Hard Reset?',
+            message: 'Resetting will CLEAR today\'s entire progress graph and timer. Confirm?',
             onConfirm: () => {
-                if(isRunning) handleStop();
-                setData(p => ({ ...p, timerState: { isRunning: false, startTime: null, elapsed: 0, laps: [] } }));
+                const dateStr = getTodayStr(); // Get Today's Date
+                setData(p => ({ 
+                    ...p, 
+                    // Graph Reset Logic: Set today's history to 0
+                    studyHistory: { ...p.studyHistory, [dateStr]: 0 },
+                    // Timer Reset
+                    timerState: { isRunning: false, startTime: null, elapsed: 0, laps: [] } 
+                }));
                 setShowModal(false);
+                showToast("Timer & Graph Reset for Today");
             }
         });
         setShowModal(true);
@@ -2323,7 +2257,7 @@ const StopwatchView = () => {
 
     const handleLap = () => setData(p => ({ ...p, timerState: { ...p.timerState, laps: [`${h}:${m}:${s}`, ...p.timerState.laps] } }));
 
-    // Fullscreen Toggles
+    // Fullscreen Logic - Optimized to not break on re-renders
     const toggleFullScreen = () => {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen().catch(e => console.log(e));
@@ -2340,33 +2274,63 @@ const StopwatchView = () => {
         return () => document.removeEventListener('fullscreenchange', handleEsc);
     }, []);
 
-    // --- CSS INJECTION FOR ARROW FIX ---
-    // (Aap chahein to isse styles.css me daal sakte hain, par yahan bhi kaam karega)
-    const arrowStyles = {
-        chartControls: {
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '15px',
-            marginBottom: '15px'
-        },
-        navBtn: {
-            background: '#333',
-            color: '#fff',
-            border: 'none',
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '1.2rem',
-            paddingBottom: '3px' // Visual center fix
+    // --- CSS FIX FOR CLIPPING & ARROW ALIGNMENT ---
+    const fixedStyles = `
+        .flip-unit-container {
+            display: flex; /* Flexbox for centering */
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            width: 140px;
+            height: 180px;
+            background-color: #202020;
+            border-radius: 16px;
+            font-size: 100px; /* Slightly reduced to fit */
+            font-family: 'Manrope', sans-serif;
+            color: #e5e5e5;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow: hidden; /* Strict overflow */
         }
-    };
+        .upper-card, .lower-card {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            height: 50%;
+            overflow: hidden;
+            position: absolute;
+            left: 0;
+            background-color: #202020;
+        }
+        .upper-card { 
+            top: 0; 
+            align-items: flex-end; /* Bottom align for top half */
+            border-bottom: 2px solid #000;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+        }
+        .lower-card { 
+            bottom: 0; 
+            align-items: flex-start; /* Top align for bottom half */
+            border-bottom-left-radius: 16px;
+            border-bottom-right-radius: 16px;
+        }
+        /* The span holds the number and needs to be positioned effectively */
+        .upper-card span { transform: translateY(50%); } 
+        .lower-card span { transform: translateY(-50%); }
+        
+        .chart-controls-fixed {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+    `;
 
     return React.createElement('div', { className: `stopwatch-page ${isFocusMode ? 'fullscreen-mode' : ''}` },
+        // Inject CSS Fixes
+        React.createElement('style', null, fixedStyles),
+
         // Top Bar
         !isFocusMode && React.createElement('div', { style: { padding: '20px', display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '1000px', margin: '0 auto' } },
             React.createElement('button', { onClick: () => setView('home'), style: { background: 'none', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' } }, '← Back'),
@@ -2405,15 +2369,15 @@ const StopwatchView = () => {
                         laps.map((l, i) => React.createElement('div', { key: i, className: 'lap-item' }, React.createElement('span', null, `#${laps.length - i}`), React.createElement('span', {style:{color:'#fff'}}, l)))
                     )
                 ),
-                // Graph with FIXED ARROWS
+                // Graph
                 React.createElement('div', { className: 'stats-container' },
-                    React.createElement('div', { style: arrowStyles.chartControls },
-                        React.createElement('button', { style: arrowStyles.navBtn, onClick: () => setGraphOffset(graphOffset - 1) }, '‹'),
+                    React.createElement('div', { className: 'chart-controls-fixed' },
+                        React.createElement('button', { className: 'chart-nav-btn', onClick: () => setGraphOffset(graphOffset - 1), style: {display:'flex', alignItems:'center', justifyContent:'center', paddingBottom:'3px'} }, '‹'),
                         React.createElement('div', null, 
                             React.createElement('button', { className: `chart-filter-btn ${graphMode === 'WEEK'?'active':''}`, onClick: () => {setGraphMode('WEEK'); setGraphOffset(0)} }, 'W'), 
                             React.createElement('button', { className: `chart-filter-btn ${graphMode === 'MONTH'?'active':''}`, onClick: () => {setGraphMode('MONTH'); setGraphOffset(0)} }, 'M')
                         ),
-                        React.createElement('button', { style: arrowStyles.navBtn, onClick: () => setGraphOffset(graphOffset + 1) }, '›')
+                        React.createElement('button', { className: 'chart-nav-btn', onClick: () => setGraphOffset(graphOffset + 1), style: {display:'flex', alignItems:'center', justifyContent:'center', paddingBottom:'3px'} }, '›')
                     ),
                     React.createElement('div', { style: { height: '220px' } }, React.createElement('canvas', { ref: chartRef }))
                 )
