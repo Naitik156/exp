@@ -907,14 +907,17 @@ const getAnalytics = (filterClass = 'Overall') => {
                     React.createElement('p', { className: 'card-subtitle', style: { fontSize: '0.9rem', marginTop: '5px' } }, 'Check Today\'s Targets')
                 ),
                                 // Focus Timer Card
+               // Focus Timer Card (Updated to match other cards)
                 React.createElement('div', { 
                     className: 'card', 
                     onClick: () => navigateTo('stopwatch'),
-                    style: { textAlign: 'center', cursor: 'pointer', minHeight: '180px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '1.5rem', background: '#1c1917', color: 'white', border: '1px solid #333' }
+                    // Style se background black aur color white hata diya
+                    style: { textAlign: 'center', cursor: 'pointer', minHeight: '180px', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '1.5rem' }
                 },
                     React.createElement('div', { style: { fontSize: '3rem', marginBottom: '0.75rem' } }, '⏱️'),
-                    React.createElement('h3', { className: 'card-title', style: { fontSize: '1.25rem', margin: 0, color: 'white' } }, 'Focus Timer'),
-                    React.createElement('p', { className: 'card-subtitle', style: { fontSize: '0.9rem', marginTop: '5px', color: '#a8a29e' } }, 'Track Study Hours')
+                    // Title aur Subtitle se bhi color white hata diya taaki default black/grey ho jaye
+                    React.createElement('h3', { className: 'card-title', style: { fontSize: '1.25rem', margin: 0 } }, 'Focus Timer'),
+                    React.createElement('p', { className: 'card-subtitle', style: { fontSize: '0.9rem', marginTop: '5px' } }, 'Track Study Hours')
                 )
             ),
             React.createElement('div', { className: 'social-links', style: { marginTop: '3rem', display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' } },
