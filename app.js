@@ -2089,6 +2089,107 @@ React.createElement('div', { className: 'test-history-card' },
             )
         );
     };
+    const StopwatchView = () => {
+        const [now, setNow] = useState(Date.now());
+        const [graphMode, setGraphMode] = useState('WEEK');
+        const [graphOffset, setGraphOffset] = useState(0);
+        const chartRef = React.useRef(null);
+        const { isRunning, startTime, elapsed, laps } = data.timerState || {};
+
+        useEffect(() => {
+            let interval = null;
+            if (isRunning) {
+                interval = setInterval(() => {
+                    const currentTimestamp = Date.now();
+                    setNow(currentTimestamp);
+                    // Midnight Check (IST)
+                    const indiaTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"});
+                    const d = new Date(indiaTime);
+                    if (d.getHours() === 0 && d.getMinutes() === 0 && d.getSeconds() <= 2) {
+                        handleStop();
+                        showToast("Midnight Reset! 🌙");
+                    }
+                }, 100);
+            }
+            return () => clearInterval(interval);
+        }, [isRunning]);
+
+        useEffect(() => {
+            if (!chartRef.current || typeof Chart === 'undefined') return;
+            const history = data.studyHistory || {};
+            const labels = [], dataPoints = [];
+            const today = new Date();
+            
+            if (graphMode === 'WEEK') {
+                const startOfWeek = new Date(today);
+                startOfWeek.setDate(today.getDate() - today.getDay() + (graphOffset * 7));
+                for (let i = 0; i < 7; i++) {
+                    const d = new Date(startOfWeek);
+                    d.setDate(startOfWeek.getDate() + i);
+                    const dateStr = d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+                    labels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
+                    dataPoints.push(((history[dateStr] || 0) / 3600).toFixed(1));
+                }
+            } else {
+                 const targetMonth = new Date(today.getFullYear(), today.getMonth() + graphOffset, 1);
+                 const daysInMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0).getDate();
+                 for(let i=1; i<=daysInMonth; i++) {
+                     const d = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), i);
+                     const dateStr = d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+                     labels.push(i);
+                     dataPoints.push(((history[dateStr] || 0) / 3600).toFixed(1));
+                 }
+            }
+            const chart = new Chart(chartRef.current, {
+                type: 'bar',
+                data: { labels, datasets: [{ label: 'Hours', data: dataPoints, backgroundColor: '#0F766E', borderRadius: 4 }] },
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: '#333' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
+            });
+            return () => chart.destroy();
+        }, [data.studyHistory, graphMode, graphOffset]);
+
+        const totalSeconds = elapsed + (isRunning && startTime ? Math.floor((now - startTime) / 1000) : 0);
+        const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+        const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+        const s = (totalSeconds % 60).toString().padStart(2, '0');
+
+        const handleStop = () => {
+            if (!isRunning) return;
+            const sessionSecs = Math.floor((Date.now() - startTime) / 1000);
+            const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+            setData(p => ({ ...p, studyHistory: { ...p.studyHistory, [dateStr]: (p.studyHistory?.[dateStr] || 0) + sessionSecs }, timerState: { ...p.timerState, isRunning: false, startTime: null, elapsed: elapsed + sessionSecs } }));
+        };
+
+        const handleStart = () => setData(p => ({ ...p, timerState: { ...p.timerState, isRunning: true, startTime: Date.now() } }));
+        const handleReset = () => { if(isRunning) handleStop(); setData(p => ({ ...p, timerState: { isRunning: false, startTime: null, elapsed: 0, laps: [] } })); };
+        const handleLap = () => setData(p => ({ ...p, timerState: { ...p.timerState, laps: [`${h}:${m}:${s}`, ...p.timerState.laps] } }));
+
+        return React.createElement('div', { className: 'stopwatch-page' },
+            React.createElement('div', { style: { padding: '20px', display: 'flex', justifyContent: 'space-between' } },
+                React.createElement('button', { onClick: () => setView('home'), style: { background: 'none', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer' } }, '← Back'),
+                React.createElement('button', { onClick: () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(), style: { background: 'none', border: 'none', color: '#fff', fontSize: '1.5rem', cursor: 'pointer' } }, '⛶')
+            ),
+            React.createElement('div', { className: 'stopwatch-container' },
+                React.createElement('div', { className: 'flip-clock' }, React.createElement(AnimatedCard, { digit: h }), React.createElement(StaticCard, { digit: ':' }), React.createElement(AnimatedCard, { digit: m }), React.createElement(StaticCard, { digit: ':' }), React.createElement(AnimatedCard, { digit: s })),
+                React.createElement('div', { className: 'stopwatch-controls' },
+                    !isRunning ? React.createElement('button', { className: 'btn-circle btn-start', onClick: handleStart }, 'Start') : React.createElement('button', { className: 'btn-circle btn-stop', onClick: handleStop }, 'Pause'),
+                    React.createElement('button', { className: 'btn-circle btn-reset', onClick: handleReset }, 'Reset'),
+                    isRunning && React.createElement('button', { className: 'btn-circle btn-reset', onClick: handleLap }, 'Lap')
+                ),
+                React.createElement('div', { className: 'grid grid-2', style: { width: '100%', gap: '20px' } },
+                    React.createElement('div', { className: 'stats-container' }, React.createElement('h3', { style: { color: '#888', borderBottom: '1px solid #333' } }, 'Laps'), React.createElement('div', { className: 'lap-list' }, laps.map((l, i) => React.createElement('div', { key: i, className: 'lap-item' }, React.createElement('span', null, `#${laps.length - i}`), React.createElement('span', null, l))))),
+                    React.createElement('div', { className: 'stats-container' },
+                        React.createElement('div', { className: 'chart-controls' },
+                            React.createElement('button', { className: 'chart-nav-btn', onClick: () => setGraphOffset(graphOffset - 1) }, '‹'),
+                            React.createElement('div', null, React.createElement('button', { className: `chart-filter-btn ${graphMode === 'WEEK'?'active':''}`, onClick: () => {setGraphMode('WEEK'); setGraphOffset(0)} }, 'W'), React.createElement('button', { className: `chart-filter-btn ${graphMode === 'MONTH'?'active':''}`, onClick: () => {setGraphMode('MONTH'); setGraphOffset(0)} }, 'M')),
+                            React.createElement('button', { className: 'chart-nav-btn', onClick: () => setGraphOffset(graphOffset + 1) }, '›')
+                        ),
+                        React.createElement('div', { style: { height: '200px' } }, React.createElement('canvas', { ref: chartRef }))
+                    )
+                )
+            )
+        );
+    };
     const ErrorBookView = () => {
         const [f, setF] = useState({ tid: '', sub: 'Physics', search: '' });
         const [showAdd, setShowAdd] = useState(false);
