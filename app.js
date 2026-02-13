@@ -233,16 +233,39 @@ const EXAM_SYLLABUS = {
     }
 };
 // --- FLIP ANIMATION COMPONENTS ---
+// --- IMPROVED FLIP ANIMATION COMPONENTS ---
 const AnimatedCard = ({ digit }) => {
+    // Key change forces animation restart
     return React.createElement('div', { className: 'flip-unit-container' },
-        React.createElement('div', { className: 'upper-card' }, React.createElement('span', null, digit)),
-        React.createElement('div', { className: 'lower-card' }, React.createElement('span', null, digit))
+        // Upper card (Static current)
+        React.createElement('div', { className: 'upper-card' }, 
+            React.createElement('span', null, digit)
+        ),
+        // Lower card (Static current)
+        React.createElement('div', { className: 'lower-card' }, 
+            React.createElement('span', null, digit)
+        ),
+        // Flipper (Animation trigger)
+        React.createElement('div', { 
+            key: digit, // Crucial for animation reset
+            className: 'upper-card fold', 
+            style: { zIndex: 2 } 
+        }, 
+            React.createElement('span', null, digit)
+        ),
+        React.createElement('div', { 
+            key: `${digit}-bottom`, 
+            className: 'lower-card unfold', 
+            style: { zIndex: 2 } 
+        }, 
+            React.createElement('span', null, digit)
+        )
     );
 };
-const StaticCard = ({ digit }) => {
-    return React.createElement('div', { className: 'flip-unit-container', style: { width: '30px', background: 'transparent', boxShadow: 'none', color: '#555' } },
-        React.createElement('div', { className: 'upper-card', style: {background:'transparent', border:'none'} }, React.createElement('span', null, digit)),
-        React.createElement('div', { className: 'lower-card', style: {background:'transparent', border:'none'} }, React.createElement('span', null, digit))
+
+const StaticCard = () => {
+    return React.createElement('div', { className: 'static-card' }, 
+        React.createElement('span', null, ':')
     );
 };
 const App = () => {
