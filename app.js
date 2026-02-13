@@ -254,7 +254,8 @@ const [selectedClass, setSelectedClass] = useState(() => localStorage.getItem('l
 const [selectedSubject, setSelectedSubject] = useState(() => localStorage.getItem('lastSubject') || null);
 const [selectedChapter, setSelectedChapter] = useState(() => localStorage.getItem('lastChapter') || null);
     const [data, setData] = useState({ 
-        NEET: {}, JEE: {}, dailyGoals: [], tests: [], mistakes: [] 
+        NEET: {}, JEE: {}, dailyGoals: [], tests: [], mistakes: [] ,studyHistory: {}, 
+        timerState: { isRunning: false, startTime: null, elapsed: 0, laps: [] }
     });
     const [activeNotif, setActiveNotif] = useState(null);
     const [notifShow, setNotifShow] = useState(false);
