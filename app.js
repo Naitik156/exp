@@ -2113,14 +2113,13 @@ React.createElement('div', { className: 'test-history-card' },
         );
     };
     // --- UPDATED STOPWATCH VIEW (With Midnight Auto-Split & Graph Fixes) ---
-// --- FINAL STOPWATCH VIEW (Fullscreen Fix + No Clipping + Graph Reset) ---
+// --- FINAL RESPONSIVE STOPWATCH VIEW ---
 const StopwatchView = () => {
     const [now, setNow] = useState(Date.now());
     const [graphMode, setGraphMode] = useState('WEEK');
     const [graphOffset, setGraphOffset] = useState(0);
     const [isFocusMode, setIsFocusMode] = useState(false);
     
-    // NAYA CHANGE: Container ko pakad kar rakhne ke liye Ref
     const pageRef = React.useRef(null);
     const chartRef = React.useRef(null);
     const lastAutoSaveRef = React.useRef(Date.now());
@@ -2129,7 +2128,7 @@ const StopwatchView = () => {
     const getTodayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
     const { isRunning = false, startTime = null, elapsed = 0, laps = [] } = data.timerState || {};
 
-    // 1. TIMER & AUTO-SAVE LOGIC
+    // 1. TIMER LOGIC
     useEffect(() => {
         let interval = null;
         if (isRunning) {
@@ -2220,7 +2219,7 @@ const StopwatchView = () => {
 
     // Handlers
     const handleStop = (e) => {
-        if(e) e.stopPropagation(); // Click leak rokne ke liye
+        if(e) e.stopPropagation();
         if (!isRunning) return;
         const sessionSecs = Math.floor((Date.now() - startTime) / 1000);
         const dateStr = getTodayStr();
@@ -2261,13 +2260,9 @@ const StopwatchView = () => {
         setData(p => ({ ...p, timerState: { ...p.timerState, laps: [`${h}:${m}:${s}`, ...p.timerState.laps] } }));
     };
 
-    // --- FULLSCREEN FIX: DOCUMENT KI JAGAH REF USE KIYA ---
     const toggleFullScreen = () => {
         if (!document.fullscreenElement) {
-            // Sirf stopwatch wale div ko fullscreen karein
-            if (pageRef.current) {
-                pageRef.current.requestFullscreen().catch(e => console.log(e));
-            }
+            if (pageRef.current) pageRef.current.requestFullscreen().catch(e => console.log(e));
             setIsFocusMode(true);
         } else {
             if (document.exitFullscreen) document.exitFullscreen();
@@ -2281,8 +2276,14 @@ const StopwatchView = () => {
         return () => document.removeEventListener('fullscreenchange', handleEsc);
     }, []);
 
-    // --- CSS FIX (Font Size Reduced + Flex Centering) ---
+    // --- RESPONSIVE CSS FIX (Mobile + Desktop + Fullscreen) ---
     const fixedStyles = `
+        /* --- 1. DEFAULT DESKTOP (Bada Size) --- */
+        .flip-clock {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
         .flip-unit-container {
             display: flex;
             justify-content: center;
@@ -2292,13 +2293,22 @@ const StopwatchView = () => {
             height: 180px;
             background-color: #202020;
             border-radius: 16px;
-            /* Font size 100px se 90px kiya taaki kate nahi */
-            font-size: 90px; 
+            font-size: 100px;
             font-family: 'Manrope', sans-serif;
             color: #e5e5e5;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             overflow: hidden;
         }
+        .static-card {
+            width: 40px;
+            height: 180px;
+            font-size: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+        }
+        
         .upper-card, .lower-card {
             display: flex;
             justify-content: center;
@@ -2322,10 +2332,54 @@ const StopwatchView = () => {
             border-bottom-left-radius: 16px;
             border-bottom-right-radius: 16px;
         }
-        /* Perfect centering logic */
         .upper-card span { transform: translateY(50%); } 
         .lower-card span { transform: translateY(-50%); }
-        
+
+        /* --- 2. MOBILE VIEW (Screen < 600px) --- */
+        /* Yahan hum 'vw' (viewport width) use karenge taaki screen se bahar na jaye */
+        @media (max-width: 600px) {
+            .flip-clock { gap: 2vw; } /* Gap kam kiya */
+            .flip-unit-container {
+                width: 26vw;      /* 3 cards + gaps fit ho jayenge */
+                height: 36vw;
+                font-size: 20vw;
+                border-radius: 8px;
+            }
+            .static-card {
+                width: 4vw;
+                height: 36vw;
+                font-size: 15vw;
+            }
+            .btn-circle {
+                width: 70px;
+                height: 70px;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* --- 3. FULLSCREEN MODE (Hamesha Fit Rahega) --- */
+        /* 'vmin' use kar rahe hain - jo bhi side choti hogi uske hisab se size lega */
+        .stopwatch-page.fullscreen-mode .flip-clock {
+            gap: 2vmin;
+            margin-bottom: 5vh;
+        }
+        .stopwatch-page.fullscreen-mode .flip-unit-container {
+            width: 25vmin;  
+            height: 35vmin; 
+            font-size: 22vmin;
+            border-radius: 2vmin;
+        }
+        .stopwatch-page.fullscreen-mode .static-card {
+            width: 5vmin;
+            height: 35vmin;
+            font-size: 20vmin;
+        }
+        .stopwatch-page.fullscreen-mode .btn-circle {
+            width: 15vmin;
+            height: 15vmin;
+            font-size: 3vmin;
+        }
+
         .chart-controls-fixed {
             display: flex;
             align-items: center;
@@ -2335,7 +2389,6 @@ const StopwatchView = () => {
         }
     `;
 
-    // Div par 'ref={pageRef}' lagaya hai, ab yahi div fullscreen hoga
     return React.createElement('div', { 
         ref: pageRef, 
         className: `stopwatch-page ${isFocusMode ? 'fullscreen-mode' : ''}` 
