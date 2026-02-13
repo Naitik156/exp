@@ -2094,7 +2094,7 @@ React.createElement('div', { className: 'test-history-card' },
         const [graphMode, setGraphMode] = useState('WEEK');
         const [graphOffset, setGraphOffset] = useState(0);
         const chartRef = React.useRef(null);
-        const { isRunning, startTime, elapsed, laps } = data.timerState || {};
+        const { isRunning = false, startTime = null, elapsed = 0, laps = [] } = data.timerState || {};
 
         useEffect(() => {
             let interval = null;
@@ -2161,7 +2161,13 @@ React.createElement('div', { className: 'test-history-card' },
         };
 
         const handleStart = () => setData(p => ({ ...p, timerState: { ...p.timerState, isRunning: true, startTime: Date.now() } }));
-        const handleReset = () => { if(isRunning) handleStop(); setData(p => ({ ...p, timerState: { isRunning: false, startTime: null, elapsed: 0, laps: [] } })); };
+        const handleReset = () => { 
+    if(isRunning) handleStop(); 
+    setData(p => ({ 
+        ...p, 
+        timerState: { isRunning: false, startTime: null, elapsed: 0, laps: [] } 
+    })); 
+};
         const handleLap = () => setData(p => ({ ...p, timerState: { ...p.timerState, laps: [`${h}:${m}:${s}`, ...p.timerState.laps] } }));
 
         return React.createElement('div', { className: 'stopwatch-page' },
