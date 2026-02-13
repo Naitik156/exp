@@ -2113,18 +2113,20 @@ React.createElement('div', { className: 'test-history-card' },
         );
     };
     // --- UPDATED STOPWATCH VIEW (With Midnight Auto-Split & Graph Fixes) ---
-// --- UPDATED STOPWATCH VIEW (Fixes: Clipping, Fullscreen Stability, Graph Reset) ---
+// --- FINAL STOPWATCH VIEW (Fullscreen Fix + No Clipping + Graph Reset) ---
 const StopwatchView = () => {
     const [now, setNow] = useState(Date.now());
     const [graphMode, setGraphMode] = useState('WEEK');
     const [graphOffset, setGraphOffset] = useState(0);
     const [isFocusMode, setIsFocusMode] = useState(false);
+    
+    // NAYA CHANGE: Container ko pakad kar rakhne ke liye Ref
+    const pageRef = React.useRef(null);
     const chartRef = React.useRef(null);
     const lastAutoSaveRef = React.useRef(Date.now());
     const sessionDateRef = React.useRef(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }));
 
     const getTodayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-
     const { isRunning = false, startTime = null, elapsed = 0, laps = [] } = data.timerState || {};
 
     // 1. TIMER & AUTO-SAVE LOGIC
@@ -2155,7 +2157,6 @@ const StopwatchView = () => {
                 // 3-Min Auto Save
                 if (currentTime - lastAutoSaveRef.current > 180000) {
                     const sessionSecs = Math.floor((currentTime - startTime) / 1000);
-                    // Silent update to DB only, don't disrupt timer state
                     setData(prev => ({
                         ...prev,
                         studyHistory: { ...prev.studyHistory, [currentStr]: (prev.studyHistory?.[currentStr] || 0) + sessionSecs },
@@ -2211,14 +2212,15 @@ const StopwatchView = () => {
         });
     }, [data.studyHistory, graphMode, graphOffset, isRunning]);
 
-    // Calc Display
+    // Display Values
     const totalSeconds = elapsed + (isRunning && startTime ? Math.floor((now - startTime) / 1000) : 0);
     const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
     const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
     const s = (totalSeconds % 60).toString().padStart(2, '0');
 
     // Handlers
-    const handleStop = () => {
+    const handleStop = (e) => {
+        if(e) e.stopPropagation(); // Click leak rokne ke liye
         if (!isRunning) return;
         const sessionSecs = Math.floor((Date.now() - startTime) / 1000);
         const dateStr = getTodayStr();
@@ -2229,23 +2231,22 @@ const StopwatchView = () => {
         }));
     };
 
-    const handleStart = () => {
+    const handleStart = (e) => {
+        if(e) e.stopPropagation();
         sessionDateRef.current = getTodayStr();
         setData(p => ({ ...p, timerState: { ...p.timerState, isRunning: true, startTime: Date.now() } }));
     };
     
-    // --- RESET FIXED: CLEARS TODAY'S GRAPH TOO ---
-    const handleReset = () => { 
+    const handleReset = (e) => { 
+        if(e) e.stopPropagation();
         setModalConfig({
             title: 'Hard Reset?',
             message: 'Resetting will CLEAR today\'s entire progress graph and timer. Confirm?',
             onConfirm: () => {
-                const dateStr = getTodayStr(); // Get Today's Date
+                const dateStr = getTodayStr();
                 setData(p => ({ 
                     ...p, 
-                    // Graph Reset Logic: Set today's history to 0
                     studyHistory: { ...p.studyHistory, [dateStr]: 0 },
-                    // Timer Reset
                     timerState: { isRunning: false, startTime: null, elapsed: 0, laps: [] } 
                 }));
                 setShowModal(false);
@@ -2255,12 +2256,18 @@ const StopwatchView = () => {
         setShowModal(true);
     };
 
-    const handleLap = () => setData(p => ({ ...p, timerState: { ...p.timerState, laps: [`${h}:${m}:${s}`, ...p.timerState.laps] } }));
+    const handleLap = (e) => {
+        if(e) e.stopPropagation();
+        setData(p => ({ ...p, timerState: { ...p.timerState, laps: [`${h}:${m}:${s}`, ...p.timerState.laps] } }));
+    };
 
-    // Fullscreen Logic - Optimized to not break on re-renders
+    // --- FULLSCREEN FIX: DOCUMENT KI JAGAH REF USE KIYA ---
     const toggleFullScreen = () => {
         if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(e => console.log(e));
+            // Sirf stopwatch wale div ko fullscreen karein
+            if (pageRef.current) {
+                pageRef.current.requestFullscreen().catch(e => console.log(e));
+            }
             setIsFocusMode(true);
         } else {
             if (document.exitFullscreen) document.exitFullscreen();
@@ -2274,10 +2281,10 @@ const StopwatchView = () => {
         return () => document.removeEventListener('fullscreenchange', handleEsc);
     }, []);
 
-    // --- CSS FIX FOR CLIPPING & ARROW ALIGNMENT ---
+    // --- CSS FIX (Font Size Reduced + Flex Centering) ---
     const fixedStyles = `
         .flip-unit-container {
-            display: flex; /* Flexbox for centering */
+            display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
@@ -2285,11 +2292,12 @@ const StopwatchView = () => {
             height: 180px;
             background-color: #202020;
             border-radius: 16px;
-            font-size: 100px; /* Slightly reduced to fit */
+            /* Font size 100px se 90px kiya taaki kate nahi */
+            font-size: 90px; 
             font-family: 'Manrope', sans-serif;
             color: #e5e5e5;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            overflow: hidden; /* Strict overflow */
+            overflow: hidden;
         }
         .upper-card, .lower-card {
             display: flex;
@@ -2303,18 +2311,18 @@ const StopwatchView = () => {
         }
         .upper-card { 
             top: 0; 
-            align-items: flex-end; /* Bottom align for top half */
+            align-items: flex-end; 
             border-bottom: 2px solid #000;
             border-top-left-radius: 16px;
             border-top-right-radius: 16px;
         }
         .lower-card { 
             bottom: 0; 
-            align-items: flex-start; /* Top align for bottom half */
+            align-items: flex-start; 
             border-bottom-left-radius: 16px;
             border-bottom-right-radius: 16px;
         }
-        /* The span holds the number and needs to be positioned effectively */
+        /* Perfect centering logic */
         .upper-card span { transform: translateY(50%); } 
         .lower-card span { transform: translateY(-50%); }
         
@@ -2327,8 +2335,11 @@ const StopwatchView = () => {
         }
     `;
 
-    return React.createElement('div', { className: `stopwatch-page ${isFocusMode ? 'fullscreen-mode' : ''}` },
-        // Inject CSS Fixes
+    // Div par 'ref={pageRef}' lagaya hai, ab yahi div fullscreen hoga
+    return React.createElement('div', { 
+        ref: pageRef, 
+        className: `stopwatch-page ${isFocusMode ? 'fullscreen-mode' : ''}` 
+    },
         React.createElement('style', null, fixedStyles),
 
         // Top Bar
