@@ -2403,6 +2403,7 @@ filtered.length === 0 ? React.createElement('p', {style:{textAlign:'center', pad
         view === 'dashboard' && React.createElement(DashboardView),
         view === 'daily-goals' && React.createElement(DailyGoalsView),
         view === 'test-analysis' && React.createElement(TestAnalysisView),
+        view === 'stopwatch' && React.createElement(StopwatchView),
         view === 'error-book' && React.createElement(ErrorBookView),
 
         // --- 3. GLOBAL MODAL (Reset Chapter, Delete, etc.) WITH 'X' ---
