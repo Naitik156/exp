@@ -1561,6 +1561,8 @@ const handleDeleteChapter = (chapterName) => {
             )
         );
     };  
+
+        
 const DailyGoalsView = () => {
     // --- HELPER: India ki Current Date nikalne ke liye (YYYY-MM-DD) ---
     const getISTDate = () => {
@@ -1568,8 +1570,13 @@ const DailyGoalsView = () => {
     };
 
     const todayIST = getISTDate();
-    const [viewDate, setViewDate] = useState(todayIST); // Select ki gayi date
+    const [viewDate, setViewDate] = useState(todayIST); 
     const [showAddModal, setShowAddModal] = useState(false);
+    
+    // --- NEW GRAPH STATES ---
+    const [graphMode, setGraphMode] = useState('WEEK'); // 'WEEK', 'MONTH', 'YEAR'
+    const [graphOffset, setGraphOffset] = useState(0); // 0 = Current, -1 = Previous...
+
     const [newGoal, setNewGoal] = useState({ 
         title: '', 
         desc: '', 
@@ -1580,10 +1587,8 @@ const DailyGoalsView = () => {
     
     const goalChartRef = React.useRef(null);
 
-    // --- LOCK LOGIC: Kya hum aaj ki date dekh rahe hain? ---
     const isToday = viewDate === todayIST;
 
-    // Goals filter: Sirf wahi dikhao jo us date ke hain ya har din (Recurring) hote hain
     const goals = (data.dailyGoals || []).filter(g => {
         if (g.isRecurring) return true;
         return g.date === viewDate;
@@ -1594,16 +1599,14 @@ const DailyGoalsView = () => {
             showToast('Goal name bhariye!');
             return;
         }
-        // Naya function: date: viewDate set kiya gaya hai
         const updatedGoals = [...(data.dailyGoals || []), { 
-    ...newGoal, 
-    id: Date.now(), 
-    doneDates: {}, // Naya: Har din ka status yahan save hoga
-    date: viewDate 
-}];
+            ...newGoal, 
+            id: Date.now(), 
+            doneDates: {}, 
+            date: viewDate 
+        }];
         setData(prev => ({ ...prev, dailyGoals: updatedGoals }));
         setShowAddModal(false);
-        // Reset form to default
         setNewGoal({ title: '', desc: '', icon: '📖', isRecurring: false, date: todayIST });
         showToast(`🎯 Target saved for ${viewDate.split('-').reverse().join('/')}`);
     };
@@ -1615,7 +1618,6 @@ const DailyGoalsView = () => {
         }
         const updatedGoals = (data.dailyGoals || []).map(g => {
             if (g.id === id) {
-                // Ab hum global "completed" ki jagah us din ki date check kar rahe hain
                 const currentStatus = g.doneDates?.[todayIST] || false;
                 return { 
                     ...g, 
@@ -1625,7 +1627,7 @@ const DailyGoalsView = () => {
             return g;
         });
         
-        // History calculation logic
+        // History calculation
         const todaysTasks = updatedGoals.filter(g => g.isRecurring || g.date === todayIST);
         const completedCount = todaysTasks.filter(g => g.doneDates?.[todayIST]).length;
         const percent = todaysTasks.length > 0 ? Math.round((completedCount / todaysTasks.length) * 100) : 0;
@@ -1636,45 +1638,147 @@ const DailyGoalsView = () => {
             goalsHistory: { ...(prev.goalsHistory || {}), [todayIST]: percent } 
         }));
     };
+
     const deleteGoal = (id) => {
         const updatedGoals = (data.dailyGoals || []).filter(g => g.id !== id);
         setData(prev => ({ ...prev, dailyGoals: updatedGoals }));
         showToast("Goal deleted");
     };
 
-    // Graph drawing logic
+    // --- UPDATED GRAPH LOGIC (WEEK / MONTH / YEAR) ---
     useEffect(() => {
         if (!goalChartRef.current || typeof Chart === 'undefined') return;
-        const history = data.goalsHistory || {};
-        const dates = Object.keys(history).sort().slice(-7); 
-        const scores = dates.map(d => history[d]);
-        const finalLabels = dates.length > 0 ? dates.map(d => d.split('-').slice(1).reverse().join('/')) : ["-", "-", "-", "-", "-", "-", "-"];
         
+        const history = data.goalsHistory || {};
+        const labels = [];
+        const dataPoints = [];
+        const today = new Date(); // Browser time for calculation base
+        
+        // Helper to format YYYY-MM-DD
+        const formatDateKey = (d) => d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+
+        if (graphMode === 'WEEK') {
+            // Logic: Current date se start of week (Sunday) nikalo, fir offset apply karo
+            const currentDay = today.getDay(); // 0-6
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - currentDay + (graphOffset * 7));
+
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(startOfWeek);
+                d.setDate(startOfWeek.getDate() + i);
+                const key = formatDateKey(d);
+                labels.push(d.toLocaleDateString('en-US', { weekday: 'short' })); // Sun, Mon...
+                dataPoints.push(history[key] || 0);
+            }
+
+        } else if (graphMode === 'MONTH') {
+            // Logic: Target month ke saare din
+            const targetMonth = new Date(today.getFullYear(), today.getMonth() + graphOffset, 1);
+            const daysInMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0).getDate();
+            
+            // Label e.g., "Feb"
+            // labels are 1, 2, 3...
+            for(let i=1; i<=daysInMonth; i++) {
+                const d = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), i);
+                const key = formatDateKey(d);
+                labels.push(i); // Date number
+                dataPoints.push(history[key] || 0);
+            }
+
+        } else if (graphMode === 'YEAR') {
+            // Logic: Target year ke 12 months ka average consistency
+            const targetYear = today.getFullYear() + graphOffset;
+            
+            for(let m=0; m<12; m++) {
+                const monthName = new Date(targetYear, m, 1).toLocaleDateString('en-US', { month: 'short' });
+                labels.push(monthName);
+                
+                // Average nikalna us mahine ka
+                let sum = 0; 
+                let count = 0;
+                // Us mahine ke saare din check karo history me
+                // Note: Ye thoda heavy loop hai but yearly data kam dekha jata hai isliye chalega
+                Object.keys(history).forEach(key => {
+                    if(key.startsWith(`${targetYear}-${String(m+1).padStart(2, '0')}`)) {
+                        sum += history[key];
+                        count++;
+                    }
+                });
+                dataPoints.push(count > 0 ? Math.round(sum / count) : 0);
+            }
+        }
+        
+        // Destroy old chart
+        const chartInstance = Chart.getChart(goalChartRef.current);
+        if (chartInstance) chartInstance.destroy();
+
         const chart = new Chart(goalChartRef.current, {
             type: 'line',
             data: {
-                labels: finalLabels,
+                labels: labels,
                 datasets: [{
                     label: 'Success %',
-                    data: scores.length > 0 ? scores : [0,0,0,0,0,0,0],
+                    data: dataPoints,
                     borderColor: '#F59E0B',
                     backgroundColor: 'rgba(245, 158, 11, 0.1)',
                     fill: true,
                     tension: 0.4,
-                    borderWidth: 3
+                    borderWidth: 3,
+                    pointRadius: graphMode === 'MONTH' ? 2 : 4 // Month view me dots chote
                 }]
             },
             options: { 
                 responsive: true, 
                 maintainAspectRatio: false, 
-                scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } } },
-                plugins: { legend: { display: false } }
+                scales: { 
+                    y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } },
+                    x: { grid: { display: false } }
+                },
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: (context) => {
+                                // Tooltip me Year/Month context dikhana
+                                if(graphMode === 'WEEK' || graphMode === 'MONTH') return context[0].label;
+                                return `${context[0].label} ${today.getFullYear() + graphOffset}`;
+                            }
+                        }
+                    } 
+                }
             }
         });
-        return () => chart.destroy();
-    }, [data.goalsHistory]);
+        return () => { if(chart) chart.destroy(); };
+    }, [data.goalsHistory, graphMode, graphOffset]);
 
     const progressPercent = goals.length > 0 ? Math.round((goals.filter(g => g.doneDates?.[viewDate]).length / goals.length) * 100) : 0;
+
+    // --- STYLES FOR CONTROLS ---
+    const controlBtnStyle = (isActive) => ({
+        background: isActive ? '#F59E0B' : 'transparent',
+        color: isActive ? 'white' : '#888',
+        border: '1px solid #ddd',
+        borderRadius: '6px',
+        padding: '2px 8px',
+        fontSize: '0.75rem',
+        cursor: 'pointer',
+        fontWeight: '700',
+        transition: 'all 0.2s'
+    });
+
+    const arrowBtnStyle = {
+        background: '#f3f4f6',
+        border: 'none',
+        borderRadius: '50%',
+        width: '24px',
+        height: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        color: '#555',
+        fontSize: '14px'
+    };
 
     return React.createElement('div', { className: 'container daily-goals-page' },
         React.createElement('div', { className: 'nav-breadcrumb' },
@@ -1692,7 +1796,7 @@ const DailyGoalsView = () => {
                         isToday ? "📅 Today's List" : `📅 List for ${viewDate.split('-').reverse().join('/')}`
                     )
                 ),
-                // DATE SWITCHER (Top Right Corner)
+                // DATE SWITCHER
                 React.createElement('div', { className: 'date-picker-wrapper' },
                     React.createElement('input', { 
                         type: 'date', 
@@ -1709,20 +1813,35 @@ const DailyGoalsView = () => {
                     React.createElement('span', { style: { fontWeight: '700', color: 'var(--primary)' } }, `${progressPercent}%`)
                 ),
                 React.createElement('div', { className: 'progress-bar-bg', style: { height: '8px' } },
-                                
                     React.createElement('div', { className: 'progress-bar-fill', style: { width: `${progressPercent}%`, background: 'linear-gradient(90deg, #F59E0B, #fbbf24)' } })
                 )
             )
         ),
 
-        // Lock Message (Past ya Future dates ke liye)
         !isToday && React.createElement('div', { className: 'lock-banner' }, 
             `🔒 You are viewing ${viewDate < todayIST ? 'History' : 'Future Planning'}. Marking/Unmarking is disabled.`
         ),
 
-        // Consistency Graph
+        // --- UPDATED CONSISTENCY GRAPH CARD ---
         React.createElement('div', { className: 'card', style: { marginBottom: '2rem', padding: '20px', borderLeft: '6px solid #F59E0B' } },
-            React.createElement('h3', { style: { fontSize: '1rem', fontWeight: '800', marginBottom: '15px' } }, '📈 Consistency Trend'),
+            // GRAPH HEADER ROW
+            React.createElement('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' } },
+                React.createElement('h3', { style: { fontSize: '1rem', fontWeight: '800', margin: 0 } }, '📈 Consistency Trend'),
+                
+                // GRAPH CONTROLS
+                React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                    React.createElement('button', { style: arrowBtnStyle, onClick: () => setGraphOffset(graphOffset - 1) }, '‹'),
+                    
+                    React.createElement('div', { style: { display: 'flex', gap: '4px' } },
+                        React.createElement('button', { style: controlBtnStyle(graphMode === 'WEEK'), onClick: () => { setGraphMode('WEEK'); setGraphOffset(0); } }, 'W'),
+                        React.createElement('button', { style: controlBtnStyle(graphMode === 'MONTH'), onClick: () => { setGraphMode('MONTH'); setGraphOffset(0); } }, 'M'),
+                        React.createElement('button', { style: controlBtnStyle(graphMode === 'YEAR'), onClick: () => { setGraphMode('YEAR'); setGraphOffset(0); } }, 'Y')
+                    ),
+
+                    React.createElement('button', { style: arrowBtnStyle, onClick: () => setGraphOffset(graphOffset + 1) }, '›')
+                )
+            ),
+            
             React.createElement('div', { style: { height: '180px' } },
                 React.createElement('canvas', { ref: goalChartRef })
             )
@@ -1739,20 +1858,21 @@ const DailyGoalsView = () => {
             },
                 React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: '15px', width: '100%' } },
                     React.createElement('div', { 
-    className: 'custom-checkbox',
-    style: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: goal.doneDates?.[viewDate] ? 'var(--primary)' : 'transparent',
-        border: `2px solid ${goal.doneDates?.[viewDate] ? 'var(--primary)' : '#ccc'}`,
-        borderRadius: '6px',
-        color: 'white',
-        fontSize: '14px',
-        fontWeight: 'bold',
-        transition: 'all 0.2s'
-    }
-}, goal.doneDates?.[viewDate] ? '✓' : ''),
+                        className: 'custom-checkbox',
+                        style: {
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: goal.doneDates?.[viewDate] ? 'var(--primary)' : 'transparent',
+                            border: `2px solid ${goal.doneDates?.[viewDate] ? 'var(--primary)' : '#ccc'}`,
+                            borderRadius: '6px',
+                            color: 'white',
+                            fontSize: '14px',
+                            fontWeight: 'bold',
+                            transition: 'all 0.2s',
+                            minWidth: '24px', minHeight: '24px'
+                        }
+                    }, goal.doneDates?.[viewDate] ? '✓' : ''),
                     React.createElement('div', { className: 'goal-icon-circle' }, goal.icon),
                     React.createElement('div', { className: 'goal-content' },
                         React.createElement('span', { className: 'goal-title' }, goal.title),
@@ -1768,7 +1888,7 @@ const DailyGoalsView = () => {
             ))
         ),
 
-        // Add Button (Sirf aaj aur aage ki dates ke liye dikhega)
+        // Add Button
         viewDate >= todayIST && React.createElement('button', { 
             className: 'btn btn-primary', 
             style: {
@@ -1782,14 +1902,13 @@ const DailyGoalsView = () => {
             }
         }, '+ Add Target for ' + viewDate.split('-').reverse().slice(0,2).join('/')),
 
-        // Add Modal
+        // Add Modal (Same as before)
         showAddModal && React.createElement('div', { className: 'modal' },
             React.createElement('div', { className: 'modal-content glass-modal' },
                 React.createElement('button', { className: 'modal-close-x', onClick: () => setShowAddModal(false) }, '×'),
                 React.createElement('h3', { className: 'custom-modal-header' }, 
                     React.createElement('span', { className: 'target-icon' }, '🎯'), ' Naya Target Set Karein'
                 ),
-                // Goal Name
                 React.createElement('div', { className: 'input-group' },
                     React.createElement('label', null, 'Goal Name'),
                     React.createElement('input', { 
@@ -1799,7 +1918,6 @@ const DailyGoalsView = () => {
                         placeholder: 'Kya karna hai?' 
                     })
                 ),
-                // Description (Restored like Image 2)
                 React.createElement('div', { className: 'input-group' },
                     React.createElement('label', null, 'Description'),
                     React.createElement('textarea', { 
@@ -1810,7 +1928,6 @@ const DailyGoalsView = () => {
                         placeholder: 'Details...' 
                     })
                 ),
-                // Icon Selector (Restored like Image 2)
                 React.createElement('div', { className: 'input-group' },
                     React.createElement('label', null, 'Choose Icon'),
                     React.createElement('select', { 
@@ -1823,7 +1940,6 @@ const DailyGoalsView = () => {
                         )
                     )
                 ),
-                // Active For Section
                 React.createElement('div', { className: 'active-for-container' },
                     React.createElement('div', { className: 'active-for-row' },
                         React.createElement('span', { className: 'active-for-title' }, 'Active For'),
@@ -1848,8 +1964,6 @@ const DailyGoalsView = () => {
         )
     );
 };
-        
-
 
 const TestAnalysisView = () => {
         const [activeTab, setActiveTab] = useState('OVERALL');
