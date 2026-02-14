@@ -2189,13 +2189,14 @@ React.createElement('div', { className: 'test-history-card' },
     };
     // --- UPDATED STOPWATCH VIEW (With Midnight Auto-Split & Graph Fixes) ---
 // --- FINAL RESPONSIVE STOPWATCH VIEW (Auto-Scaling Fix) ---
+// --- FINAL STOPWATCH VIEW (Orientation-Aware Auto Scaling) ---
 const StopwatchView = () => {
     const [now, setNow] = useState(Date.now());
     const [graphMode, setGraphMode] = useState('WEEK');
     const [graphOffset, setGraphOffset] = useState(0);
     const [isFocusMode, setIsFocusMode] = useState(false);
     
-    // Chart aur Refs
+    // Refs
     const chartRef = React.useRef(null);
     const lastAutoSaveRef = React.useRef(Date.now());
     const sessionDateRef = React.useRef(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }));
@@ -2203,7 +2204,7 @@ const StopwatchView = () => {
     const getTodayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
     const { isRunning = false, startTime = null, elapsed = 0, laps = [] } = data.timerState || {};
 
-    // 1. TIMER LOGIC (Untouched)
+    // 1. TIMER LOGIC
     useEffect(() => {
         let interval = null;
         if (isRunning) {
@@ -2243,7 +2244,7 @@ const StopwatchView = () => {
         return () => clearInterval(interval);
     }, [isRunning, startTime, elapsed]);
 
-    // 2. GRAPH LOGIC (Untouched)
+    // 2. GRAPH LOGIC
     useEffect(() => {
         if (!chartRef.current || typeof Chart === 'undefined') return;
         const history = data.studyHistory || {};
@@ -2251,7 +2252,7 @@ const StopwatchView = () => {
         const today = new Date();
         
         if (graphMode === 'WEEK') {
-            const currentDay = today.getDay();
+            const currentDay = today.getDay(); 
             const startOfWeek = new Date(today);
             startOfWeek.setDate(today.getDate() - currentDay + (graphOffset * 7));
 
@@ -2293,7 +2294,7 @@ const StopwatchView = () => {
     const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
     const s = (totalSeconds % 60).toString().padStart(2, '0');
 
-    // Handlers (Untouched)
+    // Handlers
     const handleStop = (e) => {
         if(e) e.stopPropagation();
         if (!isRunning) return;
@@ -2336,6 +2337,7 @@ const StopwatchView = () => {
         setData(p => ({ ...p, timerState: { ...p.timerState, laps: [`${h}:${m}:${s}`, ...p.timerState.laps] } }));
     };
 
+    // Fullscreen Toggle
     const toggleFullScreen = () => {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen().catch(e => console.log(e));
@@ -2352,7 +2354,7 @@ const StopwatchView = () => {
         return () => document.removeEventListener('fullscreenchange', handleEsc);
     }, []);
 
-    // --- NEW CSS: SCALING LOGIC (VMIN) ---
+    // --- NEW CSS: ORIENTATION AWARE SCALING ---
     const fixedStyles = `
         /* 1. DEFAULT DESKTOP (Normal Mode) */
         .flip-clock { display: flex; gap: 15px; justify-content: center; margin-bottom: 2rem; }
@@ -2369,14 +2371,14 @@ const StopwatchView = () => {
         .upper-card span { transform: translateY(50%); } 
         .lower-card span { transform: translateY(-50%); }
 
-        /* Graph Buttons Fix */
+        /* Graph Controls */
         .chart-controls-fixed { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; position: relative; z-index: 50; }
         .chart-nav-btn { background: #262626; border: 1px solid #404040; color: white; width: 38px; height: 38px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; padding-bottom: 4px; }
         .chart-filter-group { display: flex; background: #262626; padding: 4px; border-radius: 8px; border: 1px solid #404040; }
         .chart-filter-btn { background: transparent; border: none; color: #a3a3a3; padding: 6px 16px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
         .chart-filter-btn.active { background: #3b82f6; color: white; }
 
-        /* 2. RESPONSIVE MOBILE (Normal Mode) */
+        /* 2. MOBILE VIEW (Normal Mode) */
         @media (max-width: 600px) {
             .flip-clock { gap: 1vw; }
             .flip-unit-container { width: 26vw; height: 38vw; font-size: 20vw; }
@@ -2384,57 +2386,79 @@ const StopwatchView = () => {
             .btn-circle { width: 65px; height: 65px; font-size: 0.8rem; }
         }
 
-        /* 3. FULLSCREEN MODE (MAGIC SCALING) */
-        /* Flexbox Layout to fill screen */
-        .stopwatch-page.fullscreen-mode .stopwatch-container {
+        /* 3. FULLSCREEN MODE (The Fix) */
+        .stopwatch-page.fullscreen-mode {
+            background: black;
             display: flex;
             flex-direction: column;
-            justify-content: space-evenly; /* Even spacing between clock and buttons */
-            height: 100vh;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
             width: 100vw;
-            padding: 0;
-            margin: 0;
-            max-width: 100% !important;
+            height: 100vh;
         }
 
-        /* Clock Section - Big & Centered */
+        .stopwatch-page.fullscreen-mode .stopwatch-container {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            padding: 0; margin: 0; max-width: none;
+        }
+
+        /* Top 70% Clock */
         .stopwatch-page.fullscreen-mode .flip-clock {
-            flex-grow: 1; /* Takes available space */
+            flex: 7; /* 70% Height */
+            width: 100%;
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             margin: 0;
             gap: 2vmin;
         }
 
-        /* Clock Digits - vmin ensures it fits both Portrait & Landscape */
-        .stopwatch-page.fullscreen-mode .flip-unit-container {
-            width: 26vmin;  /* Huge relative to smallest screen side */
-            height: 36vmin;
-            font-size: 24vmin;
-            border-radius: 3vmin;
-        }
-        .stopwatch-page.fullscreen-mode .static-card {
-            width: 6vmin;
-            height: 36vmin;
-            font-size: 20vmin;
-        }
-        .stopwatch-page.fullscreen-mode .upper-card { border-top-left-radius: 3vmin; border-top-right-radius: 3vmin; }
-        .stopwatch-page.fullscreen-mode .lower-card { border-bottom-left-radius: 3vmin; border-bottom-right-radius: 3vmin; }
-
-        /* Buttons Section - Pushed to bottom but scaled */
+        /* Bottom 30% Buttons */
         .stopwatch-page.fullscreen-mode .stopwatch-controls {
-            margin-bottom: 5vh; /* Gap from bottom */
+            flex: 3; /* 30% Height */
+            width: 100%;
             display: flex;
-            gap: 6vmin;
             justify-content: center;
-            align-items: center;
-            transform: scale(1);
+            align-items: flex-start;
+            padding-top: 2vh;
+            gap: 5vw;
         }
-        .stopwatch-page.fullscreen-mode .btn-circle {
-            width: 18vmin;  /* Buttons grow with screen */
-            height: 18vmin;
-            font-size: 3.5vmin;
+
+        /* --- ORIENTATION RULES --- */
+        
+        /* PORTRAIT (Phone Seedha) -> Width ko use karo */
+        @media (orientation: portrait) {
+            .stopwatch-page.fullscreen-mode .flip-unit-container {
+                width: 28vw; /* Screen width ka 28% */
+                height: 38vw;
+                font-size: 28vw;
+                border-radius: 4vw;
+            }
+            .stopwatch-page.fullscreen-mode .static-card {
+                width: 5vw; height: 38vw; font-size: 20vw;
+            }
+            .stopwatch-page.fullscreen-mode .btn-circle {
+                width: 20vw; height: 20vw; font-size: 4vw;
+            }
+        }
+
+        /* LANDSCAPE (Phone Teda / Laptop) -> Height ko use karo */
+        @media (orientation: landscape) {
+            .stopwatch-page.fullscreen-mode .flip-unit-container {
+                height: 50vh; /* Screen height ka 50% */
+                width: 36vh;  /* Height ke ratio me width */
+                font-size: 40vh;
+                border-radius: 4vh;
+            }
+            .stopwatch-page.fullscreen-mode .static-card {
+                height: 50vh; width: 5vh; font-size: 30vh;
+            }
+            .stopwatch-page.fullscreen-mode .btn-circle {
+                height: 15vh; width: 15vh; font-size: 2.5vh;
+            }
         }
     `;
 
