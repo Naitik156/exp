@@ -2188,7 +2188,8 @@ React.createElement('div', { className: 'test-history-card' },
         );
     };
     // --- UPDATED STOPWATCH VIEW (With Midnight Auto-Split & Graph Fixes) ---
-// --- FINAL RESPONSIVE STOPWATCH VIEW ---
+// --- FINAL RESPONSIVE STOPWATCH VIEW 
+    // --- FINAL FIXED STOPWATCH VIEW (Navigation & Graph Fixed) ---
 const StopwatchView = () => {
     const [now, setNow] = useState(Date.now());
     const [graphMode, setGraphMode] = useState('WEEK');
@@ -2351,9 +2352,9 @@ const StopwatchView = () => {
         return () => document.removeEventListener('fullscreenchange', handleEsc);
     }, []);
 
-    // --- RESPONSIVE CSS FIX (Mobile + Desktop + Fullscreen) ---
+    // --- ENHANCED CSS (Graph Buttons Ab Clear & Clickable Honge) ---
     const fixedStyles = `
-        /* --- 1. DEFAULT DESKTOP (Bada Size) --- */
+        /* 1. CLOCK STYLES */
         .flip-clock {
             display: flex;
             gap: 15px;
@@ -2383,7 +2384,6 @@ const StopwatchView = () => {
             justify-content: center;
             color: #666;
         }
-        
         .upper-card, .lower-card {
             display: flex;
             justify-content: center;
@@ -2394,74 +2394,72 @@ const StopwatchView = () => {
             left: 0;
             background-color: #202020;
         }
-        .upper-card { 
-            top: 0; 
-            align-items: flex-end; 
-            border-bottom: 2px solid #000;
-            border-top-left-radius: 16px;
-            border-top-right-radius: 16px;
-        }
-        .lower-card { 
-            bottom: 0; 
-            align-items: flex-start; 
-            border-bottom-left-radius: 16px;
-            border-bottom-right-radius: 16px;
-        }
+        .upper-card { top: 0; align-items: flex-end; border-bottom: 2px solid #000; border-top-left-radius: 16px; border-top-right-radius: 16px; }
+        .lower-card { bottom: 0; align-items: flex-start; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; }
         .upper-card span { transform: translateY(50%); } 
         .lower-card span { transform: translateY(-50%); }
 
-        /* --- 2. MOBILE VIEW (Screen < 600px) --- */
-        /* Yahan hum 'vw' (viewport width) use karenge taaki screen se bahar na jaye */
-        @media (max-width: 600px) {
-            .flip-clock { gap: 2vw; } /* Gap kam kiya */
-            .flip-unit-container {
-                width: 26vw;      /* 3 cards + gaps fit ho jayenge */
-                height: 36vw;
-                font-size: 20vw;
-                border-radius: 8px;
-            }
-            .static-card {
-                width: 4vw;
-                height: 36vw;
-                font-size: 15vw;
-            }
-            .btn-circle {
-                width: 70px;
-                height: 70px;
-                font-size: 0.9rem;
-            }
-        }
-
-        /* --- 3. FULLSCREEN MODE (Hamesha Fit Rahega) --- */
-        /* 'vmin' use kar rahe hain - jo bhi side choti hogi uske hisab se size lega */
-        .stopwatch-page.fullscreen-mode .flip-clock {
-            gap: 2vmin;
-            margin-bottom: 5vh;
-        }
-        .stopwatch-page.fullscreen-mode .flip-unit-container {
-            width: 25vmin;  
-            height: 35vmin; 
-            font-size: 22vmin;
-            border-radius: 2vmin;
-        }
-        .stopwatch-page.fullscreen-mode .static-card {
-            width: 5vmin;
-            height: 35vmin;
-            font-size: 20vmin;
-        }
-        .stopwatch-page.fullscreen-mode .btn-circle {
-            width: 15vmin;
-            height: 15vmin;
-            font-size: 3vmin;
-        }
-
+        /* 2. GRAPH NAVIGATION STYLES (New Fix) */
         .chart-controls-fixed {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 15px;
             margin-bottom: 15px;
+            position: relative;
+            z-index: 50; /* Button click priority */
         }
+        .chart-nav-btn {
+            background: #262626;
+            border: 1px solid #404040;
+            color: white;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 4px;
+            transition: all 0.2s;
+        }
+        .chart-nav-btn:active { transform: scale(0.9); background: #404040; }
+        
+        .chart-filter-group {
+            display: flex;
+            background: #262626;
+            padding: 4px;
+            border-radius: 8px;
+            border: 1px solid #404040;
+        }
+        .chart-filter-btn {
+            background: transparent;
+            border: none;
+            color: #a3a3a3;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .chart-filter-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+
+        /* 3. MOBILE & FULLSCREEN ADAPTATIONS */
+        @media (max-width: 600px) {
+            .flip-clock { gap: 2vw; }
+            .flip-unit-container { width: 26vw; height: 36vw; font-size: 20vw; border-radius: 8px; }
+            .static-card { width: 4vw; height: 36vw; font-size: 15vw; }
+            .btn-circle { width: 70px; height: 70px; font-size: 0.9rem; }
+        }
+        .stopwatch-page.fullscreen-mode .flip-clock { gap: 2vmin; margin-bottom: 5vh; }
+        .stopwatch-page.fullscreen-mode .flip-unit-container { width: 25vmin; height: 35vmin; font-size: 22vmin; border-radius: 2vmin; }
+        .stopwatch-page.fullscreen-mode .static-card { width: 5vmin; height: 35vmin; font-size: 20vmin; }
+        .stopwatch-page.fullscreen-mode .btn-circle { width: 15vmin; height: 15vmin; font-size: 3vmin; }
     `;
 
     return React.createElement('div', { 
@@ -2508,15 +2506,15 @@ const StopwatchView = () => {
                         laps.map((l, i) => React.createElement('div', { key: i, className: 'lap-item' }, React.createElement('span', null, `#${laps.length - i}`), React.createElement('span', {style:{color:'#fff'}}, l)))
                     )
                 ),
-                // Graph
+                // Graph with FIXED Navigation Buttons
                 React.createElement('div', { className: 'stats-container' },
                     React.createElement('div', { className: 'chart-controls-fixed' },
-                        React.createElement('button', { className: 'chart-nav-btn', onClick: () => setGraphOffset(graphOffset - 1), style: {display:'flex', alignItems:'center', justifyContent:'center', paddingBottom:'3px'} }, '‹'),
-                        React.createElement('div', null, 
-                            React.createElement('button', { className: `chart-filter-btn ${graphMode === 'WEEK'?'active':''}`, onClick: () => {setGraphMode('WEEK'); setGraphOffset(0)} }, 'W'), 
-                            React.createElement('button', { className: `chart-filter-btn ${graphMode === 'MONTH'?'active':''}`, onClick: () => {setGraphMode('MONTH'); setGraphOffset(0)} }, 'M')
+                        React.createElement('button', { className: 'chart-nav-btn', onClick: () => setGraphOffset(graphOffset - 1) }, '‹'),
+                        React.createElement('div', { className: 'chart-filter-group' }, 
+                            React.createElement('button', { className: `chart-filter-btn ${graphMode === 'WEEK'?'active':''}`, onClick: () => {setGraphMode('WEEK'); setGraphOffset(0)} }, 'Week'), 
+                            React.createElement('button', { className: `chart-filter-btn ${graphMode === 'MONTH'?'active':''}`, onClick: () => {setGraphMode('MONTH'); setGraphOffset(0)} }, 'Month')
                         ),
-                        React.createElement('button', { className: 'chart-nav-btn', onClick: () => setGraphOffset(graphOffset + 1), style: {display:'flex', alignItems:'center', justifyContent:'center', paddingBottom:'3px'} }, '›')
+                        React.createElement('button', { className: 'chart-nav-btn', onClick: () => setGraphOffset(graphOffset + 1) }, '›')
                     ),
                     React.createElement('div', { style: { height: '220px' } }, React.createElement('canvas', { ref: chartRef }))
                 )
