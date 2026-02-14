@@ -1904,7 +1904,7 @@ const DailyGoalsView = () => {
                 ),
                 React.createElement('div', { className: 'active-for-container' },
                     React.createElement('div', { className: 'active-for-row' },
-                        React.createElement('span', { className: 'active-for-title' }, 'Recur?'),
+                        React.createElement('span', { className: 'active-for-title' }, 'ACTIVE FOR ALL MONTH '),
                         React.createElement('label', { className: 'habit-checkbox-wrapper' },
                             React.createElement('input', { 
                                 type: 'checkbox', checked: newGoal.isRecurring,
