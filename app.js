@@ -2188,9 +2188,7 @@ React.createElement('div', { className: 'test-history-card' },
         );
     };
     // --- UPDATED STOPWATCH VIEW (With Midnight Auto-Split & Graph Fixes) ---
-// --- FINAL RESPONSIVE STOPWATCH VIEW 
-    // --- FINAL FIXED STOPWATCH VIEW (Navigation & Graph Fixed) ---
-// --- FINAL STOPWATCH VIEW (Fullscreen Stable + History Fixed) ---
+// --- FINAL RESPONSIVE STOPWATCH VIEW (Auto-Scaling Fix) ---
 const StopwatchView = () => {
     const [now, setNow] = useState(Date.now());
     const [graphMode, setGraphMode] = useState('WEEK');
@@ -2205,7 +2203,7 @@ const StopwatchView = () => {
     const getTodayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
     const { isRunning = false, startTime = null, elapsed = 0, laps = [] } = data.timerState || {};
 
-    // 1. TIMER LOGIC
+    // 1. TIMER LOGIC (Untouched)
     useEffect(() => {
         let interval = null;
         if (isRunning) {
@@ -2214,7 +2212,7 @@ const StopwatchView = () => {
                 setNow(currentTime);
                 const currentStr = getTodayStr();
 
-                // Midnight Logic (Previous day save + Reset)
+                // Midnight Logic
                 if (currentStr !== sessionDateRef.current) {
                     const prevDate = sessionDateRef.current;
                     const sessionSecs = Math.floor((currentTime - startTime) / 1000);
@@ -2230,7 +2228,7 @@ const StopwatchView = () => {
                     showToast("Midnight! 🌙 New Day Started.");
                 }
 
-                // 3-Min Auto Save (Silent Update)
+                // 3-Min Auto Save
                 if (currentTime - lastAutoSaveRef.current > 180000) {
                     const sessionSecs = Math.floor((currentTime - startTime) / 1000);
                     setData(prev => ({
@@ -2245,7 +2243,7 @@ const StopwatchView = () => {
         return () => clearInterval(interval);
     }, [isRunning, startTime, elapsed]);
 
-    // 2. GRAPH LOGIC (History + Week Navigation Fixed)
+    // 2. GRAPH LOGIC (Untouched)
     useEffect(() => {
         if (!chartRef.current || typeof Chart === 'undefined') return;
         const history = data.studyHistory || {};
@@ -2253,8 +2251,7 @@ const StopwatchView = () => {
         const today = new Date();
         
         if (graphMode === 'WEEK') {
-            const currentDay = today.getDay(); // 0 (Sun) - 6 (Sat)
-            // Offset ke hisab se Sunday nikalo
+            const currentDay = today.getDay();
             const startOfWeek = new Date(today);
             startOfWeek.setDate(today.getDate() - currentDay + (graphOffset * 7));
 
@@ -2262,18 +2259,15 @@ const StopwatchView = () => {
                 const d = new Date(startOfWeek);
                 d.setDate(startOfWeek.getDate() + i);
                 const dateStr = d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-                
                 labels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
                 dataPoints.push(((history[dateStr] || 0) / 3600).toFixed(2)); 
             }
         } else {
-             // Monthly View
              const targetMonth = new Date(today.getFullYear(), today.getMonth() + graphOffset, 1);
              const daysInMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0).getDate();
              for(let i=1; i<=daysInMonth; i++) {
                  const d = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), i);
                  const dateStr = d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
-                 
                  labels.push(i);
                  dataPoints.push(((history[dateStr] || 0) / 3600).toFixed(2));
              }
@@ -2299,7 +2293,7 @@ const StopwatchView = () => {
     const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
     const s = (totalSeconds % 60).toString().padStart(2, '0');
 
-    // Handlers
+    // Handlers (Untouched)
     const handleStop = (e) => {
         if(e) e.stopPropagation();
         if (!isRunning) return;
@@ -2342,8 +2336,6 @@ const StopwatchView = () => {
         setData(p => ({ ...p, timerState: { ...p.timerState, laps: [`${h}:${m}:${s}`, ...p.timerState.laps] } }));
     };
 
-    // --- FULLSCREEN FIX: USE DOCUMENT.DOCUMENTELEMENT ---
-    // Isse re-render hone par bhi fullscreen nahi hatega
     const toggleFullScreen = () => {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen().catch(e => console.log(e));
@@ -2354,52 +2346,96 @@ const StopwatchView = () => {
         }
     };
     
-    // Listen for ESC key to update state
     useEffect(() => {
         const handleEsc = () => { if (!document.fullscreenElement) setIsFocusMode(false); };
         document.addEventListener('fullscreenchange', handleEsc);
         return () => document.removeEventListener('fullscreenchange', handleEsc);
     }, []);
 
-    // --- CSS ---
+    // --- NEW CSS: SCALING LOGIC (VMIN) ---
     const fixedStyles = `
-        /* CLOCK */
-        .flip-clock { display: flex; gap: 15px; justify-content: center; }
+        /* 1. DEFAULT DESKTOP (Normal Mode) */
+        .flip-clock { display: flex; gap: 15px; justify-content: center; margin-bottom: 2rem; }
         .flip-unit-container {
             display: flex; justify-content: center; align-items: center; position: relative;
-            width: 140px; height: 180px; background-color: #202020; border-radius: 16px;
-            font-size: 100px; font-family: 'Manrope', sans-serif; color: #e5e5e5;
+            width: 120px; height: 160px; background-color: #202020; border-radius: 12px;
+            font-size: 90px; font-family: 'Manrope', sans-serif; color: #e5e5e5;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden;
         }
-        .static-card { width: 40px; height: 180px; font-size: 80px; display: flex; align-items: center; justify-content: center; color: #666; }
+        .static-card { width: 30px; height: 160px; font-size: 70px; display: flex; align-items: center; justify-content: center; color: #666; }
         .upper-card, .lower-card { display: flex; justify-content: center; width: 100%; height: 50%; overflow: hidden; position: absolute; left: 0; background-color: #202020; }
-        .upper-card { top: 0; align-items: flex-end; border-bottom: 2px solid #000; border-top-left-radius: 16px; border-top-right-radius: 16px; }
-        .lower-card { bottom: 0; align-items: flex-start; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px; }
+        .upper-card { top: 0; align-items: flex-end; border-bottom: 2px solid #000; border-top-left-radius: 12px; border-top-right-radius: 12px; }
+        .lower-card { bottom: 0; align-items: flex-start; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
         .upper-card span { transform: translateY(50%); } 
         .lower-card span { transform: translateY(-50%); }
 
-        /* GRAPH NAV */
+        /* Graph Buttons Fix */
         .chart-controls-fixed { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; position: relative; z-index: 50; }
-        .chart-nav-btn {
-            background: #262626; border: 1px solid #404040; color: white; width: 38px; height: 38px;
-            border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: flex;
-            align-items: center; justify-content: center; padding-bottom: 4px;
-        }
+        .chart-nav-btn { background: #262626; border: 1px solid #404040; color: white; width: 38px; height: 38px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; padding-bottom: 4px; }
         .chart-filter-group { display: flex; background: #262626; padding: 4px; border-radius: 8px; border: 1px solid #404040; }
         .chart-filter-btn { background: transparent; border: none; color: #a3a3a3; padding: 6px 16px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
         .chart-filter-btn.active { background: #3b82f6; color: white; }
 
-        /* RESPONSIVE */
+        /* 2. RESPONSIVE MOBILE (Normal Mode) */
         @media (max-width: 600px) {
-            .flip-clock { gap: 2vw; }
-            .flip-unit-container { width: 26vw; height: 36vw; font-size: 20vw; border-radius: 8px; }
-            .static-card { width: 4vw; height: 36vw; font-size: 15vw; }
-            .btn-circle { width: 70px; height: 70px; font-size: 0.9rem; }
+            .flip-clock { gap: 1vw; }
+            .flip-unit-container { width: 26vw; height: 38vw; font-size: 20vw; }
+            .static-card { width: 4vw; height: 38vw; font-size: 16vw; }
+            .btn-circle { width: 65px; height: 65px; font-size: 0.8rem; }
         }
-        .stopwatch-page.fullscreen-mode .flip-clock { gap: 2vmin; margin-bottom: 5vh; }
-        .stopwatch-page.fullscreen-mode .flip-unit-container { width: 25vmin; height: 35vmin; font-size: 22vmin; border-radius: 2vmin; }
-        .stopwatch-page.fullscreen-mode .static-card { width: 5vmin; height: 35vmin; font-size: 20vmin; }
-        .stopwatch-page.fullscreen-mode .btn-circle { width: 15vmin; height: 15vmin; font-size: 3vmin; }
+
+        /* 3. FULLSCREEN MODE (MAGIC SCALING) */
+        /* Flexbox Layout to fill screen */
+        .stopwatch-page.fullscreen-mode .stopwatch-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly; /* Even spacing between clock and buttons */
+            height: 100vh;
+            width: 100vw;
+            padding: 0;
+            margin: 0;
+            max-width: 100% !important;
+        }
+
+        /* Clock Section - Big & Centered */
+        .stopwatch-page.fullscreen-mode .flip-clock {
+            flex-grow: 1; /* Takes available space */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            gap: 2vmin;
+        }
+
+        /* Clock Digits - vmin ensures it fits both Portrait & Landscape */
+        .stopwatch-page.fullscreen-mode .flip-unit-container {
+            width: 26vmin;  /* Huge relative to smallest screen side */
+            height: 36vmin;
+            font-size: 24vmin;
+            border-radius: 3vmin;
+        }
+        .stopwatch-page.fullscreen-mode .static-card {
+            width: 6vmin;
+            height: 36vmin;
+            font-size: 20vmin;
+        }
+        .stopwatch-page.fullscreen-mode .upper-card { border-top-left-radius: 3vmin; border-top-right-radius: 3vmin; }
+        .stopwatch-page.fullscreen-mode .lower-card { border-bottom-left-radius: 3vmin; border-bottom-right-radius: 3vmin; }
+
+        /* Buttons Section - Pushed to bottom but scaled */
+        .stopwatch-page.fullscreen-mode .stopwatch-controls {
+            margin-bottom: 5vh; /* Gap from bottom */
+            display: flex;
+            gap: 6vmin;
+            justify-content: center;
+            align-items: center;
+            transform: scale(1);
+        }
+        .stopwatch-page.fullscreen-mode .btn-circle {
+            width: 18vmin;  /* Buttons grow with screen */
+            height: 18vmin;
+            font-size: 3.5vmin;
+        }
     `;
 
     return React.createElement('div', { 
@@ -2445,7 +2481,7 @@ const StopwatchView = () => {
                         laps.map((l, i) => React.createElement('div', { key: i, className: 'lap-item' }, React.createElement('span', null, `#${laps.length - i}`), React.createElement('span', {style:{color:'#fff'}}, l)))
                     )
                 ),
-                // Graph with FIXED Navigation
+                // Graph
                 React.createElement('div', { className: 'stats-container' },
                     React.createElement('div', { className: 'chart-controls-fixed' },
                         React.createElement('button', { className: 'chart-nav-btn', onClick: () => setGraphOffset(graphOffset - 1) }, '‹'),
