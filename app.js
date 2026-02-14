@@ -1745,18 +1745,24 @@ const DailyGoalsView = () => {
     const progressPercent = goals.length > 0 ? Math.round((goals.filter(g => g.doneDates?.[viewDate]).length / goals.length) * 100) : 0;
 
     // --- STYLES ---
+// --- STYLES (Updated for Clickability) ---
     const activeBtnStyle = {
         background: '#0F766E', color: 'white', border: 'none',
-        borderRadius: '6px', padding: '4px 10px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer'
+        borderRadius: '6px', padding: '6px 12px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer',
+        position: 'relative', zIndex: 50, boxShadow: '0 2px 5px rgba(15, 118, 110, 0.3)'
     };
+    
     const inactiveBtnStyle = {
-        background: '#f3f4f6', color: '#666', border: 'none',
-        borderRadius: '6px', padding: '4px 10px', fontSize: '0.8rem', fontWeight: 'bold', cursor: 'pointer'
+        background: '#f3f4f6', color: '#666', border: '1px solid #e5e7eb',
+        borderRadius: '6px', padding: '6px 12px', fontSize: '0.85rem', fontWeight: 'bold', cursor: 'pointer',
+        position: 'relative', zIndex: 50
     };
+    
     const navBtnStyle = {
-        background: '#e5e7eb', color: '#333', border: 'none', borderRadius: '50%',
-        width: '28px', height: '28px', fontSize: '1.2rem', cursor: 'pointer',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', paddingBottom: '4px'
+        background: '#ffffff', color: '#333', border: '1px solid #e5e7eb', borderRadius: '50%',
+        width: '32px', height: '32px', fontSize: '1.2rem', cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', paddingBottom: '3px',
+        position: 'relative', zIndex: 50, boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
     };
 
     return React.createElement('div', { className: 'container daily-goals-page' },
