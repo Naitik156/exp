@@ -2355,6 +2355,7 @@ const StopwatchView = () => {
     }, []);
 
     // --- NEW CSS: ORIENTATION AWARE SCALING ---
+// --- FINAL CSS: SCALING LOGIC (VMIN + Font Fix) ---
     const fixedStyles = `
         /* 1. DEFAULT DESKTOP (Normal Mode) */
         .flip-clock { display: flex; gap: 15px; justify-content: center; margin-bottom: 2rem; }
@@ -2386,18 +2387,13 @@ const StopwatchView = () => {
             .btn-circle { width: 65px; height: 65px; font-size: 0.8rem; }
         }
 
-        /* 3. FULLSCREEN MODE (The Fix) */
+        /* 3. FULLSCREEN MODE (Reduced Font Sizes to Prevent Cutting) */
         .stopwatch-page.fullscreen-mode {
             background: black;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            width: 100vw;
-            height: 100vh;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            overflow: hidden; width: 100vw; height: 100vh;
         }
-
         .stopwatch-page.fullscreen-mode .stopwatch-container {
             width: 100%; height: 100%;
             display: flex; flex-direction: column;
@@ -2407,58 +2403,46 @@ const StopwatchView = () => {
 
         /* Top 70% Clock */
         .stopwatch-page.fullscreen-mode .flip-clock {
-            flex: 7; /* 70% Height */
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0;
-            gap: 2vmin;
+            flex: 7; width: 100%;
+            display: flex; justify-content: center; align-items: center;
+            margin: 0; gap: 2vmin;
         }
-
+        .stopwatch-page.fullscreen-mode .flip-unit-container {
+            width: 26vmin; height: 36vmin;
+            font-size: 20vmin; /* Reduced from 24 to 20 */
+            border-radius: 3vmin;
+        }
+        .stopwatch-page.fullscreen-mode .static-card { width: 6vmin; height: 36vmin; font-size: 16vmin; }
+        
         /* Bottom 30% Buttons */
         .stopwatch-page.fullscreen-mode .stopwatch-controls {
-            flex: 3; /* 30% Height */
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding-top: 2vh;
-            gap: 5vw;
+            flex: 3; width: 100%;
+            display: flex; justify-content: center; align-items: flex-start;
+            padding-top: 2vh; gap: 5vw;
         }
 
         /* --- ORIENTATION RULES --- */
         
-        /* PORTRAIT (Phone Seedha) -> Width ko use karo */
+        /* PORTRAIT (Phone Seedha) */
         @media (orientation: portrait) {
             .stopwatch-page.fullscreen-mode .flip-unit-container {
-                width: 28vw; /* Screen width ka 28% */
-                height: 38vw;
-                font-size: 28vw;
+                width: 28vw; height: 38vw;
+                font-size: 20vw; /* Reduced from 28 to 20 */
                 border-radius: 4vw;
             }
-            .stopwatch-page.fullscreen-mode .static-card {
-                width: 5vw; height: 38vw; font-size: 20vw;
-            }
-            .stopwatch-page.fullscreen-mode .btn-circle {
-                width: 20vw; height: 20vw; font-size: 4vw;
-            }
+            .stopwatch-page.fullscreen-mode .static-card { width: 5vw; height: 38vw; font-size: 15vw; }
+            .stopwatch-page.fullscreen-mode .btn-circle { width: 20vw; height: 20vw; font-size: 4vw; }
         }
 
-        /* LANDSCAPE (Phone Teda / Laptop) -> Height ko use karo */
+        /* LANDSCAPE (Phone Teda / Laptop) */
         @media (orientation: landscape) {
             .stopwatch-page.fullscreen-mode .flip-unit-container {
-                height: 50vh; /* Screen height ka 50% */
-                width: 36vh;  /* Height ke ratio me width */
-                font-size: 40vh;
+                height: 50vh; width: 36vh;
+                font-size: 30vh; /* Reduced from 40 to 30 */
                 border-radius: 4vh;
             }
-            .stopwatch-page.fullscreen-mode .static-card {
-                height: 50vh; width: 5vh; font-size: 30vh;
-            }
-            .stopwatch-page.fullscreen-mode .btn-circle {
-                height: 15vh; width: 15vh; font-size: 2.5vh;
-            }
+            .stopwatch-page.fullscreen-mode .static-card { height: 50vh; width: 5vh; font-size: 25vh; }
+            .stopwatch-page.fullscreen-mode .btn-circle { height: 15vh; width: 15vh; font-size: 2.5vh; }
         }
     `;
 
