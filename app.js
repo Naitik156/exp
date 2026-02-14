@@ -452,25 +452,38 @@ useEffect(() => {
         return data[currentExam][className][subject][chapter] || {};
     };
 
+// --- INSTANT SAVE FIX (Reload karne par data nahi udega) ---
     const updateChapterData = (className, subject, chapter, newData) => {
-        setData(prev => ({
-            ...prev,
-            [currentExam]: {
-                ...prev[currentExam],
-                [className]: {
-                    ...prev[currentExam]?.[className],
-                    [subject]: {
-                        ...prev[currentExam]?.[className]?.[subject],
-                        [chapter]: {
-                            ...prev[currentExam]?.[className]?.[subject]?.[chapter],
-                            ...newData
+        setData(prev => {
+            // 1. Naya state calculate karo
+            const nextState = {
+                ...prev,
+                [currentExam]: {
+                    ...prev[currentExam],
+                    [className]: {
+                        ...prev[currentExam]?.[className],
+                        [subject]: {
+                            ...prev[currentExam]?.[className]?.[subject],
+                            [chapter]: {
+                                ...prev[currentExam]?.[className]?.[subject]?.[chapter],
+                                ...newData
+                            }
                         }
                     }
                 }
-            }
-        }));
-    };
+            };
 
+            // 2. Database me TURANT save karo (Wait nahi karega)
+            if (user && window.db && window.dbFuncs) {
+                const { doc, setDoc } = window.dbFuncs;
+                const docRef = doc(window.db, "users", user.uid);
+                // "merge: true" purana data safe rakhega
+                setDoc(docRef, nextState, { merge: true }).catch(err => console.log("Save Error:", err));
+            }
+
+            return nextState; // UI update
+        });
+    };
     const resetAllProgress = () => {
         setModalConfig({
             title: 'Reset All Progress',
