@@ -341,13 +341,21 @@ const compressImage = (file) => {
         }
     }, [view]);
     useEffect(() => {
-        if (!window.auth) return;
-        const unsubscribe = window.auth.onAuthStateChanged((u) => {
-            if (u) { setUser(u); } 
-            else { window.location.href = "login.html"; }
-        });
-        return () => unsubscribe();
-    }, []);
+    if (!window.auth) return;
+
+    const unsubscribe = window.auth.onAuthStateChanged((u) => {
+        if (u) {
+            setUser(u);
+        } else {
+            console.log("User session expired");
+            setUser(null);
+            setView('exam-select');   // page reload nahi karega
+        }
+    });
+
+    return () => unsubscribe();
+}, []);
+
 
     // 2. Navigation Logic
     const navigateTo = (viewName, params = {}) => {
