@@ -2490,12 +2490,29 @@ const StopwatchView = () => {
             .stopwatch-page.fullscreen-mode .btn-circle { height: 15vh; width: 15vh; font-size: 2.5vh; }
         }
     `;
-
+const marqueeStyle = `
+        .stopwatch-marquee {
+            width: 100%; overflow: hidden; background: #FEF3C7; border-bottom: 2px solid #F59E0B;
+            padding: 8px 0; font-family: 'Manrope', sans-serif; position: relative; z-index: 20;
+        }
+        .marquee-text {
+            display: inline-block; white-space: nowrap; color: #92400E; font-weight: 700;
+            font-size: 0.9rem; animation: scroll-left 15s linear infinite; padding-left: 100%;
+        }
+        @keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+    `;
     return React.createElement('div', { 
         className: `stopwatch-page ${isFocusMode ? 'fullscreen-mode' : ''}` 
     },
         React.createElement('style', null, fixedStyles),
-
+// 1. Marquee Style
+        React.createElement('style', null, marqueeStyle),
+        // 2. Marquee Strip (Normal Mode Only)
+        !isFocusMode && React.createElement('div', { className: 'stopwatch-marquee' },
+            React.createElement('div', { className: 'marquee-text' }, 
+                "💡 Tip: Always use the stopwatch while studying to track time this will keep you consistent. Pause when resting. BE HONEST! ⏱️"
+            )
+        ),
         // Top Bar
         !isFocusMode && React.createElement('div', { style: { padding: '20px', display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '1000px', margin: '0 auto' } },
             React.createElement('button', { onClick: () => setView('home'), style: { background: 'none', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' } }, '← Back'),
