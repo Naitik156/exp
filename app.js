@@ -1779,28 +1779,25 @@ const DailyGoalsView = () => {
     };
 // --- NEW MARQUEE STYLE ---
     const marqueeStyle = `
-        .scrolling-strip-container {
-            width: 100%;
-            overflow: hidden;
-            background: #FEF3C7; /* Light Yellow */
-            border-bottom: 2px solid #F59E0B;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            padding: 8px 0;
+        .stopwatch-marquee {
+            width: 100%; overflow: hidden; 
+            background: #171717; /* Dark Background */
+            border-bottom: 1px solid #333;
+            border-top: 1px solid #333;
+            padding: 10px 0; 
+            font-family: 'Manrope', sans-serif; 
+            margin-bottom: 10px;
         }
-        .scrolling-text {
-            display: inline-block;
-            white-space: nowrap;
-            color: #92400E; /* Dark Brown/Orange */
-            font-weight: 700;
-            font-size: 0.9rem;
-            animation: scroll-left 15s linear infinite;
+        .marquee-text {
+            display: inline-block; white-space: nowrap; 
+            color: #FBBF24; /* Golden Text for visibility */
+            font-weight: 600;
+            font-size: 0.9rem; 
+            letter-spacing: 0.5px;
+            animation: scroll-left 20s linear infinite; 
             padding-left: 100%;
         }
-        @keyframes scroll-left {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-100%); }
-        }
+        @keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
     `;
     return React.createElement('div', { className: 'container daily-goals-page' },
                                // 1. Style Inject
@@ -2508,9 +2505,10 @@ const marqueeStyle = `
 // 1. Marquee Style
         React.createElement('style', null, marqueeStyle),
         // 2. Marquee Strip (Normal Mode Only)
+        // 2. Marquee Strip (Ab Back Button ke neeche)
         !isFocusMode && React.createElement('div', { className: 'stopwatch-marquee' },
             React.createElement('div', { className: 'marquee-text' }, 
-                "💡 Tip: Always use the stopwatch while studying to track time this will keep you consistent. Pause when resting. BE HONEST! ⏱️"
+                "💡 Tip: Always use the stopwatch while studying to track time this will keep you consistentstay consistent. Pause when resting. BE HONEST! ⏱️"
             )
         ),
         // Top Bar
