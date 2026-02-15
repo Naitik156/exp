@@ -2201,48 +2201,57 @@ React.createElement('div', { className: 'test-history-card' },
         );
     };
     // --- UPDATED STOPWATCH VIEW (With Midnight Auto-Split & Graph Fixes) ---
-// --- MOVED OUTSIDE APP (FIXES MINIMIZE ISSUE) ---
+// --- ISSE "const App" KE UPAR PASTE KAREIN (APP KE ANDAR NAHI) ---
 const StopwatchView = ({ data, setData, setView, showToast, setShowModal, setModalConfig }) => {
-    const [now, setNow] = useState(Date.now());
-    const [graphMode, setGraphMode] = useState('WEEK');
-    const [graphOffset, setGraphOffset] = useState(0);
-    const [isFocusMode, setIsFocusMode] = useState(false);
+    const [now, setNow] = React.useState(Date.now());
+    const [graphMode, setGraphMode] = React.useState('WEEK');
+    const [graphOffset, setGraphOffset] = React.useState(0);
+    const [isFocusMode, setIsFocusMode] = React.useState(false);
     
+    // Refs
     const chartRef = React.useRef(null);
+    const containerRef = React.useRef(null); // Container ke liye Ref
     const lastAutoSaveRef = React.useRef(Date.now());
     const sessionDateRef = React.useRef(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }));
 
     const getTodayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
     const { isRunning = false, startTime = null, elapsed = 0, laps = [] } = data.timerState || {};
 
-    // --- NEW: WAKE LOCK (PREVENTS SCREEN SLEEP) ---
-    useEffect(() => {
+    // 1. WAKE LOCK (Phone Sleep Rokne Ke Liye)
+    React.useEffect(() => {
         let wakeLock = null;
         const requestLock = async () => {
-            try { if(navigator.wakeLock) wakeLock = await navigator.wakeLock.request('screen'); }
-            catch(e) { console.log("Wake Lock Err", e); }
+            if ('wakeLock' in navigator) {
+                try { 
+                    wakeLock = await navigator.wakeLock.request('screen'); 
+                } catch (err) { console.log("Wake Lock Error:", err); }
+            }
         };
-        
-        if(isFocusMode) requestLock();
-        
-        return () => { if(wakeLock) wakeLock.release(); }
+        // Jab Focus Mode ON ho, tab Screen Lock karein
+        if(isFocusMode) {
+            requestLock();
+            // Agar user tab change kare, toh wapas aane par lock lagayein
+            const handleVis = () => { if (document.visibilityState === 'visible') requestLock(); };
+            document.addEventListener('visibilitychange', handleVis);
+            return () => {
+                document.removeEventListener('visibilitychange', handleVis);
+                if(wakeLock) wakeLock.release();
+            };
+        }
     }, [isFocusMode]);
 
-    // 1. TIMER LOGIC
-    useEffect(() => {
+    // 2. TIMER LOGIC
+    React.useEffect(() => {
         let interval = null;
         if (isRunning) {
             interval = setInterval(() => {
                 const currentTime = Date.now();
                 setNow(currentTime);
                 const currentStr = getTodayStr();
-
-                // Midnight Logic
+                // Midnight check
                 if (currentStr !== sessionDateRef.current) {
                     const prevDate = sessionDateRef.current;
                     const sessionSecs = Math.floor((currentTime - startTime) / 1000);
-                    const totalForPrevDay = elapsed + sessionSecs;
-
                     setData(prev => ({
                         ...prev,
                         studyHistory: { ...prev.studyHistory, [prevDate]: (prev.studyHistory?.[prevDate] || 0) + totalForPrevDay },
@@ -2252,8 +2261,7 @@ const StopwatchView = ({ data, setData, setView, showToast, setShowModal, setMod
                     lastAutoSaveRef.current = currentTime;
                     showToast("Midnight! 🌙 New Day Started.");
                 }
-
-                // 3-Min Auto Save
+                // Auto Save every 3 mins
                 if (currentTime - lastAutoSaveRef.current > 180000) {
                     const sessionSecs = Math.floor((currentTime - startTime) / 1000);
                     setData(prev => ({
@@ -2268,8 +2276,8 @@ const StopwatchView = ({ data, setData, setView, showToast, setShowModal, setMod
         return () => clearInterval(interval);
     }, [isRunning, startTime, elapsed]);
 
-    // 2. GRAPH LOGIC
-    useEffect(() => {
+    // 3. GRAPH LOGIC
+    React.useEffect(() => {
         if (!chartRef.current || typeof Chart === 'undefined') return;
         const history = data.studyHistory || {};
         const labels = [], dataPoints = [];
@@ -2279,7 +2287,6 @@ const StopwatchView = ({ data, setData, setView, showToast, setShowModal, setMod
             const currentDay = today.getDay(); 
             const startOfWeek = new Date(today);
             startOfWeek.setDate(today.getDate() - currentDay + (graphOffset * 7));
-
             for (let i = 0; i < 7; i++) {
                 const d = new Date(startOfWeek);
                 d.setDate(startOfWeek.getDate() + i);
@@ -2297,38 +2304,26 @@ const StopwatchView = ({ data, setData, setView, showToast, setShowModal, setMod
                  dataPoints.push(((history[dateStr] || 0) / 3600).toFixed(2));
              }
         }
-        
         const chartInstance = Chart.getChart(chartRef.current);
         if (chartInstance) chartInstance.destroy();
-
         new Chart(chartRef.current, {
             type: 'bar',
             data: { labels, datasets: [{ label: 'Hours', data: dataPoints, backgroundColor: '#3b82f6', borderRadius: 4, barPercentage: 0.6 }] },
-            options: { 
-                responsive: true, maintainAspectRatio: false, 
-                scales: { y: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#888' } }, x: { grid: { display: false }, ticks: { color: '#888' } } }, 
-                plugins: { legend: { display: false } } 
-            }
+            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#888' } }, x: { grid: { display: false }, ticks: { color: '#888' } } }, plugins: { legend: { display: false } } }
         });
     }, [data.studyHistory, graphMode, graphOffset, isRunning]);
 
-    // Display Values
     const totalSeconds = elapsed + (isRunning && startTime ? Math.floor((now - startTime) / 1000) : 0);
     const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
     const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
     const s = (totalSeconds % 60).toString().padStart(2, '0');
 
-    // Handlers (with stopPropagation)
     const handleStop = (e) => {
         e?.stopPropagation();
         if (!isRunning) return;
         const sessionSecs = Math.floor((Date.now() - startTime) / 1000);
         const dateStr = getTodayStr();
-        setData(p => ({ 
-            ...p, 
-            studyHistory: { ...p.studyHistory, [dateStr]: (p.studyHistory?.[dateStr] || 0) + sessionSecs }, 
-            timerState: { ...p.timerState, isRunning: false, startTime: null, elapsed: elapsed + sessionSecs } 
-        }));
+        setData(p => ({ ...p, studyHistory: { ...p.studyHistory, [dateStr]: (p.studyHistory?.[dateStr] || 0) + sessionSecs }, timerState: { ...p.timerState, isRunning: false, startTime: null, elapsed: elapsed + sessionSecs } }));
     };
 
     const handleStart = (e) => {
@@ -2344,13 +2339,9 @@ const StopwatchView = ({ data, setData, setView, showToast, setShowModal, setMod
             message: 'Resetting will CLEAR today\'s entire progress graph and timer. Confirm?',
             onConfirm: () => {
                 const dateStr = getTodayStr();
-                setData(p => ({ 
-                    ...p, 
-                    studyHistory: { ...p.studyHistory, [dateStr]: 0 },
-                    timerState: { isRunning: false, startTime: null, elapsed: 0, laps: [] } 
-                }));
+                setData(p => ({ ...p, studyHistory: { ...p.studyHistory, [dateStr]: 0 }, timerState: { isRunning: false, startTime: null, elapsed: 0, laps: [] } }));
                 setShowModal(false);
-                showToast("Timer & Graph Reset for Today");
+                showToast("Timer Reset");
             }
         });
         setShowModal(true);
@@ -2361,10 +2352,11 @@ const StopwatchView = ({ data, setData, setView, showToast, setShowModal, setMod
         setData(p => ({ ...p, timerState: { ...p.timerState, laps: [`${h}:${m}:${s}`, ...p.timerState.laps] } }));
     };
 
-    // Fullscreen Toggle
+    // 4. IMPROVED FULLSCREEN TOGGLE
     const toggleFullScreen = () => {
         if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(e => console.log(e));
+            // Document ki jagah Container ko fullscreen karein (Jada stable)
+            if(containerRef.current) containerRef.current.requestFullscreen().catch(e => console.log(e));
             setIsFocusMode(true);
         } else {
             if (document.exitFullscreen) document.exitFullscreen();
@@ -2372,63 +2364,15 @@ const StopwatchView = ({ data, setData, setView, showToast, setShowModal, setMod
         }
     };
     
-    useEffect(() => {
+    React.useEffect(() => {
         const handleEsc = () => { if (!document.fullscreenElement) setIsFocusMode(false); };
         document.addEventListener('fullscreenchange', handleEsc);
         return () => document.removeEventListener('fullscreenchange', handleEsc);
     }, []);
 
-    // --- ORIGINAL CSS & RENDER REMAINS SAME ---
-    const fixedStyles = `
-        /* 1. DEFAULT DESKTOP */
-        .flip-clock { display: flex; gap: 15px; justify-content: center; margin-bottom: 2rem; }
-        .flip-unit-container {
-            display: flex; justify-content: center; align-items: center; position: relative;
-            width: 120px; height: 160px; background-color: #202020; border-radius: 12px;
-            font-size: 90px; font-family: 'Manrope', sans-serif; color: #e5e5e5;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden;
-        }
-        .static-card { width: 30px; height: 160px; font-size: 70px; display: flex; align-items: center; justify-content: center; color: #666; }
-        .upper-card, .lower-card { display: flex; justify-content: center; width: 100%; height: 50%; overflow: hidden; position: absolute; left: 0; background-color: #202020; }
-        .upper-card { top: 0; align-items: flex-end; border-bottom: 2px solid #000; border-top-left-radius: 12px; border-top-right-radius: 12px; }
-        .lower-card { bottom: 0; align-items: flex-start; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
-        .upper-card span { transform: translateY(50%); } 
-        .lower-card span { transform: translateY(-50%); }
-        .chart-controls-fixed { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; position: relative; z-index: 50; }
-        .chart-nav-btn { background: #262626; border: 1px solid #404040; color: white; width: 38px; height: 38px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; padding-bottom: 4px; }
-        .chart-filter-group { display: flex; background: #262626; padding: 4px; border-radius: 8px; border: 1px solid #404040; }
-        .chart-filter-btn { background: transparent; border: none; color: #a3a3a3; padding: 6px 16px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
-        .chart-filter-btn.active { background: #3b82f6; color: white; }
-        @media (max-width: 600px) {
-            .flip-clock { gap: 1vw; }
-            .flip-unit-container { width: 26vw; height: 38vw; font-size: 20vw; }
-            .static-card { width: 4vw; height: 38vw; font-size: 16vw; }
-            .btn-circle { width: 65px; height: 65px; font-size: 0.8rem; }
-        }
-        .stopwatch-page.fullscreen-mode {
-            background: black; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; overflow: hidden; width: 100vw; height: 100vh;
-        }
-        .stopwatch-page.fullscreen-mode .stopwatch-container { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0; margin: 0; max-width: none; }
-        .stopwatch-page.fullscreen-mode .flip-clock { flex: 7; width: 100%; display: flex; justify-content: center; align-items: center; margin: 0; gap: 2vmin; margin-bottom: 8vh; }
-        .stopwatch-page.fullscreen-mode .flip-unit-container { width: 25vmin; height: 35vmin; font-size: 22vmin; border-radius: 3vmin; line-height: 35vmin; box-shadow: 0 4vmin 8vmin rgba(0,0,0,0.9); }
-        .stopwatch-page.fullscreen-mode .static-card { width: 5vmin; height: 35vmin; font-size: 20vmin; line-height: 30vmin; }
-        .stopwatch-page.fullscreen-mode .upper-card { border-top-left-radius: 3vmin; border-top-right-radius: 3vmin; }
-        .stopwatch-page.fullscreen-mode .lower-card { border-bottom-left-radius: 3vmin; border-bottom-right-radius: 3vmin; }
-        .stopwatch-page.fullscreen-mode .stopwatch-controls { flex: 3; width: 100%; display: flex; justify-content: center; align-items: flex-start; padding-top: 2vh; gap: 5vw; transform: scale(1.1); margin-bottom: 0; }
-        @media (orientation: portrait) {
-            .stopwatch-page.fullscreen-mode .flip-unit-container { width: 28vw; height: 38vw; font-size: 20vw; border-radius: 4vw; }
-            .stopwatch-page.fullscreen-mode .static-card { width: 5vw; height: 38vw; font-size: 15vw; }
-            .stopwatch-page.fullscreen-mode .btn-circle { width: 20vw; height: 20vw; font-size: 4vw; }
-        }
-        @media (orientation: landscape) {
-            .stopwatch-page.fullscreen-mode .flip-unit-container { height: 50vh; width: 36vh; font-size: 30vh; border-radius: 4vh; }
-            .stopwatch-page.fullscreen-mode .static-card { height: 50vh; width: 5vh; font-size: 25vh; }
-            .stopwatch-page.fullscreen-mode .btn-circle { height: 15vh; width: 15vh; font-size: 2.5vh; }
-        }
-    `;
+    const fixedStyles = `.flip-clock { display: flex; gap: 15px; justify-content: center; margin-bottom: 2rem; } .flip-unit-container { display: flex; justify-content: center; align-items: center; position: relative; width: 120px; height: 160px; background-color: #202020; border-radius: 12px; font-size: 90px; font-family: 'Manrope', sans-serif; color: #e5e5e5; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; } .static-card { width: 30px; height: 160px; font-size: 70px; display: flex; align-items: center; justify-content: center; color: #666; } .upper-card, .lower-card { display: flex; justify-content: center; width: 100%; height: 50%; overflow: hidden; position: absolute; left: 0; background-color: #202020; } .upper-card { top: 0; align-items: flex-end; border-bottom: 2px solid #000; border-top-left-radius: 12px; border-top-right-radius: 12px; } .lower-card { bottom: 0; align-items: flex-start; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; } .upper-card span { transform: translateY(50%); } .lower-card span { transform: translateY(-50%); } .chart-controls-fixed { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; position: relative; z-index: 50; } .chart-nav-btn { background: #262626; border: 1px solid #404040; color: white; width: 38px; height: 38px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; padding-bottom: 4px; } .chart-filter-group { display: flex; background: #262626; padding: 4px; border-radius: 8px; border: 1px solid #404040; } .chart-filter-btn { background: transparent; border: none; color: #a3a3a3; padding: 6px 16px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; cursor: pointer; } .chart-filter-btn.active { background: #3b82f6; color: white; } @media (max-width: 600px) { .flip-clock { gap: 1vw; } .flip-unit-container { width: 26vw; height: 38vw; font-size: 20vw; } .static-card { width: 4vw; height: 38vw; font-size: 16vw; } .btn-circle { width: 65px; height: 65px; font-size: 0.8rem; } } .stopwatch-page.fullscreen-mode { background: black; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; width: 100vw; height: 100vh; } .stopwatch-page.fullscreen-mode .stopwatch-container { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 0; margin: 0; max-width: none; } .stopwatch-page.fullscreen-mode .flip-clock { flex: 7; width: 100%; display: flex; justify-content: center; align-items: center; margin: 0; gap: 2vmin; margin-bottom: 8vh; } .stopwatch-page.fullscreen-mode .flip-unit-container { width: 25vmin; height: 35vmin; font-size: 22vmin; border-radius: 3vmin; line-height: 35vmin; box-shadow: 0 4vmin 8vmin rgba(0,0,0,0.9); } .stopwatch-page.fullscreen-mode .static-card { width: 5vmin; height: 35vmin; font-size: 20vmin; line-height: 30vmin; } .stopwatch-page.fullscreen-mode .upper-card { border-top-left-radius: 3vmin; border-top-right-radius: 3vmin; } .stopwatch-page.fullscreen-mode .lower-card { border-bottom-left-radius: 3vmin; border-bottom-right-radius: 3vmin; } .stopwatch-page.fullscreen-mode .stopwatch-controls { flex: 3; width: 100%; display: flex; justify-content: center; align-items: flex-start; padding-top: 2vh; gap: 5vw; transform: scale(1.1); margin-bottom: 0; } @media (orientation: portrait) { .stopwatch-page.fullscreen-mode .flip-unit-container { width: 28vw; height: 38vw; font-size: 20vw; border-radius: 4vw; } .stopwatch-page.fullscreen-mode .static-card { width: 5vw; height: 38vw; font-size: 15vw; } .stopwatch-page.fullscreen-mode .btn-circle { width: 20vw; height: 20vw; font-size: 4vw; } } @media (orientation: landscape) { .stopwatch-page.fullscreen-mode .flip-unit-container { height: 50vh; width: 36vh; font-size: 30vh; border-radius: 4vh; } .stopwatch-page.fullscreen-mode .static-card { height: 50vh; width: 5vh; font-size: 25vh; } .stopwatch-page.fullscreen-mode .btn-circle { height: 15vh; width: 15vh; font-size: 2.5vh; } }`;
 
-    return React.createElement('div', { className: `stopwatch-page ${isFocusMode ? 'fullscreen-mode' : ''}` },
+    return React.createElement('div', { ref: containerRef, className: `stopwatch-page ${isFocusMode ? 'fullscreen-mode' : ''}` },
         React.createElement('style', null, fixedStyles),
         !isFocusMode && React.createElement('div', { style: { padding: '20px', display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '1000px', margin: '0 auto' } },
             React.createElement('button', { onClick: () => setView('home'), style: { background: 'none', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' } }, '← Back'),
