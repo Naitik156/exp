@@ -1777,8 +1777,40 @@ const DailyGoalsView = () => {
         display: 'flex', alignItems: 'center', justifyContent: 'center', paddingBottom: '3px',
         position: 'relative', zIndex: 50, boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
     };
-
+// --- NEW MARQUEE STYLE ---
+    const marqueeStyle = `
+        .scrolling-strip-container {
+            width: 100%;
+            overflow: hidden;
+            background: #FEF3C7; /* Light Yellow */
+            border-bottom: 2px solid #F59E0B;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            padding: 8px 0;
+        }
+        .scrolling-text {
+            display: inline-block;
+            white-space: nowrap;
+            color: #92400E; /* Dark Brown/Orange */
+            font-weight: 700;
+            font-size: 0.9rem;
+            animation: scroll-left 15s linear infinite;
+            padding-left: 100%;
+        }
+        @keyframes scroll-left {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+    `;
     return React.createElement('div', { className: 'container daily-goals-page' },
+                               // 1. Style Inject
+        React.createElement('style', null, marqueeStyle),
+        // 2. Scrolling Strip
+        React.createElement('div', { className: 'scrolling-strip-container' },
+            React.createElement('div', { className: 'scrolling-text' }, 
+                "💡 Tips: Set target before sleep for the next day. Believe me, focus will increase! 🚀"
+            )
+        ),
         React.createElement('div', { className: 'nav-breadcrumb' },
             React.createElement('span', { className: 'breadcrumb-item', onClick: () => setView('home') }, 'Home'),
             React.createElement('span', { className: 'breadcrumb-separator' }, '/'),
