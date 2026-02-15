@@ -1899,7 +1899,7 @@ const DailyGoalsView = () => {
                     React.createElement('div', { className: 'goal-icon-circle' }, goal.icon),
                     React.createElement('div', { className: 'goal-content' },
                         React.createElement('span', { className: 'goal-title' }, goal.title),
-                        React.createElement('span', { className: 'goal-desc' }, goal.isRecurring ? '🔄 Recurring' : (goal.desc || 'No desc'))
+                        React.createElement('span', { className: 'goal-desc' }, goal.isRecurring ? '🔄 Recurring' : (goal.desc || 'No description'))
                     ),
                     isToday && React.createElement('button', { 
                         className: 'delete-goal-btn', 
