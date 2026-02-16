@@ -2233,63 +2233,91 @@ React.createElement('div', { className: 'test-history-card' },
         );
     };
     // --- UPDATED STOPWATCH VIEW (With Midnight Auto-Split & Graph Fixes) ---
-// --- FINAL RESPONSIVE STOPWATCH VIEW (Auto-Scaling Fix) ---
-// --- FINAL STOPWATCH VIEW (Orientation-Aware Auto Scaling) ---
+// --- UPDATED STOPWATCH VIEW (With Wake Lock & Midnight Background Sync) ---
 const StopwatchView = () => {
     const [now, setNow] = useState(Date.now());
     const [graphMode, setGraphMode] = useState('WEEK');
     const [graphOffset, setGraphOffset] = useState(0);
     const [isFocusMode, setIsFocusMode] = useState(false);
     
-    // Refs
     const chartRef = React.useRef(null);
-    const lastAutoSaveRef = React.useRef(Date.now());
-    const sessionDateRef = React.useRef(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }));
+    const wakeLockRef = React.useRef(null); // Screen Sleep Fix
 
     const getTodayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
     const { isRunning = false, startTime = null, elapsed = 0, laps = [] } = data.timerState || {};
 
-    // 1. TIMER LOGIC
+    // --- 1. SCREEN WAKE LOCK (Sleep Fix) ---
+    const requestWakeLock = async () => {
+        if ('wakeLock' in navigator && isRunning) {
+            try {
+                wakeLockRef.current = await navigator.wakeLock.request('screen');
+            } catch (err) { console.log("WakeLock Error:", err); }
+        }
+    };
+
+    // --- 2. MIDNIGHT SYNC LOGIC (Background Fix) ---
+    const syncTimerAcrossMidnight = () => {
+        const nowTs = Date.now();
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const startOfTodayTs = startOfToday.getTime();
+
+        const todayStr = getTodayStr();
+        const yesterday = new Date(startOfTodayTs - 86400000).toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+
+        // CASE A: Timer chal raha tha aur 12 baj gaye
+        if (isRunning && startTime && startTime < startOfTodayTs) {
+            const yesterdaySeconds = Math.floor((startOfTodayTs - startTime) / 1000);
+            setData(prev => ({
+                ...prev,
+                studyHistory: { ...prev.studyHistory, [yesterday]: (prev.studyHistory?.[yesterday] || 0) + yesterdaySeconds + elapsed },
+                timerState: { ...prev.timerState, startTime: startOfTodayTs, elapsed: 0, laps: [`🌙 Midnight Split`, ...prev.timerState.laps] }
+            }));
+            showToast("Day Change: Time Split! 🌙");
+        } 
+        // CASE B: Timer paused tha lekin 12 baj gaye (Reset Today)
+        else if (!isRunning && elapsed > 0 && data.lastActiveDate !== todayStr) {
+            const lastDate = data.lastActiveDate || yesterday;
+            setData(prev => ({
+                ...prev,
+                studyHistory: { ...prev.studyHistory, [lastDate]: (prev.studyHistory?.[lastDate] || 0) + elapsed },
+                timerState: { ...prev.timerState, elapsed: 0, laps: [] },
+                lastActiveDate: todayStr
+            }));
+            showToast("New Day Started! ☀️");
+        }
+    };
+
+    // --- 3. EFFECTS ---
+    useEffect(() => {
+        syncTimerAcrossMidnight(); // App load par check
+        
+        const handleVisibility = () => {
+            if (document.visibilityState === 'visible') {
+                syncTimerAcrossMidnight(); // Background se wapas aane par sync
+                requestWakeLock();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibility);
+        return () => document.removeEventListener('visibilitychange', handleVisibility);
+    }, [isRunning, startTime]);
+
     useEffect(() => {
         let interval = null;
         if (isRunning) {
-            interval = setInterval(() => {
-                const currentTime = Date.now();
-                setNow(currentTime);
-                const currentStr = getTodayStr();
-
-                // Midnight Logic
-                if (currentStr !== sessionDateRef.current) {
-                    const prevDate = sessionDateRef.current;
-                    const sessionSecs = Math.floor((currentTime - startTime) / 1000);
-                    const totalForPrevDay = elapsed + sessionSecs;
-
-                    setData(prev => ({
-                        ...prev,
-                        studyHistory: { ...prev.studyHistory, [prevDate]: (prev.studyHistory?.[prevDate] || 0) + totalForPrevDay },
-                        timerState: { ...prev.timerState, startTime: currentTime, elapsed: 0, laps: [`🌙 Midnight Reset`, ...prev.timerState.laps] }
-                    }));
-                    sessionDateRef.current = currentStr;
-                    lastAutoSaveRef.current = currentTime;
-                    showToast("Midnight! 🌙 New Day Started.");
-                }
-
-                // 3-Min Auto Save
-                if (currentTime - lastAutoSaveRef.current > 180000) {
-                    const sessionSecs = Math.floor((currentTime - startTime) / 1000);
-                    setData(prev => ({
-                        ...prev,
-                        studyHistory: { ...prev.studyHistory, [currentStr]: (prev.studyHistory?.[currentStr] || 0) + sessionSecs },
-                        timerState: { ...prev.timerState, startTime: currentTime, elapsed: elapsed + sessionSecs }
-                    }));
-                    lastAutoSaveRef.current = currentTime;
-                }
-            }, 1000);
+            requestWakeLock();
+            interval = setInterval(() => setNow(Date.now()), 1000);
+        } else {
+            if (wakeLockRef.current) wakeLockRef.current.release();
         }
-        return () => clearInterval(interval);
-    }, [isRunning, startTime, elapsed]);
+        return () => {
+            clearInterval(interval);
+            if (wakeLockRef.current) wakeLockRef.current.release();
+        };
+    }, [isRunning]);
 
-    // 2. GRAPH LOGIC
+    // Graph aur Baaki code same rahega...
     useEffect(() => {
         if (!chartRef.current || typeof Chart === 'undefined') return;
         const history = data.studyHistory || {};
@@ -2348,14 +2376,15 @@ const StopwatchView = () => {
         setData(p => ({ 
             ...p, 
             studyHistory: { ...p.studyHistory, [dateStr]: (p.studyHistory?.[dateStr] || 0) + sessionSecs }, 
-            timerState: { ...p.timerState, isRunning: false, startTime: null, elapsed: elapsed + sessionSecs } 
+            timerState: { ...p.timerState, isRunning: false, startTime: null, elapsed: elapsed + sessionSecs },
+            lastActiveDate: dateStr
         }));
     };
 
     const handleStart = (e) => {
         if(e) e.stopPropagation();
-        sessionDateRef.current = getTodayStr();
-        setData(p => ({ ...p, timerState: { ...p.timerState, isRunning: true, startTime: Date.now() } }));
+        const dateStr = getTodayStr();
+        setData(p => ({ ...p, timerState: { ...p.timerState, isRunning: true, startTime: Date.now() }, lastActiveDate: dateStr }));
     };
     
     const handleReset = (e) => { 
@@ -2382,7 +2411,6 @@ const StopwatchView = () => {
         setData(p => ({ ...p, timerState: { ...p.timerState, laps: [`${h}:${m}:${s}`, ...p.timerState.laps] } }));
     };
 
-    // Fullscreen Toggle
     const toggleFullScreen = () => {
         if (!document.fullscreenElement) {
             document.documentElement.requestFullscreen().catch(e => console.log(e));
@@ -2392,6 +2420,8 @@ const StopwatchView = () => {
             setIsFocusMode(false);
         }
     };
+    
+    // UI Render part (Keep it as it was in original code)...
     
     useEffect(() => {
         const handleEsc = () => { if (!document.fullscreenElement) setIsFocusMode(false); };
