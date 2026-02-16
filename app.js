@@ -2234,285 +2234,367 @@ React.createElement('div', { className: 'test-history-card' },
     };
     // --- UPDATED STOPWATCH VIEW (With Midnight Auto-Split & Graph Fixes) ---
 // --- FINAL RESPONSIVE STOPWATCH VIEW (Auto-Scaling Fix) ---
-// --- FINAL STOPWATCH VIEW (Orientation-Aware Auto Scaling) ---
 const StopwatchView = () => {
-
     // =============================
-    // WAKE LOCK + FULLSCREEN SAFE
-    // =============================
+// WAKE LOCK + FULLSCREEN FIX
+// =============================
 
-    const wakeLockRef = React.useRef(null);
+const wakeLockRef = React.useRef(null);
 
-    const requestWakeLock = async () => {
-        try {
-            if ('wakeLock' in navigator && !wakeLockRef.current) {
-                wakeLockRef.current = await navigator.wakeLock.request('screen');
-                wakeLockRef.current.addEventListener('release', () => {
-                    wakeLockRef.current = null;
-                });
-            }
-        } catch (err) {
-            console.log("WakeLock error:", err);
+const requestWakeLock = async () => {
+    try {
+        if ('wakeLock' in navigator) {
+            wakeLockRef.current = await navigator.wakeLock.request('screen');
+        }
+    } catch (err) {
+        console.log("Wake Lock error:", err);
+    }
+};
+
+const releaseWakeLock = async () => {
+    if (wakeLockRef.current) {
+        await wakeLockRef.current.release();
+        wakeLockRef.current = null;
+    }
+};
+
+const enterFullscreen = () => {
+    const elem = document.documentElement;
+    if (!document.fullscreenElement) {
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen().catch(() => {});
+        }
+    }
+};
+
+// Auto re-enter fullscreen if removed
+React.useEffect(() => {
+    const handleVisibility = () => {
+        if (document.visibilityState === 'visible') {
+            setTimeout(() => {
+                enterFullscreen();
+            }, 500);
         }
     };
 
-    const releaseWakeLock = async () => {
-        try {
-            if (wakeLockRef.current) {
-                await wakeLockRef.current.release();
-                wakeLockRef.current = null;
-            }
-        } catch {}
-    };
+    document.addEventListener('visibilitychange', handleVisibility);
 
-    const enterFullscreen = async () => {
-        try {
-            if (!document.fullscreenElement) {
-                await document.documentElement.requestFullscreen();
-            }
-        } catch {}
+    return () => {
+        document.removeEventListener('visibilitychange', handleVisibility);
     };
-
-    const exitFullscreen = async () => {
-        try {
-            if (document.fullscreenElement) {
-                await document.exitFullscreen();
-            }
-        } catch {}
-    };
-
-    // =============================
-    // STATE
-    // =============================
+}, []);
 
     const [now, setNow] = useState(Date.now());
     const [graphMode, setGraphMode] = useState('WEEK');
     const [graphOffset, setGraphOffset] = useState(0);
     const [isFocusMode, setIsFocusMode] = useState(false);
-
+    
+    // Refs
     const chartRef = React.useRef(null);
-    const intervalRef = React.useRef(null);
     const lastAutoSaveRef = React.useRef(Date.now());
-    const sessionDateRef = React.useRef(
-        new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' })
-    );
+    const sessionDateRef = React.useRef(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' }));
 
-    const getTodayStr = () =>
-        new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+    const getTodayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+    const { isRunning = false, startTime = null, elapsed = 0, laps = [] } = data.timerState || {};
 
-    const { isRunning = false, startTime = null, elapsed = 0, laps = [] } =
-        data.timerState || {};
-
-    // =============================
-    // TIMER ENGINE (SAFE VERSION)
-    // =============================
-
+    // 1. TIMER LOGIC
     useEffect(() => {
+        let interval = null;
+        if (isRunning) {
+            interval = setInterval(() => {
+                const currentTime = Date.now();
+                setNow(currentTime);
+                const currentStr = getTodayStr();
 
-        if (!isRunning) {
-            clearInterval(intervalRef.current);
-            return;
+                // Midnight Logic
+                if (currentStr !== sessionDateRef.current) {
+                    const prevDate = sessionDateRef.current;
+                    const sessionSecs = Math.floor((currentTime - startTime) / 1000);
+                    const totalForPrevDay = elapsed + sessionSecs;
+
+                    setData(prev => ({
+                        ...prev,
+                        studyHistory: { ...prev.studyHistory, [prevDate]: (prev.studyHistory?.[prevDate] || 0) + totalForPrevDay },
+                        timerState: { ...prev.timerState, startTime: currentTime, elapsed: 0, laps: [`🌙 Midnight Reset`, ...prev.timerState.laps] }
+                    }));
+                    sessionDateRef.current = currentStr;
+                    lastAutoSaveRef.current = currentTime;
+                    showToast("Midnight! 🌙 New Day Started.");
+                }
+
+                // 3-Min Auto Save
+                if (currentTime - lastAutoSaveRef.current > 180000) {
+                    const sessionSecs = Math.floor((currentTime - startTime) / 1000);
+                    setData(prev => ({
+                        ...prev,
+                        studyHistory: { ...prev.studyHistory, [currentStr]: (prev.studyHistory?.[currentStr] || 0) + sessionSecs },
+                        timerState: { ...prev.timerState, startTime: currentTime, elapsed: elapsed + sessionSecs }
+                    }));
+                    lastAutoSaveRef.current = currentTime;
+                }
+            }, 1000);
         }
-
-        intervalRef.current = setInterval(() => {
-
-            const currentTime = Date.now();
-            setNow(currentTime);
-            const todayStr = getTodayStr();
-
-            // Midnight rollover
-            if (todayStr !== sessionDateRef.current) {
-
-                const sessionSecs = Math.floor(
-                    (currentTime - startTime) / 1000
-                );
-
-                setData(prev => ({
-                    ...prev,
-                    studyHistory: {
-                        ...prev.studyHistory,
-                        [sessionDateRef.current]:
-                            (prev.studyHistory?.[sessionDateRef.current] || 0) +
-                            elapsed +
-                            sessionSecs
-                    },
-                    timerState: {
-                        ...prev.timerState,
-                        startTime: currentTime,
-                        elapsed: 0,
-                        laps: [`🌙 Midnight Reset`, ...prev.timerState.laps]
-                    }
-                }));
-
-                sessionDateRef.current = todayStr;
-                lastAutoSaveRef.current = currentTime;
-            }
-
-            // Auto Save every 3 min
-            if (currentTime - lastAutoSaveRef.current > 180000) {
-
-                const sessionSecs = Math.floor(
-                    (currentTime - startTime) / 1000
-                );
-
-                setData(prev => ({
-                    ...prev,
-                    studyHistory: {
-                        ...prev.studyHistory,
-                        [todayStr]:
-                            (prev.studyHistory?.[todayStr] || 0) +
-                            sessionSecs
-                    },
-                    timerState: {
-                        ...prev.timerState,
-                        startTime: currentTime,
-                        elapsed: elapsed + sessionSecs
-                    }
-                }));
-
-                lastAutoSaveRef.current = currentTime;
-            }
-
-        }, 1000);
-
-        return () => clearInterval(intervalRef.current);
-
+        return () => clearInterval(interval);
     }, [isRunning, startTime, elapsed]);
 
-    // =============================
-    // HANDLERS
-    // =============================
+    // 2. GRAPH LOGIC
+    useEffect(() => {
+        if (!chartRef.current || typeof Chart === 'undefined') return;
+        const history = data.studyHistory || {};
+        const labels = [], dataPoints = [];
+        const today = new Date();
+        
+        if (graphMode === 'WEEK') {
+            const currentDay = today.getDay(); 
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - currentDay + (graphOffset * 7));
 
-    const handleStart = async (e) => {
-        if (e) e.stopPropagation();
-
-        await enterFullscreen();
-        await requestWakeLock();
-
-        sessionDateRef.current = getTodayStr();
-
-        setData(p => ({
-            ...p,
-            timerState: {
-                ...p.timerState,
-                isRunning: true,
-                startTime: Date.now()
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(startOfWeek);
+                d.setDate(startOfWeek.getDate() + i);
+                const dateStr = d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+                labels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
+                dataPoints.push(((history[dateStr] || 0) / 3600).toFixed(2)); 
             }
-        }));
-    };
+        } else {
+             const targetMonth = new Date(today.getFullYear(), today.getMonth() + graphOffset, 1);
+             const daysInMonth = new Date(targetMonth.getFullYear(), targetMonth.getMonth() + 1, 0).getDate();
+             for(let i=1; i<=daysInMonth; i++) {
+                 const d = new Date(targetMonth.getFullYear(), targetMonth.getMonth(), i);
+                 const dateStr = d.toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
+                 labels.push(i);
+                 dataPoints.push(((history[dateStr] || 0) / 3600).toFixed(2));
+             }
+        }
+        
+        const chartInstance = Chart.getChart(chartRef.current);
+        if (chartInstance) chartInstance.destroy();
 
-    const handleStop = async (e) => {
-        if (e) e.stopPropagation();
+        new Chart(chartRef.current, {
+            type: 'bar',
+            data: { labels, datasets: [{ label: 'Hours', data: dataPoints, backgroundColor: '#3b82f6', borderRadius: 4, barPercentage: 0.6 }] },
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
+                scales: { y: { beginAtZero: true, grid: { color: '#333' }, ticks: { color: '#888' } }, x: { grid: { display: false }, ticks: { color: '#888' } } }, 
+                plugins: { legend: { display: false } } 
+            }
+        });
+    }, [data.studyHistory, graphMode, graphOffset, isRunning]);
+
+    // Display Values
+    const totalSeconds = elapsed + (isRunning && startTime ? Math.floor((now - startTime) / 1000) : 0);
+    const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+    const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+    const s = (totalSeconds % 60).toString().padStart(2, '0');
+
+    // Handlers
+    const handleStop = (e) => {
+        if(e) e.stopPropagation();
         if (!isRunning) return;
-
-        await releaseWakeLock();
-
         const sessionSecs = Math.floor((Date.now() - startTime) / 1000);
         const dateStr = getTodayStr();
-
-        setData(p => ({
-            ...p,
-            studyHistory: {
-                ...p.studyHistory,
-                [dateStr]:
-                    (p.studyHistory?.[dateStr] || 0) + sessionSecs
-            },
-            timerState: {
-                ...p.timerState,
-                isRunning: false,
-                startTime: null,
-                elapsed: elapsed + sessionSecs
-            }
+        setData(p => ({ 
+            ...p, 
+            studyHistory: { ...p.studyHistory, [dateStr]: (p.studyHistory?.[dateStr] || 0) + sessionSecs }, 
+            timerState: { ...p.timerState, isRunning: false, startTime: null, elapsed: elapsed + sessionSecs } 
         }));
     };
 
-    const handleReset = async (e) => {
-        if (e) e.stopPropagation();
-
-        await releaseWakeLock();
-        await exitFullscreen();
-
-        const dateStr = getTodayStr();
-
-        setData(p => ({
-            ...p,
-            studyHistory: {
-                ...p.studyHistory,
-                [dateStr]: 0
-            },
-            timerState: {
-                isRunning: false,
-                startTime: null,
-                elapsed: 0,
-                laps: []
+    const handleStart = (e) => {
+        if(e) e.stopPropagation();
+        sessionDateRef.current = getTodayStr();
+        setData(p => ({ ...p, timerState: { ...p.timerState, isRunning: true, startTime: Date.now() } }));
+    };
+    
+    const handleReset = (e) => { 
+        if(e) e.stopPropagation();
+        setModalConfig({
+            title: 'Hard Reset?',
+            message: 'Resetting will CLEAR today\'s entire progress graph and timer. Confirm?',
+            onConfirm: () => {
+                const dateStr = getTodayStr();
+                setData(p => ({ 
+                    ...p, 
+                    studyHistory: { ...p.studyHistory, [dateStr]: 0 },
+                    timerState: { isRunning: false, startTime: null, elapsed: 0, laps: [] } 
+                }));
+                setShowModal(false);
+                showToast("Timer & Graph Reset for Today");
             }
-        }));
+        });
+        setShowModal(true);
     };
 
-    const handleLap = () => {
-        const totalSeconds =
-            elapsed +
-            (isRunning && startTime
-                ? Math.floor((now - startTime) / 1000)
-                : 0);
-
-        const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-        const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-        const s = String(totalSeconds % 60).padStart(2, '0');
-
-        setData(p => ({
-            ...p,
-            timerState: {
-                ...p.timerState,
-                laps: [`${h}:${m}:${s}`, ...p.timerState.laps]
-            }
-        }));
+    const handleLap = (e) => {
+        if(e) e.stopPropagation();
+        setData(p => ({ ...p, timerState: { ...p.timerState, laps: [`${h}:${m}:${s}`, ...p.timerState.laps] } }));
     };
 
-    // =============================
-    // CLEANUP ON UNMOUNT
-    // =============================
-
+    // Fullscreen Toggle
+    const toggleFullScreen = () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(e => console.log(e));
+            setIsFocusMode(true);
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+            setIsFocusMode(false);
+        }
+    };
+    
     useEffect(() => {
-        return () => {
-            clearInterval(intervalRef.current);
-            releaseWakeLock();
-        };
+        const handleEsc = () => { if (!document.fullscreenElement) setIsFocusMode(false); };
+        document.addEventListener('fullscreenchange', handleEsc);
+        return () => document.removeEventListener('fullscreenchange', handleEsc);
     }, []);
 
-    // =============================
-    // DISPLAY
-    // =============================
+    // --- NEW CSS: ORIENTATION AWARE SCALING ---
+// --- FINAL CSS: SCALING LOGIC (VMIN + Font Fix) ---
+    const fixedStyles = `
+        /* 1. DEFAULT DESKTOP (Normal Mode) */
+        .flip-clock { display: flex; gap: 15px; justify-content: center; margin-bottom: 2rem; }
+        .flip-unit-container {
+            display: flex; justify-content: center; align-items: center; position: relative;
+            width: 120px; height: 160px; background-color: #202020; border-radius: 12px;
+            font-size: 90px; font-family: 'Manrope', sans-serif; color: #e5e5e5;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden;
+        }
+        .static-card { width: 30px; height: 160px; font-size: 70px; display: flex; align-items: center; justify-content: center; color: #666; }
+        .upper-card, .lower-card { display: flex; justify-content: center; width: 100%; height: 50%; overflow: hidden; position: absolute; left: 0; background-color: #202020; }
+        .upper-card { top: 0; align-items: flex-end; border-bottom: 2px solid #000; border-top-left-radius: 12px; border-top-right-radius: 12px; }
+        .lower-card { bottom: 0; align-items: flex-start; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
+        .upper-card span { transform: translateY(50%); } 
+        .lower-card span { transform: translateY(-50%); }
 
-    const totalSeconds =
-        elapsed +
-        (isRunning && startTime
-            ? Math.floor((now - startTime) / 1000)
-            : 0);
+        /* Graph Controls */
+        .chart-controls-fixed { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; position: relative; z-index: 50; }
+        .chart-nav-btn { background: #262626; border: 1px solid #404040; color: white; width: 38px; height: 38px; border-radius: 50%; font-size: 1.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; padding-bottom: 4px; }
+        .chart-filter-group { display: flex; background: #262626; padding: 4px; border-radius: 8px; border: 1px solid #404040; }
+        .chart-filter-btn { background: transparent; border: none; color: #a3a3a3; padding: 6px 16px; border-radius: 6px; font-weight: 700; font-size: 0.85rem; cursor: pointer; }
+        .chart-filter-btn.active { background: #3b82f6; color: white; }
 
-    const h = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-    const m = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-    const s = String(totalSeconds % 60).padStart(2, '0');
+        /* 2. MOBILE VIEW (Normal Mode) */
+        @media (max-width: 600px) {
+            .flip-clock { gap: 1vw; }
+            .flip-unit-container { width: 26vw; height: 38vw; font-size: 20vw; }
+            .static-card { width: 4vw; height: 38vw; font-size: 16vw; }
+            .btn-circle { width: 65px; height: 65px; font-size: 0.8rem; }
+        }
 
-    return React.createElement(
-        "div",
-        { className: "stopwatch-page" },
+        /* 3. FULLSCREEN MODE (Reduced Font Sizes to Prevent Cutting) */
+        .stopwatch-page.fullscreen-mode {
+            background: black;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            overflow: hidden; width: 100vw; height: 100vh;
+        }
+        .stopwatch-page.fullscreen-mode .stopwatch-container {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            padding: 0; margin: 0; max-width: none;
+        }
 
-        React.createElement("div", { className: "flip-clock" },
-            React.createElement(AnimatedCard, { digit: h }),
-            React.createElement(StaticCard, null),
-            React.createElement(AnimatedCard, { digit: m }),
-            React.createElement(StaticCard, null),
-            React.createElement(AnimatedCard, { digit: s })
+        /* Top 70% Clock */
+        .stopwatch-page.fullscreen-mode .flip-clock {
+            flex: 7; width: 100%;
+            display: flex; justify-content: center; align-items: center;
+            margin: 0; gap: 2vmin;
+        }
+        .stopwatch-page.fullscreen-mode .flip-unit-container {
+            width: 26vmin; height: 36vmin;
+            font-size: 20vmin; /* Reduced from 24 to 20 */
+            border-radius: 3vmin;
+        }
+        .stopwatch-page.fullscreen-mode .static-card { width: 6vmin; height: 36vmin; font-size: 16vmin; }
+        
+        /* Bottom 30% Buttons */
+        .stopwatch-page.fullscreen-mode .stopwatch-controls {
+            flex: 3; width: 100%;
+            display: flex; justify-content: center; align-items: flex-start;
+            padding-top: 2vh; gap: 5vw;
+        }
+
+        /* --- ORIENTATION RULES --- */
+        
+        /* PORTRAIT (Phone Seedha) */
+        @media (orientation: portrait) {
+            .stopwatch-page.fullscreen-mode .flip-unit-container {
+                width: 28vw; height: 38vw;
+                font-size: 20vw; /* Reduced from 28 to 20 */
+                border-radius: 4vw;
+            }
+            .stopwatch-page.fullscreen-mode .static-card { width: 5vw; height: 38vw; font-size: 15vw; }
+            .stopwatch-page.fullscreen-mode .btn-circle { width: 20vw; height: 20vw; font-size: 4vw; }
+        }
+
+        /* LANDSCAPE (Phone Teda / Laptop) */
+        @media (orientation: landscape) {
+            .stopwatch-page.fullscreen-mode .flip-unit-container {
+                height: 50vh; width: 36vh;
+                font-size: 30vh; /* Reduced from 40 to 30 */
+                border-radius: 4vh;
+            }
+            .stopwatch-page.fullscreen-mode .static-card { height: 50vh; width: 5vh; font-size: 25vh; }
+            .stopwatch-page.fullscreen-mode .btn-circle { height: 15vh; width: 15vh; font-size: 2.5vh; }
+        }
+    `;
+
+    return React.createElement('div', { 
+        className: `stopwatch-page ${isFocusMode ? 'fullscreen-mode' : ''}` 
+    },
+        React.createElement('style', null, fixedStyles),
+
+        // Top Bar
+        !isFocusMode && React.createElement('div', { style: { padding: '20px', display: 'flex', justifyContent: 'space-between', width: '100%', maxWidth: '1000px', margin: '0 auto' } },
+            React.createElement('button', { onClick: () => setView('home'), style: { background: 'none', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' } }, '← Back'),
+            React.createElement('button', { onClick: toggleFullScreen, style: { background: 'none', border: 'none', color: '#fff', fontSize: '1.5rem', cursor: 'pointer' } }, '⛶')
         ),
+        
+        isFocusMode && React.createElement('button', { 
+            onClick: toggleFullScreen, 
+            style: { position: 'absolute', top: '20px', right: '30px', background: 'none', border: 'none', color: '#444', fontSize: '1.5rem', cursor: 'pointer', zIndex: 100 } 
+        }, '⛶'),
 
-        React.createElement("div", { className: "stopwatch-controls" },
-            !isRunning
-                ? React.createElement("button", { onClick: handleStart }, "Start")
-                : React.createElement("button", { onClick: handleStop }, "Pause"),
-            React.createElement("button", { onClick: handleReset }, "Reset"),
-            (isRunning || elapsed > 0) &&
-                React.createElement("button", { onClick: handleLap }, "Lap")
+        React.createElement('div', { className: 'stopwatch-container' },
+            // CLOCK
+            React.createElement('div', { className: 'flip-clock' }, 
+                React.createElement(AnimatedCard, { digit: h }), React.createElement(StaticCard, null), 
+                React.createElement(AnimatedCard, { digit: m }), React.createElement(StaticCard, null), 
+                React.createElement(AnimatedCard, { digit: s })
+            ),
+            
+            // CONTROLS
+            React.createElement('div', { className: 'stopwatch-controls' },
+                !isRunning 
+                    ? React.createElement('button', { className: 'btn-circle btn-start', onClick: handleStart }, 'Start') 
+                    : React.createElement('button', { className: 'btn-circle btn-stop', onClick: handleStop }, 'Pause'),
+                React.createElement('button', { className: 'btn-circle btn-reset', onClick: handleReset }, 'Reset'),
+                (isRunning || elapsed > 0) && React.createElement('button', { className: 'btn-circle btn-lap', onClick: handleLap }, 'Lap')
+            ),
+
+            // LAPS AND GRAPH
+            !isFocusMode && React.createElement('div', { className: 'grid-dark' },
+                // Laps
+                React.createElement('div', { className: 'stats-container' }, 
+                    React.createElement('h3', { style: { color: '#888', borderBottom: '1px solid #333', paddingBottom: '10px' } }, 'Session Laps'), 
+                    React.createElement('div', { className: 'lap-list' }, 
+                        laps.length === 0 ? React.createElement('div', {style:{color:'#444', textAlign:'center', marginTop:'20px'}}, 'No laps yet') :
+                        laps.map((l, i) => React.createElement('div', { key: i, className: 'lap-item' }, React.createElement('span', null, `#${laps.length - i}`), React.createElement('span', {style:{color:'#fff'}}, l)))
+                    )
+                ),
+                // Graph
+                React.createElement('div', { className: 'stats-container' },
+                    React.createElement('div', { className: 'chart-controls-fixed' },
+                        React.createElement('button', { className: 'chart-nav-btn', onClick: () => setGraphOffset(graphOffset - 1) }, '‹'),
+                        React.createElement('div', { className: 'chart-filter-group' }, 
+                            React.createElement('button', { className: `chart-filter-btn ${graphMode === 'WEEK'?'active':''}`, onClick: () => {setGraphMode('WEEK'); setGraphOffset(0)} }, 'Week'), 
+                            React.createElement('button', { className: `chart-filter-btn ${graphMode === 'MONTH'?'active':''}`, onClick: () => {setGraphMode('MONTH'); setGraphOffset(0)} }, 'Month')
+                        ),
+                        React.createElement('button', { className: 'chart-nav-btn', onClick: () => setGraphOffset(graphOffset + 1) }, '›')
+                    ),
+                    React.createElement('div', { style: { height: '220px' } }, React.createElement('canvas', { ref: chartRef }))
+                )
+            )
         )
     );
 };
