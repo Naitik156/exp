@@ -2241,6 +2241,7 @@ const StopwatchView = () => {
     const [isFocusMode, setIsFocusMode] = useState(false);
     
     const chartRef = React.useRef(null);
+    const containerRef = React.useRef(null);
     const wakeLockRef = React.useRef(null); // Screen Sleep Fix
 
     const getTodayStr = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Kolkata' });
@@ -2369,7 +2370,7 @@ const StopwatchView = () => {
 
     // Handlers
     const handleStop = (e) => {
-        if(e) e.stopPropagation();
+        if(e) { e.preventDefault(); e.stopPropagation(); }
         if (!isRunning) return;
         const sessionSecs = Math.floor((Date.now() - startTime) / 1000);
         const dateStr = getTodayStr();
@@ -2382,13 +2383,13 @@ const StopwatchView = () => {
     };
 
     const handleStart = (e) => {
-        if(e) e.stopPropagation();
+        if(e) { e.preventDefault(); e.stopPropagation(); }
         const dateStr = getTodayStr();
         setData(p => ({ ...p, timerState: { ...p.timerState, isRunning: true, startTime: Date.now() }, lastActiveDate: dateStr }));
     };
     
     const handleReset = (e) => { 
-        if(e) e.stopPropagation();
+        if(e) { e.preventDefault(); e.stopPropagation(); }
         setModalConfig({
             title: 'Hard Reset?',
             message: 'Resetting will CLEAR today\'s entire progress graph and timer. Confirm?',
@@ -2407,19 +2408,19 @@ const StopwatchView = () => {
     };
 
     const handleLap = (e) => {
-        if(e) e.stopPropagation();
+        if(e) { e.preventDefault(); e.stopPropagation(); }
         setData(p => ({ ...p, timerState: { ...p.timerState, laps: [`${h}:${m}:${s}`, ...p.timerState.laps] } }));
     };
 
     const toggleFullScreen = () => {
-        if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen().catch(e => console.log(e));
-            setIsFocusMode(true);
-        } else {
-            if (document.exitFullscreen) document.exitFullscreen();
-            setIsFocusMode(false);
-        }
-    };
+    if (!document.fullscreenElement) {
+        containerRef.current.requestFullscreen().catch(e => console.log(e));
+        setIsFocusMode(true);
+    } else {
+        document.exitFullscreen();
+        setIsFocusMode(false);
+    }
+};
     
     // UI Render part (Keep it as it was in original code)...
     
@@ -2522,8 +2523,9 @@ const StopwatchView = () => {
     `;
 
     return React.createElement('div', { 
-        className: `stopwatch-page ${isFocusMode ? 'fullscreen-mode' : ''}` 
-    },
+    ref: containerRef,
+    className: `stopwatch-page ${isFocusMode ? 'fullscreen-mode' : ''}` 
+},
         React.createElement('style', null, fixedStyles),
 
         // Top Bar
