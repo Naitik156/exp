@@ -293,6 +293,31 @@ const [selectedChapter, setSelectedChapter] = useState(() => localStorage.getIte
     const [isFetched, setIsFetched] = useState(false);
     // isFocusMode at App level so it survives StopwatchView unmount/remount on every setData() call
     const [isFocusMode, setIsFocusMode] = useState(false);
+    // ✅ GLOBAL ERROR + NETWORK STATE
+const [isOnline, setIsOnline] = useState(navigator.onLine);
+const [globalError, setGlobalError] = useState(null);
+
+useEffect(() => {
+    const handleOnline = () => {
+        setIsOnline(true);
+        setGlobalError(null);
+        showToast("✅ Back Online");
+    };
+
+    const handleOffline = () => {
+        setIsOnline(false);
+        setGlobalError("No internet connection. Please check your network.");
+    };
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+        window.removeEventListener("online", handleOnline);
+        window.removeEventListener("offline", handleOffline);
+    };
+}, []);
+
 const compressImage = (file) => {
         return new Promise((resolve) => {
             const reader = new FileReader(); reader.readAsDataURL(file);
@@ -400,49 +425,56 @@ const compressImage = (file) => {
 
 // 3. LOAD DATA (Database se progress lana) - FIXED VERSION
 useEffect(() => {
+    let timeout;
+
     const loadFromDB = async () => {
-        if (user && window.db && window.dbFuncs) {
-            try {
-                const { doc, getDoc } = window.dbFuncs;
-                const docRef = doc(window.db, "users", user.uid);
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const loadedData = docSnap.data();
-                    // Ensure timerState always has safe defaults to prevent crashes
-                    const safeTimerState = {
-                        isRunning: false, // Never restore running state - prevents ghost timer
+        if (!user || !window.db || !window.dbFuncs) return;
+
+        try {
+            const { doc, getDoc } = window.dbFuncs;
+            const docRef = doc(window.db, "users", user.uid);
+
+            // 🔥 10 second timeout protection
+            timeout = setTimeout(() => {
+                setGlobalError("Server is taking too long to respond.");
+                setIsFetched(true);
+            }, 10000);
+
+            const docSnap = await getDoc(docRef);
+
+            clearTimeout(timeout);
+
+            if (docSnap.exists()) {
+                const loadedData = docSnap.data();
+
+                setData(prev => ({
+                    ...prev,
+                    ...loadedData,
+                    timerState: {
+                        isRunning: false,
                         startTime: null,
                         elapsed: loadedData?.timerState?.elapsed || 0,
                         laps: loadedData?.timerState?.laps || []
-                    };
-                    const safeData = {
-                        NEET: {}, JEE: {}, dailyGoals: [], tests: [], mistakes: [], studyHistory: {}, syllabusCustom: {},
-                        ...loadedData,
-                        timerState: safeTimerState
-                    };
-                    setData(safeData);
-                    // Save to localStorage as offline backup
-                    try { localStorage.setItem('localDataBackup_' + user.uid, JSON.stringify(safeData)); } catch(e) {}
-                }
-                setIsFetched(true);
-            } catch (err) {
-                console.error("Load error:", err);
-                // Offline fallback: load from localStorage backup
-                try {
-                    const backup = localStorage.getItem('localDataBackup_' + user.uid);
-                    if (backup) {
-                        const parsed = JSON.parse(backup);
-                        parsed.timerState = { ...parsed.timerState, isRunning: false, startTime: null };
-                        setData(parsed);
-                        showToast('⚠️ Offline mode - Showing cached data');
                     }
-                } catch(backupErr) { console.error("Backup load error:", backupErr); }
-                setIsFetched(true);
+                }));
             }
+
+            setIsFetched(true);
+
+        } catch (err) {
+            clearTimeout(timeout);
+            console.error("Load error:", err);
+            setGlobalError("Failed to load your data. Please try again.");
+            setIsFetched(true);
         }
     };
+
     if (user) loadFromDB();
+
+    return () => clearTimeout(timeout);
+
 }, [user]);
+
 
     // 4. SAVE DATA (Progress database mein bhejna)
     useEffect(() => {
@@ -456,7 +488,10 @@ useEffect(() => {
                     // Update localStorage backup on successful save
                     try { localStorage.setItem('localDataBackup_' + user.uid, JSON.stringify(data)); } catch(e) {}
                 } catch (err) {
-                    console.error("Save error:", err);
+    console.error("Save error:", err);
+    setGlobalError("Failed to sync data. Working in offline mode.");
+}
+
                     // Still save to localStorage as offline backup even if Firestore fails
                     try { localStorage.setItem('localDataBackup_' + user.uid, JSON.stringify(data)); } catch(e) {}
                 }
@@ -3018,7 +3053,12 @@ filtered.length === 0 ? React.createElement('p', {style:{textAlign:'center', pad
         );
     };
     // Agar data fetch nahi hua, toh kuch render mat karo (Splash screen chalti rahegi)
-    if (!isFetched) return null;
+    if (!isFetched) {
+    return React.createElement('div', { className: 'container' },
+        React.createElement('h2', null, "Loading your progress...")
+    );
+}
+
    return React.createElement(React.Fragment, null,
         // --- 1. SMART FLOATING REVISION BUTTON (Disappears when all clear) ---
         (data.mistakes || []).some(m => !m.mastered) && React.createElement('button', { 
