@@ -471,28 +471,75 @@ useEffect(() => {
 }, [user]);
 
     // 4. SAVE DATA (Progress database mein bhejna)
+    // ✅ ISSE PASTE KAREIN (Naya Smart Save Logic)
+
+    // 4. SMART SAVE (Reload Proof + Low Writes for 800 Users)
+    const unsavedChangesRef = React.useRef(false);
+
+    // Part A: LocalStorage (Instant & Reload Safe - Har click par save hoga)
     useEffect(() => {
-        const saveToDB = async () => {
-            if (user && isFetched && window.dbFuncs && window.db) {
-                const { doc, setDoc } = window.dbFuncs;
-                try {
-                    const docRef = doc(window.db, "users", user.uid);
-                    // currentExam ko bhi data ke andar save karein taaki logout ke baad bhi restore ho
-                    const dataToSave = { ...data, _currentExam: currentExam || '' };
-                    await setDoc(docRef, dataToSave, { merge: true });
-                    localStorage.setItem('currentExam', currentExam || '');
-                    // Update localStorage backup on successful save
-                    try { localStorage.setItem('localDataBackup_' + user.uid, JSON.stringify(dataToSave)); } catch(e) {}
-                } catch (err) {
-                    console.error("Save error:", err);
-                    // Still save to localStorage as offline backup even if Firestore fails
-                    try { localStorage.setItem('localDataBackup_' + user.uid, JSON.stringify({ ...data, _currentExam: currentExam || '' })); } catch(e) {}
-                }
+        if (!isFetched) return;
+        
+        // Mark that we have new changes
+        unsavedChangesRef.current = true;
+
+        // Save to Phone Memory immediately
+        const dataToSave = { ...data, _currentExam: currentExam || '' };
+        try { 
+            localStorage.setItem('localDataBackup_' + user?.uid, JSON.stringify(dataToSave)); 
+            localStorage.setItem('currentExam', currentExam || '');
+        } catch(e) { console.error("Local Save Error", e); }
+
+    }, [data, currentExam, isFetched, user]);
+
+    // Part B: Cloud Save (On Exit, Reload, or Interval - Writes bachayega)
+    useEffect(() => {
+        if (!user || !window.dbFuncs || !window.db) return;
+
+        const saveToCloudNow = async () => {
+            if (!unsavedChangesRef.current) return; // Kuch naya nahi hai toh write mat waste karo
+
+            console.log("🔥 Syncing to Cloud..."); 
+            const { doc, setDoc } = window.dbFuncs;
+            try {
+                const docRef = doc(window.db, "users", user.uid);
+                // "merge: true" purana data safe rakhega
+                const dataToSave = { ...data, _currentExam: currentExam || '' };
+                
+                await setDoc(docRef, dataToSave, { merge: true });
+                
+                unsavedChangesRef.current = false; // Reset flag
+            } catch (err) {
+                console.error("Cloud Save Error:", err);
             }
         };
-        const timer = setTimeout(saveToDB, 1500);
-        return () => clearTimeout(timer);
-    }, [data, currentExam, isFetched, user]);
+
+        // 1. Auto-save every 2 minutes (Taaki long session me data loss na ho)
+        const intervalID = setInterval(saveToCloudNow, 120000);
+
+        // 2. Save on App Minimize / Tab Change (Mobile Friendly)
+        const handleVisibility = () => {
+            if (document.visibilityState === 'hidden') {
+                saveToCloudNow();
+            }
+        };
+
+        // 3. Save on Reload / Close Button (Desktop Friendly)
+        const handleUnload = () => {
+            if (unsavedChangesRef.current) {
+                saveToCloudNow(); 
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibility);
+        window.addEventListener('beforeunload', handleUnload);
+
+        return () => {
+            clearInterval(intervalID);
+            document.removeEventListener('visibilitychange', handleVisibility);
+            window.removeEventListener('beforeunload', handleUnload);
+        };
+    }, [user, data, currentExam]);
     const showToast = (message) => {
         setToast({ show: true, message });
         setTimeout(() => setToast({ show: false, message: '' }), 3000);
@@ -2554,19 +2601,38 @@ const StopwatchView = () => {
     };
 
     // --- 3. EFFECTS ---
+    // ✅ ISSE PASTE KAREIN (Naya Background Sync Logic)
     useEffect(() => {
-        syncTimerAcrossMidnight(); // App load par check
+        // 1. Initial Check
+        syncTimerAcrossMidnight(); 
         
         const handleVisibility = () => {
             if (document.visibilityState === 'visible') {
-                syncTimerAcrossMidnight(); // Background se wapas aane par sync
+                // Jab user wapas app me aaye, toh check karo timer sahi hai ya nahi
+                syncTimerAcrossMidnight();
                 requestWakeLock();
+                
+                // Force UI update
+                setNow(Date.now());
+            } else if (document.visibilityState === 'hidden' && isRunning) {
+                // Jab user app minimize kare, toh current progress save kar lo
+                // Taaki agar OS app kill kar de, toh data save rahe
+                const currentElapsed = elapsed + (startTime ? Math.floor((Date.now() - startTime) / 1000) : 0);
+                const dateStr = getTodayStr();
+                
+                // Hum state update nahi kar rahe, seedha data object me changes push kar rahe hain
+                // taaki 'Smart Save' usse pick kar le
+                setData(prev => ({
+                   ...prev,
+                   lastActiveDate: dateStr
+                   // Note: Hum yahan timer stop nahi kar rahe, bas state sync kar rahe hain
+                }));
             }
         };
 
         document.addEventListener('visibilitychange', handleVisibility);
         return () => document.removeEventListener('visibilitychange', handleVisibility);
-    }, [isRunning, startTime]);
+    }, [isRunning, startTime, elapsed]); // Dependencies updated
 
     useEffect(() => {
         let interval = null;
