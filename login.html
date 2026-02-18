@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Syllabus Tracker</title>
+
     <link rel="icon" type="image/png" href="favicon.png">
-    <link rel="icon" type="image/png" href="favicon.png">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0F766E">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0F766E">
+
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
             --primary: #0F766E;
@@ -17,6 +19,7 @@
             --card: #FFFFFF;
             --text: #1C1917;
         }
+
         body {
             font-family: 'Manrope', sans-serif;
             background: var(--bg);
@@ -26,6 +29,7 @@
             justify-content: center;
             margin: 0;
         }
+
         .login-card {
             background: var(--card);
             padding: 2.5rem;
@@ -34,21 +38,39 @@
             width: 90%;
             max-width: 400px;
             text-align: center;
-            border: 1px solid rgba(255,255,255,0.3);
             animation: fadeIn 0.6s ease;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .logo {
             font-family: 'DM Serif Display', serif;
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             color: var(--primary);
             margin-bottom: 0.5rem;
         }
-        .subtitle { color: #57534E; margin-bottom: 2rem; font-size: 0.9rem; }
-        
-        .input-group { text-align: left; margin-bottom: 1.2rem; }
-        label { display: block; font-weight: 700; margin-bottom: 8px; font-size: 0.85rem; color: var(--text); }
+
+        .subtitle {
+            color: #57534E;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+        }
+
+        .input-group {
+            text-align: left;
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+        }
+
         input {
             width: 100%;
             padding: 12px 16px;
@@ -57,9 +79,13 @@
             font-family: inherit;
             font-size: 1rem;
             box-sizing: border-box;
-            transition: all 0.2s;
         }
-        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.1); }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.1);
+        }
 
         .btn-login {
             width: 100%;
@@ -72,13 +98,30 @@
             font-size: 1rem;
             cursor: pointer;
             margin-top: 0.5rem;
-            transition: all 0.3s;
         }
-        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(15, 118, 110, 0.3); }
 
-        .divider { margin: 1.5rem 0; color: #A8A29E; font-size: 0.8rem; display: flex; align-items: center; gap: 10px; }
-        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #E7E5E4; }
-        
+        .btn-login:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .divider {
+            margin: 1.5rem 0;
+            color: #A8A29E;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #E7E5E4;
+        }
+
         .btn-google {
             width: 100%;
             padding: 12px;
@@ -91,17 +134,39 @@
             gap: 12px;
             cursor: pointer;
             font-weight: 600;
-            font-family: inherit;
             font-size: 0.95rem;
-            transition: background 0.2s;
         }
-        .btn-google:hover { background: #FAFAF9; }
-        .btn-google img { width: 20px; }
 
-        .toggle-text { margin-top: 1.5rem; font-size: 0.9rem; cursor: pointer; color: var(--primary); font-weight: 600; }
-        .toggle-text:hover { text-decoration: underline; }
+        .btn-google:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn-google img {
+            width: 20px;
+        }
+
+        .toggle-text {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .error-box {
+            display: none;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            background: #FEE2E2;
+            color: #991B1B;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
     </style>
 </head>
+
 <body>
 
 <div class="login-card">
@@ -112,6 +177,7 @@
         <label>Email Address</label>
         <input type="email" id="email" placeholder="name@example.com">
     </div>
+
     <div class="input-group">
         <label>Password</label>
         <input type="password" id="password" placeholder="••••••••">
@@ -122,36 +188,42 @@
     <div class="divider">OR</div>
 
     <button class="btn-google" id="google-btn">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="google">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg">
         Continue with Google
     </button>
 
     <div class="toggle-text" id="toggle-auth">Don't have an account? Sign Up</div>
-    <div id="error-box" style="display:none; margin-top:15px; padding:10px; border-radius:10px; background:#FEE2E2; color:#991B1B; font-size:0.85rem; font-weight:600;"></div>
 
+    <div id="error-box" class="error-box"></div>
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // Aapka complete Firebase Config
-    const firebaseConfig = {
-        apiKey: "AIzaSyC34JnP3u8km7TlX17JcA7Xw5UkddLrfvY",
-        authDomain: "my-exam-tracker-80be7.firebaseapp.com",
-        projectId: "my-exam-tracker-80be7",
-        storageBucket: "my-exam-tracker-80be7.firebasestorage.app",
-        messagingSenderId: "507669777779",
-        appId: "1:507669777779:web:4df324624b99de359cc906",
-        measurementId: "G-9JX9V9P739"
-    };
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+    getAuth,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    GoogleAuthProvider,
+    signInWithPopup
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    appId: "YOUR_APP_ID"
+};
 
-    let isLoginMode = true;
-    const errorBox = document.getElementById("error-box");
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+let isLoginMode = true;
+
+const errorBox = document.getElementById("error-box");
+const mainBtn = document.getElementById("main-btn");
+const googleBtn = document.getElementById("google-btn");
 
 function showError(message) {
     errorBox.style.display = "block";
@@ -163,17 +235,16 @@ function clearError() {
     errorBox.innerText = "";
 }
 
+document.getElementById('toggle-auth').onclick = () => {
+    isLoginMode = !isLoginMode;
+    mainBtn.innerText = isLoginMode ? "Login" : "Create Account";
+    document.getElementById('sub-title').innerText =
+        isLoginMode ? "Sign in to sync your preparation" : "Create account to start tracking";
+    document.getElementById('toggle-auth').innerText =
+        isLoginMode ? "Don't have an account? Sign Up" : "Already have an account? Login";
+};
 
-    // Toggle between Login and Signup
-    document.getElementById('toggle-auth').onclick = () => {
-        isLoginMode = !isLoginMode;
-        document.getElementById('main-btn').innerText = isLoginMode ? "Login" : "Create Account";
-        document.getElementById('sub-title').innerText = isLoginMode ? "Sign in to continue" : "Join us for your NEET prep";
-        document.getElementById('toggle-auth').innerText = isLoginMode ? "Don't have an account? Sign Up" : "Already have an account? Login";
-    };
-
-    // Google Login Function
-  document.getElementById('google-btn').onclick = async () => {
+googleBtn.onclick = async () => {
 
     if (!navigator.onLine) {
         showError("No internet connection.");
@@ -181,27 +252,24 @@ function clearError() {
     }
 
     clearError();
-    const btn = document.getElementById('google-btn');
-    btn.disabled = true;
-    btn.innerText = "Please wait...";
+    googleBtn.disabled = true;
+    googleBtn.innerText = "Please wait...";
 
     try {
         await signInWithPopup(auth, provider);
         window.location.href = "index.html";
-    } catch (e) { 
+    } catch (e) {
         showError("Google Login Failed: " + e.message);
     } finally {
-        btn.disabled = false;
-        btn.innerHTML = `
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
+        googleBtn.disabled = false;
+        googleBtn.innerHTML = `
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg">
             Continue with Google
         `;
     }
 };
 
-
-    // Email/Password Login & Signup Function
-document.getElementById('main-btn').onclick = async () => {
+mainBtn.onclick = async () => {
 
     if (!navigator.onLine) {
         showError("No internet connection.");
@@ -210,7 +278,6 @@ document.getElementById('main-btn').onclick = async () => {
 
     const email = document.getElementById('email').value.trim();
     const pass = document.getElementById('password').value.trim();
-    const btn = document.getElementById('main-btn');
 
     clearError();
 
@@ -219,10 +286,11 @@ document.getElementById('main-btn').onclick = async () => {
         return;
     }
 
-    btn.disabled = true;
-    btn.innerText = "Please wait...";
+    mainBtn.disabled = true;
+    mainBtn.innerText = "Please wait...";
 
     try {
+
         if (isLoginMode) {
             await signInWithEmailAndPassword(auth, email, pass);
         } else {
@@ -244,16 +312,17 @@ document.getElementById('main-btn').onclick = async () => {
         }
 
     } finally {
-        btn.disabled = false;
-        btn.innerText = isLoginMode ? "Login" : "Create Account";
+        mainBtn.disabled = false;
+        mainBtn.innerText = isLoginMode ? "Login" : "Create Account";
     }
 };
 
 </script>
-    <script>
-  if ("serviceWorker" in navigator) {
+
+<script>
+if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js");
-  }
+}
 </script>
 
 </body>
