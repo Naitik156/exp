@@ -127,6 +127,8 @@
     </button>
 
     <div class="toggle-text" id="toggle-auth">Don't have an account? Sign Up</div>
+    <div id="error-box" style="display:none; margin-top:15px; padding:10px; border-radius:10px; background:#FEE2E2; color:#991B1B; font-size:0.85rem; font-weight:600;"></div>
+
 </div>
 
 <script type="module">
@@ -149,6 +151,18 @@
     const provider = new GoogleAuthProvider();
 
     let isLoginMode = true;
+    const errorBox = document.getElementById("error-box");
+
+function showError(message) {
+    errorBox.style.display = "block";
+    errorBox.innerText = message;
+}
+
+function clearError() {
+    errorBox.style.display = "none";
+    errorBox.innerText = "";
+}
+
 
     // Toggle between Login and Signup
     document.getElementById('toggle-auth').onclick = () => {
@@ -159,34 +173,82 @@
     };
 
     // Google Login Function
-    document.getElementById('google-btn').onclick = async () => {
-        try {
-            await signInWithPopup(auth, provider);
-            window.location.href = "index.html"; // Login ke baad home par bhejega
-        } catch (e) { 
-            alert("Google Login Error: " + e.message); 
-        }
-    };
+  document.getElementById('google-btn').onclick = async () => {
+
+    if (!navigator.onLine) {
+        showError("No internet connection.");
+        return;
+    }
+
+    clearError();
+    const btn = document.getElementById('google-btn');
+    btn.disabled = true;
+    btn.innerText = "Please wait...";
+
+    try {
+        await signInWithPopup(auth, provider);
+        window.location.href = "index.html";
+    } catch (e) { 
+        showError("Google Login Failed: " + e.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = `
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
+            Continue with Google
+        `;
+    }
+};
+
 
     // Email/Password Login & Signup Function
-    document.getElementById('main-btn').onclick = async () => {
-        const email = document.getElementById('email').value;
-        const pass = document.getElementById('password').value;
+document.getElementById('main-btn').onclick = async () => {
 
-        if(!email || !pass) { alert("Please fill all fields"); return; }
+    if (!navigator.onLine) {
+        showError("No internet connection.");
+        return;
+    }
 
-        try {
-            if(isLoginMode) {
-                await signInWithEmailAndPassword(auth, email, pass);
-            } else {
-                await createUserWithEmailAndPassword(auth, email, pass);
-                alert("Account created successfully!");
-            }
-            window.location.href = "index.html";
-        } catch (e) { 
-            alert(e.message); 
+    const email = document.getElementById('email').value.trim();
+    const pass = document.getElementById('password').value.trim();
+    const btn = document.getElementById('main-btn');
+
+    clearError();
+
+    if (!email || !pass) {
+        showError("Please fill all fields.");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = "Please wait...";
+
+    try {
+        if (isLoginMode) {
+            await signInWithEmailAndPassword(auth, email, pass);
+        } else {
+            await createUserWithEmailAndPassword(auth, email, pass);
         }
-    };
+
+        window.location.href = "index.html";
+
+    } catch (e) {
+
+        if (e.code === "auth/invalid-credential") {
+            showError("Invalid email or password.");
+        } else if (e.code === "auth/email-already-in-use") {
+            showError("Email already registered.");
+        } else if (e.code === "auth/weak-password") {
+            showError("Password must be at least 6 characters.");
+        } else {
+            showError(e.message);
+        }
+
+    } finally {
+        btn.disabled = false;
+        btn.innerText = isLoginMode ? "Login" : "Create Account";
+    }
+};
+
 </script>
     <script>
   if ("serviceWorker" in navigator) {
