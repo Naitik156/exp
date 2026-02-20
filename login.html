@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Syllabus Tracker</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0F766E">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0F766E;
+            --primary-light: #14B8A6;
+            --bg: linear-gradient(135deg, #ECFDF5 0%, #F0FDFA 50%, #FEF3C7 100%);
+            --card: #FFFFFF;
+            --text: #1C1917;
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: var(--bg);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        .login-card {
+            background: var(--card);
+            padding: 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.3);
+            animation: fadeIn 0.6s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .logo {
+            font-family: 'DM Serif Display', serif;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        .subtitle { color: #57534E; margin-bottom: 2rem; font-size: 0.9rem; }
+        
+        .input-group { text-align: left; margin-bottom: 1.2rem; }
+        label { display: block; font-weight: 700; margin-bottom: 8px; font-size: 0.85rem; color: var(--text); }
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #E7E5E4;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.1); }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.3s;
+        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(15, 118, 110, 0.3); }
+
+        .divider { margin: 1.5rem 0; color: #A8A29E; font-size: 0.8rem; display: flex; align-items: center; gap: 10px; }
+        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #E7E5E4; }
+        
+        .btn-google {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            border: 1.5px solid #E7E5E4;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+        .btn-google:hover { background: #FAFAF9; }
+        .btn-google img { width: 20px; }
+
+        .toggle-text { margin-top: 1.5rem; font-size: 0.9rem; cursor: pointer; color: var(--primary); font-weight: 600; }
+        .toggle-text:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="logo">SYLLABUS TRACKER</div>
+    <div class="subtitle" id="sub-title">Sign in to sync your preparation</div>
+
+    <div class="input-group">
+        <label>Email Address</label>
+        <input type="email" id="email" placeholder="name@example.com">
+    </div>
+    <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="••••••••">
+    </div>
+
+    <button class="btn-login" id="main-btn">Login</button>
+
+    <div class="divider">OR</div>
+
+    <button class="btn-google" id="google-btn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="google">
+        Continue with Google
+    </button>
+
+    <div class="toggle-text" id="toggle-auth">Don't have an account? Sign Up</div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    // Aapka complete Firebase Config
+    const firebaseConfig = {
+        apiKey: "AIzaSyC34JnP3u8km7TlX17JcA7Xw5UkddLrfvY",
+        authDomain: "my-exam-tracker-80be7.firebaseapp.com",
+        projectId: "my-exam-tracker-80be7",
+        storageBucket: "my-exam-tracker-80be7.firebasestorage.app",
+        messagingSenderId: "507669777779",
+        appId: "1:507669777779:web:4df324624b99de359cc906",
+        measurementId: "G-9JX9V9P739"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    let isLoginMode = true;
+
+    // Toggle between Login and Signup
+    document.getElementById('toggle-auth').onclick = () => {
+        isLoginMode = !isLoginMode;
+        document.getElementById('main-btn').innerText = isLoginMode ? "Login" : "Create Account";
+        document.getElementById('sub-title').innerText = isLoginMode ? "Sign in to continue" : "Join us for your NEET prep";
+        document.getElementById('toggle-auth').innerText = isLoginMode ? "Don't have an account? Sign Up" : "Already have an account? Login";
+    };
+
+    // Google Login Function
+    document.getElementById('google-btn').onclick = async () => {
+        try {
+            await signInWithPopup(auth, provider);
+            window.location.href = "index.html"; // Login ke baad home par bhejega
+        } catch (e) { 
+            alert("Google Login Error: " + e.message); 
+        }
+    };
+
+    // Email/Password Login & Signup Function
+    document.getElementById('main-btn').onclick = async () => {
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('password').value;
+
+        if(!email || !pass) { alert("Please fill all fields"); return; }
+
+        try {
+            if(isLoginMode) {
+                await signInWithEmailAndPassword(auth, email, pass);
+            } else {
+                await createUserWithEmailAndPassword(auth, email, pass);
+                alert("Account created successfully!");
+            }
+            window.location.href = "index.html";
+        } catch (e) { 
+            alert(e.message); 
+        }
+    };
+</script>
+    <script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js?v=4").then(reg => {
+      reg.update();
+    }).catch(err => console.log("SW registration failed:", err));
+  }
+</script>
+
+</body>
+</html>
