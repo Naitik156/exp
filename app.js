@@ -283,8 +283,8 @@ const ExamSelectView = (ctx) => {
                         localStorage.setItem('currentExam', 'NEET');
                         // Firestore mein bhi turant save karo taaki logout ke baad bhi yaad rahe
                         if (window.db && window.dbFuncs && user) {
-                            const { doc, setDoc } = window.dbFuncs;
-                            setDoc(doc(window.db, "users", user.uid), { _currentExam: 'NEET' }, { merge: true }).catch(e => console.log(e));
+                            const { doc, updateDoc } = window.dbFuncs;
+                            updateDoc(doc(window.db, "users", user.uid), { _currentExam: 'NEET' }).catch(e => console.log(e));
                         }
                         navigateTo('home');
                     }
@@ -305,8 +305,8 @@ const ExamSelectView = (ctx) => {
                         localStorage.setItem('currentExam', 'JEE');
                         // Firestore mein bhi turant save karo taaki logout ke baad bhi yaad rahe
                         if (window.db && window.dbFuncs && user) {
-                            const { doc, setDoc } = window.dbFuncs;
-                            setDoc(doc(window.db, "users", user.uid), { _currentExam: 'JEE' }, { merge: true }).catch(e => console.log(e));
+                            const { doc, updateDoc } = window.dbFuncs;
+                            updateDoc(doc(window.db, "users", user.uid), { _currentExam: 'JEE' }).catch(e => console.log(e));
                         }
                         navigateTo('home');
                     }
@@ -2860,7 +2860,7 @@ useEffect(() => {
         const saveToCloudNow = async () => {
             if (!unsavedChangesRef.current) return;
             console.log("🔥 Debounced Cloud Sync...");
-            const { doc, setDoc } = window.dbFuncs;
+            const { doc, setDoc, updateDoc } = window.dbFuncs;
             try {
                 const docRef = doc(window.db, "users", user.uid);
                 const saveTimestamp = Date.now();
@@ -2881,7 +2881,13 @@ useEffect(() => {
                     }
                 }
 
-                await setDoc(docRef, dataToSave, { merge: true });
+                try {
+    await updateDoc(docRef, dataToSave);
+} catch (e) {
+    if (e.code === 'not-found') {
+        await setDoc(docRef, dataToSave);
+    } else { throw e; }
+}
                 unsavedChangesRef.current = false;
                 const cacheKey = 'localDataBackup_' + user.uid;
                 const cacheTimeKey = 'localDataTime_' + user.uid;
