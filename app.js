@@ -2340,18 +2340,44 @@ const ErrorBookView = (ctx) => {
         const [isUploading, setIsUploading] = useState(false);
         const [fileTargets, setFileTargets] = useState({ q: null, s: null });
 
-        const uploadToCloudinary = async (file) => {
+        const uploadToCloudinary = async (file, retries = 2) => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', UPLOAD_PRESET);
+
+            // 30 second timeout — slow net pe hang nahi karega
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 30000);
+
             const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
                 method: 'POST',
-                body: formData
+                body: formData,
+                signal: controller.signal
             });
+            clearTimeout(timeout);
+
             const resData = await res.json();
-            if (!resData.secure_url) throw new Error('Upload failed: No URL returned');
+
+            // Cloudinary ka actual error dikhao
+            if (resData.error) throw new Error('Cloudinary: ' + resData.error.message);
+            if (!resData.secure_url) throw new Error('No URL returned from Cloudinary');
+
             return resData.secure_url;
-        };
+
+        } catch (err) {
+            const isLast = attempt === retries;
+            if (err.name === 'AbortError') {
+                if (isLast) throw new Error('Upload timeout! Internet slow hai, baad mein try karein.');
+            } else if (isLast) {
+                throw err; // Final attempt fail — error upar bhejo
+            }
+            // Retry se pehle 2 second wait
+            await new Promise(r => setTimeout(r, 2000));
+        }
+    }
+};
         const filtered = (data.mistakes || []).filter(x => {
             const matchTest = f.tid ? String(x.tid) === String(f.tid) : true;
             const matchSub = x.sub === f.sub;
