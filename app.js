@@ -2344,7 +2344,7 @@ const ErrorBookView = (ctx) => {
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('file', file, 'photo.jpg');
             formData.append('upload_preset', UPLOAD_PRESET);
 
             // 30 second timeout — slow net pe hang nahi karega
@@ -2600,7 +2600,7 @@ const compressImage = (file) => {
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
                     // Quality 0.2 gives roughly 30-40KB file size
-                    resolve(canvas.toDataURL('image/jpeg', 0.2));
+                    canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.5);
                 };
             };
         });
