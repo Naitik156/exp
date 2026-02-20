@@ -1,5 +1,5 @@
 // ✅ Bump this version number whenever you update app.js or styles.css
-const CACHE_NAME = "syllabus-tracker-v5";
+const CACHE_NAME = "syllabus-tracker-v6";
 
 const STATIC_ASSETS = [
   "./",
