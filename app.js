@@ -269,7 +269,7 @@ const StaticCard = () => {
     );
 };
 const ExamSelectView = (ctx) => {
-    const { data, setData, currentExam, setCurrentExam, user, navigateTo, changeExam, showToast, setShowModal, setModalConfig, getChapterData, getProgress, getSubjectProgress, getClassProgress, getAnalytics, getChapters, getSubjectClass, updateChapterData, addCustomChapter, exportData, importData, selectedClass, setSelectedClass, selectedSubject, setSelectedSubject, selectedChapter, setSelectedChapter, editMode, setEditMode, isFocusMode, setIsFocusMode, forceChapterRefresh, unsavedChangesRef, isFetched, customChapterVersion } = ctx;
+    const { data, setData, currentExam, setCurrentExam, user, navigateTo, changeExam, showToast, setShowModal, setModalConfig, getChapterData, getProgress, getSubjectProgress, getClassProgress, getAnalytics, getChapters, getSubjectClass, updateChapterData, addCustomChapter, exportData, importData, selectedClass, setSelectedClass, selectedSubject, setSelectedSubject, selectedChapter, setSelectedChapter, editMode, setEditMode, isFocusMode, setIsFocusMode, forceChapterRefresh, unsavedChangesRef, isFetched, customChapterVersion, compressImage } = ctx;
         return React.createElement('div', { className: 'container' },
             React.createElement('div', { className: 'header' },
                 React.createElement('h1', { className: 'logo' }, 'Syllabus Tracker'),
