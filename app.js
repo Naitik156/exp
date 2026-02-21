@@ -2115,11 +2115,12 @@ const StopwatchView = (ctx) => {
             lastActiveDate: dateStr
         }));
     };
-
-    const handleStart = (e) => {
+const handleStart = (e) => {
         if(e) e.stopPropagation();
         const dateStr = getTodayStr();
-        setData(p => ({ ...p, timerState: { ...p.timerState, isRunning: true, startTime: Date.now() }, lastActiveDate: dateStr }));
+        const startTs = Date.now();
+        setNow(startTs);
+        setData(p => ({ ...p, timerState: { ...p.timerState, isRunning: true, startTime: startTs }, lastActiveDate: dateStr }));
     };
     
     const handleReset = (e) => { 
