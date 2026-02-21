@@ -2037,11 +2037,11 @@ const StopwatchView = (ctx) => {
         document.addEventListener('visibilitychange', handleVisibility);
         return () => document.removeEventListener('visibilitychange', handleVisibility);
     }, [isRunning, startTime, elapsed]); // Dependencies updated
-
-    useEffect(() => {
+useEffect(() => {
         let interval = null;
         if (isRunning) {
             requestWakeLock();
+            setNow(Date.now()); // ← FIX: sync now instantly on start, before first interval tick
             interval = setInterval(() => setNow(Date.now()), 1000);
         } else {
             if (wakeLockRef.current) wakeLockRef.current.release();
