@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Syllabus Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <meta name="theme-color" content="#0F766E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://www.gstatic.com">
+    <link rel="stylesheet" href="styles.css">
+    <!-- ✅ Google Analytics 4 — Syllabus Tracker -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RWE380QS35"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-RWE380QS35', {
+            page_title: document.title,
+            page_location: window.location.href
+        });
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        #root:empty { display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; background:linear-gradient(135deg,#ECFDF5 0%,#F0FDFA 50%,#FEF3C7 100%); }
+        #root:empty::before { content:""; width:120px; height:120px; background-image:url('favicon.png'); background-size:contain; background-repeat:no-repeat; background-position:center; margin-bottom:30px; animation:pulseLogo 1.5s infinite ease-in-out; }
+        #root:empty::after { content:""; width:35px; height:35px; border:4px solid rgba(15,118,110,0.1); border-left:4px solid #0F766E; border-radius:50%; animation:spinSpinner 1s linear infinite; }
+        @keyframes spinSpinner { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+        @keyframes pulseLogo { 0%{transform:scale(0.9);opacity:0.7} 50%{transform:scale(1.1);opacity:1} 100%{transform:scale(0.9);opacity:0.7} }
+
+        /* ── GUEST TOP BANNER ── */
+        #guest-banner {
+            display: none;
+            position: fixed; top: 0; left: 0; right: 0;
+            z-index: 8888;
+            background: linear-gradient(90deg, #0F766E, #14B8A6);
+            color: white; padding: 9px 14px;
+            font-size: 0.8rem; font-family: 'Manrope', sans-serif; font-weight: 600;
+            align-items: center; justify-content: space-between; gap: 10px;
+            box-shadow: 0 2px 10px rgba(15,118,110,0.3);
+        }
+        #guest-banner.visible { display: flex; }
+        #guest-banner span { flex: 1; }
+        #guest-login-btn {
+            background: white; color: #0F766E;
+            border: none; border-radius: 20px;
+            padding: 5px 13px; font-weight: 700; font-size: 0.78rem;
+            cursor: pointer; font-family: 'Manrope', sans-serif;
+            white-space: nowrap; transition: background 0.2s;
+        }
+        #guest-login-btn:hover { background: #ECFDF5; }
+        #guest-close-btn {
+            background: none; border: none;
+            color: rgba(255,255,255,0.8); font-size: 1.15rem;
+            cursor: pointer; padding: 0 4px; line-height: 1;
+        }
+        body.has-guest-banner { padding-top: 42px; }
+
+        /* ── BOTTOM BANNER AD ── */
+        #bottom-banner-ad {
+            display: none;
+            position: fixed; bottom: 0; left: 0; right: 0;
+            z-index: 8887; background: #fff;
+            border-top: 1px solid #E7E5E4;
+            justify-content: center; align-items: center;
+            min-height: 54px;
+            box-shadow: 0 -4px 16px rgba(0,0,0,0.06);
+        }
+        #bottom-banner-ad.visible { display: flex; }
+        body.has-bottom-ad { padding-bottom: 54px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- ── GUEST MODE TOP BANNER ── -->
+    <div id="guest-banner">
+        <span>☁️ Guest Mode — Data sirf is device pe hai. Login karo, kabhi nahi khoega!</span>
+        <button id="guest-login-btn" onclick="window.location.href='login.html'">Login Karo →</button>
+        <button id="guest-close-btn" onclick="closeGuestBanner()">×</button>
+    </div>
+
+    <!-- ── BOTTOM BANNER AD (320x50 — sabhi users ke liye) ── -->
+    <div id="bottom-banner-ad">
+        <script>
+            atOptions = {
+                'key' : '268cf2924040e4898c613af8e43d239a',
+                'format' : 'iframe',
+                'height' : 50,
+                'width' : 320,
+                'params' : {}
+            };
+        </script>
+        <script src="https://www.highperformanceformat.com/268cf2924040e4898c613af8e43d239a/invoke.js"></script>
+    </div>
+
+    <!-- React + Chart.js pehle load karo (synchronous) -->
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+
+    <!-- 
+        ROOT FIX: Firebase module SYNC hone ke BAAD app.js dynamically inject karo.
+        Pehle app.js static load hoti thi — tab window.auth/db undefined tha
+        kyunki ES module asynchronously load hote hain.
+        Isliye onAuthStateChanged kabhi fire nahi hota tha aur spinner hamesha ghoomta tha.
+    -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC34JnP3u8km7TlX17JcA7Xw5UkddLrfvY",
+            authDomain: "my-exam-tracker-80be7.firebaseapp.com",
+            projectId: "my-exam-tracker-80be7",
+            storageBucket: "my-exam-tracker-80be7.firebasestorage.app",
+            messagingSenderId: "507669777779",
+            appId: "1:507669777779:web:4df324624b99de359cc906"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.auth = auth;
+        window.db = db;
+        window.dbFuncs = { doc, getDoc, setDoc, updateDoc };
+
+        // ── GUEST MODE SETUP ────────────────────────────────────────────────
+        const IS_GUEST = localStorage.getItem('isGuest') === 'true';
+
+        if (IS_GUEST) {
+            // Guest banner dikhao
+            const banner = document.getElementById('guest-banner');
+            if (banner) { banner.classList.add('visible'); document.body.classList.add('has-guest-banner'); }
+        }
+
+        // Bottom banner ad — sabhi users ke liye (new + old + guest)
+        // Sirf pehli baar visit pe nahi — baaki sab baar dikhe
+        const bottomAd = document.getElementById('bottom-banner-ad');
+        if (bottomAd) { bottomAd.classList.add('visible'); document.body.classList.add('has-bottom-ad'); }
+
+        // ── LOGOUT ──────────────────────────────────────────────────────────
+        window.logoutUser = () => {
+            const confirmMsg = IS_GUEST
+                ? "Guest mode se bahar jaana chahte ho? Aapka data is device pe hi rahega."
+                : "Logout karein?";
+            if (confirm(confirmMsg)) {
+                const uid = window.auth?.currentUser?.uid;
+                ['lastView','lastClass','lastSubject','lastChapter','currentExam'].forEach(k => localStorage.removeItem(k));
+                if (uid) localStorage.removeItem('localDataTime_' + uid);
+                if (IS_GUEST) {
+                    localStorage.removeItem('isGuest');
+                    localStorage.removeItem('guestStartTime');
+                    window.location.href = "landing.html";
+                } else {
+                    signOut(auth).then(() => { window.location.href = "landing.html"; });
+                }
+            }
+        };
+
+        // ── SMART POPUNDER — Background → Foreground trigger ────────────────
+        // Rule 1: KABHI NAHI pehli baar visit pe (first-ever open)
+        // Rule 2: Sirf background se wapas aane pe fire ho
+        // Rule 3: User ne 2 min app use kiya ho (serious user)
+        // Rule 4: Max 2 baar per day
+        // Rule 5: New user + Old user — SAME rules (guest vs login fark nahi)
+        const _pd = { sessionStart: Date.now(), wentBg: false, fired: false };
+
+        const _tryFirePopunder = () => {
+            if (!localStorage.getItem('hasVisitedBefore')) return; // First visit ever — skip
+            const TODAY = new Date().toLocaleDateString('en-CA');
+            const count = parseInt(localStorage.getItem('pdCount_' + TODAY) || '0', 10);
+            if (count >= 2) return;                                 // Max 2/day
+            if ((Date.now() - _pd.sessionStart) / 1000 < 120) return; // < 2 min spent
+            if (_pd.fired) return;                                  // Once per session
+            if (!_pd.wentBg) return;                               // Must come from background
+
+            _pd.fired = true;
+            _pd.wentBg = false;
+            localStorage.setItem('pdCount_' + TODAY, String(count + 1));
+
+            // Fire popunder script
+            const ps = document.createElement('script');
+            ps.src = 'https://pl28762670.effectivegatecpm.com/a3/f1/c7/a3f1c71b27f6dc99a370605df6800967.js';
+            ps.async = true;
+            document.body.appendChild(ps);
+        };
+
+        // Mark first visit flag (so next time popunder can fire)
+        if (!localStorage.getItem('hasVisitedBefore')) {
+            localStorage.setItem('hasVisitedBefore', 'true');
+        }
+
+        // Visibility change listener
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                _pd.wentBg = true;
+            } else if (document.visibilityState === 'visible' && _pd.wentBg) {
+                setTimeout(_tryFirePopunder, 800);
+            }
+        });
+
+        // ── LOAD app.js after Firebase ready ────────────────────────────────
+        const s = document.createElement('script');
+        s.src = 'app.js';
+        document.body.appendChild(s);
+    </script>
+
+    <!-- Guest banner close function + SW register -->
+    <script>
+        function closeGuestBanner() {
+            const b = document.getElementById('guest-banner');
+            if (b) { b.classList.remove('visible'); document.body.classList.remove('has-guest-banner'); }
+        }
+    </script>
+
+    <!-- SW 3 sec delay se register karo taaki page load compete na kare -->
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+                setTimeout(() => {
+                    navigator.serviceWorker.register("sw.js?v=8")
+                        .then(reg => reg.update())
+                        .catch(err => console.log("SW failed:", err));
+                }, 3000);
+            });
+        }
+    </script>
+</body>
+</html>

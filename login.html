@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Syllabus Tracker</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0F766E">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- ✅ Google Analytics 4 — Syllabus Tracker -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RWE380QS35"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-RWE380QS35', {
+            page_title: document.title,
+            page_location: window.location.href
+        });
+    </script>
+    <style>
+        :root {
+            --primary: #0F766E;
+            --primary-light: #14B8A6;
+            --bg: linear-gradient(135deg, #ECFDF5 0%, #F0FDFA 50%, #FEF3C7 100%);
+            --card: #FFFFFF;
+            --text: #1C1917;
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: var(--bg);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        .login-card {
+            background: var(--card);
+            padding: 2.5rem;
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.3);
+            animation: fadeIn 0.6s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .logo {
+            font-family: 'DM Serif Display', serif;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        .subtitle { color: #57534E; margin-bottom: 2rem; font-size: 0.9rem; }
+        
+        .input-group { text-align: left; margin-bottom: 1.2rem; }
+        label { display: block; font-weight: 700; margin-bottom: 8px; font-size: 0.85rem; color: var(--text); }
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #E7E5E4;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+        input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.1); }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.3s;
+        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(15, 118, 110, 0.3); }
+
+        .divider { margin: 1.5rem 0; color: #A8A29E; font-size: 0.8rem; display: flex; align-items: center; gap: 10px; }
+        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: #E7E5E4; }
+        
+        .btn-google {
+            width: 100%;
+            padding: 12px;
+            background: white;
+            border: 1.5px solid #E7E5E4;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+        .btn-google:hover { background: #FAFAF9; }
+        .btn-google img { width: 20px; }
+
+        .toggle-text { margin-top: 1.5rem; font-size: 0.9rem; cursor: pointer; color: var(--primary); font-weight: 600; }
+        .toggle-text:hover { text-decoration: underline; }
+
+        /* Guest migration banner */
+        .migration-banner {
+            background: linear-gradient(135deg, #FEF3C7, #FFFBEB);
+            border: 1.5px solid #FDE68A;
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.82rem;
+            color: #92400E;
+            text-align: left;
+            line-height: 1.5;
+            display: none;
+        }
+        .migration-banner strong { color: #78350F; display: block; margin-bottom: 2px; font-size: 0.87rem; }
+        .back-link {
+            display: block; margin-top: 1rem;
+            font-size: 0.82rem; color: #A8A29E;
+            text-decoration: none; cursor: pointer;
+        }
+        .back-link:hover { color: var(--primary); }
+        /* Migration choice modal */
+        .mig-modal {
+            display: none; position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.55);
+            backdrop-filter: blur(4px);
+            z-index: 999; align-items: center;
+            justify-content: center; padding: 1.5rem;
+        }
+        .mig-modal.show { display: flex; }
+        .mig-modal-card {
+            background: white; border-radius: 20px;
+            padding: 2rem; max-width: 360px; width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            animation: fadeIn 0.3s ease;
+        }
+        .mig-modal-card h3 { font-size: 1.15rem; margin-bottom: 0.5rem; color: var(--primary); }
+        .mig-modal-card p { font-size: 0.87rem; color: #57534E; margin-bottom: 1.5rem; line-height: 1.5; }
+        .mig-btn {
+            display: block; width: 100%; padding: 12px;
+            border-radius: 12px; font-family: 'Manrope', sans-serif;
+            font-weight: 700; font-size: 0.93rem;
+            cursor: pointer; border: none; margin-bottom: 0.7rem; transition: all 0.2s;
+        }
+        .mig-btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; }
+        .mig-btn-primary:hover { transform: translateY(-2px); }
+        .mig-btn-secondary { background: #F3F4F6; color: #374151; }
+        .mig-btn-secondary:hover { background: #E5E7EB; }
+    </style>
+</head>
+<body>
+
+<!-- Migration modal -->
+<div class="mig-modal" id="migModal">
+    <div class="mig-modal-card">
+        <h3>☁️ Guest Data Mila!</h3>
+        <p>Aapne Guest mode mein kuch data save kiya tha. Login ke baad kya karna chahte ho?</p>
+        <button class="mig-btn mig-btn-primary" id="migrateYes">📤 Guest Data Cloud Pe Save Karo</button>
+        <button class="mig-btn mig-btn-secondary" id="migrateNo">🗑️ Fresh Start Karo (Guest Data Hatao)</button>
+    </div>
+</div>
+
+<div class="login-card">
+    <div class="logo">SYLLABUS TRACKER</div>
+    <div class="subtitle" id="sub-title">Sign in to sync your preparation</div>
+    <div class="migration-banner" id="guestBanner">
+        <strong>🎯 Guest Data Cloud Pe Save Hoga!</strong>
+        Login karte hi aapka Guest mode ka sara data automatically cloud pe migrate ho jaayega.
+    </div>
+
+    <div class="input-group">
+        <label>Email Address</label>
+        <input type="email" id="email" placeholder="name@example.com">
+    </div>
+    <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="••••••••">
+    </div>
+
+    <button class="btn-login" id="main-btn">Login</button>
+
+    <div class="divider">OR</div>
+
+    <button class="btn-google" id="google-btn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="google">
+        Continue with Google
+    </button>
+
+    <div class="toggle-text" id="toggle-auth">Don't have an account? Sign Up</div>
+    <a class="back-link" href="landing.html">← Wapas jaao</a>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyC34JnP3u8km7TlX17JcA7Xw5UkddLrfvY",
+        authDomain: "my-exam-tracker-80be7.firebaseapp.com",
+        projectId: "my-exam-tracker-80be7",
+        storageBucket: "my-exam-tracker-80be7.firebasestorage.app",
+        messagingSenderId: "507669777779",
+        appId: "1:507669777779:web:4df324624b99de359cc906",
+        measurementId: "G-9JX9V9P739"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    let isLoginMode = true;
+    const isGuest = localStorage.getItem('isGuest') === 'true';
+
+    // Show guest banner if coming from guest mode
+    if (isGuest) {
+        document.getElementById('guestBanner').style.display = 'block';
+    }
+
+    // ─── MIGRATION HELPERS ──────────────────────────────────────────────────
+    const clearGuestFlags = () => {
+        localStorage.removeItem('isGuest');
+        localStorage.removeItem('guestStartTime');
+        // Keep guestData in localStorage until migration decision is made
+    };
+
+    const doMigration = async (user, guestDataRaw) => {
+        // Migrate guest localStorage data → Firestore cloud
+        try {
+            const guestData = JSON.parse(guestDataRaw);
+            if (guestData.timerState) {
+                guestData.timerState.isRunning = false;
+                guestData.timerState.startTime = null;
+            }
+            const docRef = doc(db, 'users', user.uid);
+            await setDoc(docRef, { ...guestData, _migratedFromGuest: true, _lastSaved: Date.now() });
+            // Also save to user's cache so next open is instant
+            localStorage.setItem('localDataBackup_' + user.uid, guestDataRaw);
+            localStorage.setItem('localDataTime_' + user.uid, String(Date.now()));
+            console.log('✅ Guest data migrated to cloud!');
+        } catch (e) {
+            console.error('Migration error:', e);
+        } finally {
+            localStorage.removeItem('guestData');
+            clearGuestFlags();
+            window.location.href = 'index.html';
+        }
+    };
+
+    const discardAndGoToApp = () => {
+        localStorage.removeItem('guestData');
+        clearGuestFlags();
+        window.location.href = 'index.html';
+    };
+
+    const showMigrationModal = (user, guestDataRaw) => {
+        document.getElementById('migModal').classList.add('show');
+        document.getElementById('migrateYes').onclick = async () => {
+            document.getElementById('migModal').classList.remove('show');
+            await doMigration(user, guestDataRaw);
+        };
+        document.getElementById('migrateNo').onclick = () => {
+            document.getElementById('migModal').classList.remove('show');
+            discardAndGoToApp();
+        };
+    };
+
+    // ─── MAIN: After login, check for guest data ────────────────────────────
+    const handleLoginSuccess = async (user) => {
+        if (!isGuest) {
+            // Normal login — seedha app pe
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // Coming from guest mode — check if there's guest data to migrate
+        const guestDataRaw = localStorage.getItem('guestData');
+        if (!guestDataRaw) {
+            // No guest data — just clear flags and go
+            clearGuestFlags();
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // Check if cloud already has existing data
+        try {
+            const docRef = doc(db, 'users', user.uid);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                // Cloud data bhi hai, guest data bhi hai — user se pucho
+                showMigrationModal(user, guestDataRaw);
+            } else {
+                // No cloud data — directly migrate (new user converting from guest)
+                await doMigration(user, guestDataRaw);
+            }
+        } catch (e) {
+            console.error('Migration check error:', e);
+            clearGuestFlags();
+            window.location.href = 'index.html';
+        }
+    };
+
+    // ─── TOGGLE LOGIN/SIGNUP ────────────────────────────────────────────────
+    document.getElementById('toggle-auth').onclick = () => {
+        isLoginMode = !isLoginMode;
+        document.getElementById('main-btn').innerText = isLoginMode ? "Login" : "Create Account";
+        document.getElementById('sub-title').innerText = isLoginMode ? "Sign in to continue" : "Join us for your NEET prep";
+        document.getElementById('toggle-auth').innerText = isLoginMode ? "Don't have an account? Sign Up" : "Already have an account? Login";
+    };
+
+    // ─── GOOGLE LOGIN ───────────────────────────────────────────────────────
+    document.getElementById('google-btn').onclick = async () => {
+        try {
+            const result = await signInWithPopup(auth, provider);
+            await handleLoginSuccess(result.user);
+        } catch (e) { 
+            alert("Google Login Error: " + e.message); 
+        }
+    };
+
+    // ─── EMAIL/PASSWORD ─────────────────────────────────────────────────────
+    document.getElementById('main-btn').onclick = async () => {
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('password').value;
+
+        if (!email || !pass) { alert("Please fill all fields"); return; }
+
+        try {
+            let result;
+            if (isLoginMode) {
+                result = await signInWithEmailAndPassword(auth, email, pass);
+            } else {
+                result = await createUserWithEmailAndPassword(auth, email, pass);
+                alert("Account created successfully!");
+            }
+            await handleLoginSuccess(result.user);
+        } catch (e) { 
+            alert(e.message); 
+        }
+    };
+</script>
+    <script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("sw.js?v=8").then(reg => {
+      reg.update();
+    }).catch(err => console.log("SW registration failed:", err));
+  }
+</script>
+
+</body>
+</html>

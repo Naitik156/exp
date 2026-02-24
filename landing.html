@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Syllabus Tracker - NEET & JEE</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0F766E">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- ✅ Google Analytics 4 — Syllabus Tracker -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RWE380QS35"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-RWE380QS35', {
+            page_title: document.title,
+            page_location: window.location.href
+        });
+    </script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #0F766E;
+            --primary-light: #14B8A6;
+            --secondary: #F59E0B;
+            --card: #FFFFFF;
+            --text: #1C1917;
+            --text-light: #57534E;
+        }
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: linear-gradient(135deg, #ECFDF5 0%, #F0FDFA 50%, #FEF3C7 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+        .landing-wrapper {
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeInUp 0.6s ease;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .hero { text-align: center; margin-bottom: 1.75rem; }
+        .app-icon {
+            width: 96px; height: 96px;
+            border-radius: 22px;
+            box-shadow: 0 12px 32px rgba(15,118,110,0.25);
+            margin-bottom: 1.2rem;
+            animation: pulseLogo 2.5s infinite ease-in-out;
+        }
+        @keyframes pulseLogo {
+            0%,100% { transform: scale(1); box-shadow: 0 12px 32px rgba(15,118,110,.25); }
+            50%      { transform: scale(1.04); box-shadow: 0 16px 40px rgba(15,118,110,.38); }
+        }
+        .app-name {
+            font-family: 'DM Serif Display', serif;
+            font-size: 2.1rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.4rem;
+        }
+        .app-tagline { color: var(--text-light); font-size: 0.93rem; margin-bottom: 1.4rem; }
+        .features {
+            display: flex; flex-wrap: wrap;
+            gap: 0.45rem; justify-content: center;
+        }
+        .feature-pill {
+            background: white;
+            border: 1.5px solid rgba(15,118,110,0.15);
+            border-radius: 50px;
+            padding: 0.38rem 0.8rem;
+            font-size: 0.8rem; font-weight: 600;
+            color: var(--primary);
+            display: flex; align-items: center; gap: 0.28rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .landing-card {
+            width: 100%;
+            background: var(--card);
+            border-radius: 24px;
+            padding: 1.9rem 1.75rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            border: 1px solid rgba(255,255,255,0.6);
+            margin-top: 1.4rem;
+        }
+        .btn-login {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white; border: none; border-radius: 14px;
+            font-weight: 700; font-size: 1rem; cursor: pointer;
+            font-family: 'Manrope', sans-serif;
+            transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+            box-shadow: 0 6px 16px rgba(15,118,110,0.3);
+            margin-bottom: 0.8rem;
+        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15,118,110,0.4); }
+        .divider {
+            display: flex; align-items: center; gap: 0.75rem;
+            margin-bottom: 0.8rem; color: #A8A29E; font-size: 0.78rem;
+        }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #E7E5E4; }
+        .btn-guest {
+            width: 100%; padding: 13px;
+            background: white; color: var(--text-light);
+            border: 1.5px solid #E7E5E4; border-radius: 14px;
+            font-weight: 600; font-size: 0.93rem; cursor: pointer;
+            font-family: 'Manrope', sans-serif;
+            transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .btn-guest:hover { background: #FAFAF9; border-color: var(--primary-light); color: var(--primary); }
+        .data-warning {
+            margin-top: 1rem;
+            background: #FEF3C7; border: 1px solid #FDE68A;
+            border-radius: 10px; padding: 0.65rem 0.9rem;
+            font-size: 0.77rem; color: #92400E;
+            text-align: center; line-height: 1.5;
+        }
+        .footer-note { margin-top: 1.2rem; text-align: center; font-size: 0.73rem; color: #A8A29E; }
+    </style>
+</head>
+<body>
+<div class="landing-wrapper">
+    <div class="hero">
+        <img src="favicon.png" alt="Syllabus Tracker" class="app-icon">
+        <div class="app-name">SYLLABUS TRACKER</div>
+        <div class="app-tagline">NEET &amp; JEE taiyari ab aur organized</div>
+        <div class="features">
+            <span class="feature-pill">✅ Chapters Track</span>
+            <span class="feature-pill">📊 Test Analysis</span>
+            <span class="feature-pill">⏱️ Study Timer</span>
+            <span class="feature-pill">🎯 Daily Goals</span>
+        </div>
+    </div>
+
+    <div class="landing-card">
+        <button class="btn-login" onclick="window.location.href='login.html'">
+            🔐 Login / Sign Up
+        </button>
+        <div class="divider">YA</div>
+        <button class="btn-guest" onclick="startAsGuest()">
+            👤 Guest ke roop mein shuru karo
+        </button>
+        <div class="data-warning">
+            ⚠️ Guest mode mein data sirf <strong>is device pe</strong> save hoga.<br>
+            Login karne pe data <strong>cloud pe sync</strong> ho jaayega!
+        </div>
+    </div>
+
+    <div class="footer-note">Syllabus Tracker — Made for NEET &amp; JEE aspirants 🎯</div>
+</div>
+
+<script>
+    function startAsGuest() {
+        localStorage.setItem('isGuest', 'true');
+        localStorage.setItem('guestStartTime', Date.now().toString());
+        window.location.href = 'index.html';
+    }
+
+    // Agar pehle se guest hai toh seedha app pe bhejo
+    if (localStorage.getItem('isGuest') === 'true') {
+        window.location.href = 'index.html';
+    }
+
+    if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("sw.js?v=7")
+            .then(reg => reg.update())
+            .catch(err => console.log("SW failed:", err));
+    }
+</script>
+</body>
+</html>
